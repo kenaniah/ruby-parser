@@ -3,7 +3,6 @@ extern crate nom;
 #[macro_use]
 mod macros;
 pub mod parsers;
-pub mod token;
 
 #[derive(Debug, PartialEq)]
 pub enum Numeric {
@@ -11,7 +10,12 @@ pub enum Numeric {
     Float(f64),
 }
 
-pub use token::Token;
+/// Defines the tokens that are returned as a result of lexing
+#[derive(Debug, PartialEq)]
+pub enum Token {
+    Integer(isize),
+    Float(f64)
+}
 
 /// The type used to describe the lexer's input
 pub type Input<'a> = &'a str;
