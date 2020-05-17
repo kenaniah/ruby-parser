@@ -4,6 +4,7 @@ extern crate nom;
 mod macros;
 pub mod parsers;
 
+/// Internal enum used by the numeric_literal parser
 #[derive(Debug, PartialEq)]
 pub enum Numeric {
     Integer(isize),
