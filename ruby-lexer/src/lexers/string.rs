@@ -12,15 +12,13 @@ use crate::{CharResult, Input, StringResult, Token, TokenResult};
 
 /// `'` *single_quoted_string_character** `'`
 pub fn single_quoted_string(i: Input) -> StringResult {
-    let (i, char1) = char('\'')(i)?;
+    let (i, _) = char('\'')(i)?;
     let (i, contents) = many0(single_quoted_string_character)(i)?;
-    let (i, char2) = char('\'')(i)?;
+    let (i, _) = char('\'')(i)?;
     let mut string = String::new();
-    string.push(char1);
     for s in contents {
         string.push_str(&s);
     }
-    string.push(char2);
     Ok((i, string))
 }
 
@@ -44,9 +42,9 @@ pub fn single_quoted_escape_sequence(i: Input) -> StringResult {
 
 /// `\` *single_quoted_string_meta_character*
 pub fn single_escape_character_sequence(i: Input) -> StringResult {
-    let (i, char1) = char('\\')(i)?;
-    let (i, char2) = single_quoted_string_meta_character(i)?;
-    Ok((i, string_from_2_chars(char1, char2)))
+    let (i, _) = char('\\')(i)?;
+    let (i, char) = single_quoted_string_meta_character(i)?;
+    Ok((i, char.to_string()))
 }
 
 /// `\` *single_quoted_string_non_escaped_character*
@@ -202,8 +200,8 @@ mod tests {
         assert_err!("\\a");
         assert_err!("foo");
         // Success cases
-        assert_ok!("\\'", "\\'".to_owned());
-        assert_ok!("\\\\", "\\\\".to_owned());
+        assert_ok!("\\'", "'".to_owned());
+        assert_ok!("\\\\", "\\".to_owned());
     }
 
     #[test]
@@ -212,6 +210,7 @@ mod tests {
         // Parse errors
         assert_err!("");
         assert_err!("\\''");
+        assert_err!("'\\\\''");
         assert_err!("foo");
         assert_err!("'");
         assert_err!("'''");
@@ -219,8 +218,8 @@ mod tests {
         // Success cases
         assert_ok!("''");
         assert_ok!("'\\''");
-        assert_ok!("'This is a normal string.'");
-        let str = "'There\\'s a \"handful\" of \t non-ascii chars: \n \0 東 é é.'";
-        assert_ok!(str, str.to_owned());
+        assert_ok!("'This is a normal string.'", "This is a normal string.".to_owned());
+        assert_ok!("'Here\\'s \\a \"handful\" of chars: \\\\ \n \0 東 é é.'", "Here's \\a \"handful\" of chars: \\ \n \0 東 é é.".to_owned());
+        assert_ok!("'\\a\\'\\\\'", "\\a'\\".to_owned());
     }
 }
