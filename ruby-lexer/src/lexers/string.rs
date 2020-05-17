@@ -66,6 +66,71 @@ pub fn single_quoted_string_non_escaped_character(i: Input) -> CharResult {
     none_of("'\\")(i)
 }
 
+/// `"` *double_quoted_string_character** `"`
+pub fn double_quoted_string(i: Input) -> StringResult {
+    stub_string(i)
+}
+
+/// *source_character* **but not** ( `"` | `#` | `\` ) | `#` **not** ( `$` | `@` | `{` ) | *double_escape_sequence* | *interpolated_character_sequence*
+pub fn double_quoted_string_character(i: Input) -> StringResult {
+    stub_string(i)
+}
+
+/// *simple_escape_sequence* | *non_escaped_sequence* | *line_terminator_escape_sequence* | *octal_escape_sequence* | *hexadecimal_escape_sequence* | *control_escape_sequence*
+pub fn double_escape_sequence(i: Input) -> StringResult {
+    stub_string(i)
+}
+
+/// `\` *double_escaped_character*
+pub fn simple_escape_sequence(i: Input) -> StringResult {
+    stub_string(i)
+}
+
+/// `\` | `n` | `t` | `r` | `f` | `v` | `a` | `e` | `b` | `s`
+pub fn double_escaped_character(i: Input) -> CharResult {
+    one_of("\\ntrfvaebs")(i)
+}
+
+/// `\` *non_escaped_double_quoted_string_char*
+pub fn non_escaped_sequence(i: Input) -> StringResult {
+    stub_string(i)
+}
+
+/// *source_character* **but not** ( *alpha_numeric_character* | *line_terminator* )
+pub fn non_escaped_double_quoted_string_char(i: Input) -> StringResult {
+    stub_string(i)
+}
+
+/// `\` `x` *octal_digit* *octal_digit*? *octal_digit*?
+pub fn octal_escape_sequence(i: Input) -> StringResult {
+    stub_string(i)
+}
+
+/// `\` *hexadecimal_digit* *hexadecimal_digit*?
+pub fn hexadecimal_escape_sequence(i: Input) -> StringResult {
+    stub_string(i)
+}
+
+/// `\` ( `C` `-` | `c` ) *control_escaped_character*
+pub fn control_escape_sequence(i: Input) -> StringResult {
+    stub_string(i)
+}
+
+/// *double_escape_sequence* | `?` | *source_character* **but not** ( `\` | `?` )
+pub fn control_escaped_character(i: Input) -> StringResult {
+    stub_string(i)
+}
+
+/// `#` *global_variable_identifier* | `#` *class_variable_identifier* | `#` *instance_variable_identifier* | `#` `{` *computed_statement* `}`
+pub fn interpolated_character_sequence(i: Input) -> StringResult {
+    stub_string(i)
+}
+
+/// *uppercase_character* | *lowercase_character* | *decimal_digit*
+pub fn alpha_numeric_character(i: Input) -> StringResult {
+    stub_string(i)
+}
+
 /// Any UTF-8 scalar value (a Rust `char`)
 pub fn source_character(i: Input) -> CharResult {
     anychar(i)
