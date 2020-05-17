@@ -1,18 +1,18 @@
 /*!
-Provides support for lexing Ruby's numeric literal format.
+Provides support for lexing Ruby's numeric literal formats.
 
 ## How To Use
-This module is provided as a set of [nom](https://docs.rs/nom/6.0.0-alpha1/nom/index.html) parser combinators that follow the ISO Ruby spec for lexing
-numeric literals. The top-level parser is [`numeric_literal`](fn.numeric_literal.html), which returns
-a tuple of the remaining input and a `Token::Integer` or `Token::Float` value when successful.
-While all of supporting parser combinators are made available, this should generally be the only
-function you need to invoke.
+
+This module is provided as a set of [nom](https://docs.rs/nom/6.0.0-alpha1/nom/index.html) parser
+combinators that follow the ISO Ruby spec for lexing numeric literals. The top-level lexer is the
+[`numeric_literal`](fn.numeric_literal.html) function, which returns a tuple of the remaining input
+and a `Token::Integer` or `Token::Float` value when successful. While all of the supporting parser
+combinators are made available, this should generally be the only function you need to invoke.
 
 ## Example
 
 ```
-use ruby_lexer::parsers::numeric_literal::numeric_literal;
-use ruby_lexer::Token;
+use ruby_lexer::prelude::{numeric_literal, Token};
 
 let input = "12_345";
 assert_eq!(numeric_literal(input), Ok(("", Token::Integer(12345))));
@@ -44,6 +44,7 @@ pub fn numeric_literal(i: Input) -> TokenResult {
 }
 
 /// ( `+` | `-` ) *unsigned_number*
+#[doc(visible)]
 pub fn signed_number(i: Input) -> NumericResult {
     let (i, sign) = opt(one_of("+-"))(i)?;
     let (i, token) = unsigned_number(i)?;

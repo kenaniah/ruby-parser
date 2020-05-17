@@ -1,8 +1,28 @@
+/*!
+# Ruby Lexer - a library for parsing Ruby syntax
+
+ruby-lexer is a library that provides the APIs needed to lex the Ruby programming language's
+syntax into a stream of tokens.
+
+## Parser combinators
+
+This library is provided as a set of parser combinator functions, powered by [nom](https://docs.rs/nom/).
+All of the parser combinators are structured to semantically reflect the ISO Ruby specification,
+but minor deviations from the spec have been made when necessary (namely, re-ordering alternative
+parsers to consume the largest production first).
+
+## Prelude
+
+As a parser combinator library, essentially everything has been marked as public. The most useful
+parts of the library have been re-exported under the prelude module.
+!*/
+
 extern crate nom;
 
 #[macro_use]
 mod macros;
-pub mod parsers;
+pub mod lexers;
+pub mod prelude;
 
 /// Internal enum used by the numeric_literal parser
 #[derive(Debug, PartialEq)]
