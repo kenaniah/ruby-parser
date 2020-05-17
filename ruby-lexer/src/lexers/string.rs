@@ -12,17 +12,34 @@ use crate::{CharResult, Input, StringResult, Token, TokenResult};
 
 /// `'` *single_quoted_string_character** `'`
 pub fn single_quoted_string(i: Input) -> StringResult {
-    stub_string(i)
+    let (i, char1) = char('\'')(i)?;
+    let (i, contents) = many0(single_quoted_string_character)(i)?;
+    let (i, char2) = char('\'')(i)?;
+    let mut string = String::new();
+    string.push(char1);
+    for s in contents {
+        string.push_str(&s);
+    }
+    string.push(char2);
+    Ok((i, string))
 }
 
 /// *single_quoted_string_non_escaped_character* | *single_quoted_escape_sequence*
 pub fn single_quoted_string_character(i: Input) -> StringResult {
-    stub_string(i)
+    alt((
+        map(single_quoted_string_non_escaped_character, |char| {
+            char.to_string()
+        }),
+        single_quoted_escape_sequence,
+    ))(i)
 }
 
 /// *single_escape_character_sequence* | *single_quoted_string_non_escaped_character_sequence*
 pub fn single_quoted_escape_sequence(i: Input) -> StringResult {
-    stub_string(i)
+    alt((
+        single_escape_character_sequence,
+        single_quoted_string_non_escaped_character_sequence,
+    ))(i)
 }
 
 /// `\` *single_quoted_string_meta_character*
@@ -49,7 +66,7 @@ pub fn single_quoted_string_non_escaped_character(i: Input) -> CharResult {
     none_of("'\\")(i)
 }
 
-/// Any UTF-8 character
+/// Any UTF-8 scalar value (a Rust `char`)
 pub fn source_character(i: Input) -> CharResult {
     anychar(i)
 }
@@ -86,13 +103,18 @@ mod tests {
         assert_ok!("1", '1');
         assert_ok!("é", 'é'); // U+00e9: 'latin small letter e with acute'
         assert_ok!("東", '東'); // U+6771: 'CJK Unified Ideograph-6771' "East"
-        // Combined characters
+                                // Combined characters
         assert_eq!(source_character("é"), Ok(("\u{301}", 'e'))); // U+0065: 'latin small letter e' + U+0301: 'combining acute accent'
     }
 
     #[test]
     fn test_single_quoted_string_non_escaped_character_sequence() {
-        use_parser!(single_quoted_string_non_escaped_character_sequence, Input, String, ErrorKind);
+        use_parser!(
+            single_quoted_string_non_escaped_character_sequence,
+            Input,
+            String,
+            ErrorKind
+        );
         // Parse errors
         assert_err!("");
         assert_err!("\\");
@@ -119,4 +141,21 @@ mod tests {
         assert_ok!("\\\\", "\\\\".to_owned());
     }
 
+    #[test]
+    fn test_single_quoted_string() {
+        use_parser!(single_quoted_string, Input, String, ErrorKind);
+        // Parse errors
+        assert_err!("");
+        assert_err!("\\''");
+        assert_err!("foo");
+        assert_err!("'");
+        assert_err!("'''");
+        assert_err!("'foo");
+        // Success cases
+        assert_ok!("''");
+        assert_ok!("'\\''");
+        assert_ok!("'This is a normal string.'");
+        let str = "'There\\'s a \"handful\" of \t non-ascii chars: \n \0 東 é é.'";
+        assert_ok!(str, str.to_owned());
+    }
 }

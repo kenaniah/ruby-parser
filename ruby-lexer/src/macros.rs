@@ -13,6 +13,12 @@ macro_rules! use_parser {
 /// Tests whether the parser's output matches a successful result
 #[macro_export]
 macro_rules! assert_ok {
+    ($input:expr) => {
+        let res = parser($input);
+        if res.is_err() {
+            panic!("\nExpected parsing to succeed...\n     input: {:?}\n    result: {:?}\n  expected: Ok", $input, res.unwrap_err())
+        }
+    };
     ($input:expr, $result:expr) => {
         _type_check_ok($result);
         let res = parser($input);
