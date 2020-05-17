@@ -1,3 +1,29 @@
+/*!
+Provides support for lexing Ruby's numeric literal format.
+
+## How To Use
+This module is provided as a set of [nom](https://docs.rs/nom/6.0.0-alpha1/nom/index.html) parser combinators that follow the ISO Ruby spec for lexing
+numeric literals. The top-level parser is [`numeric_literal`](fn.numeric_literal.html), which returns
+a tuple of the remaining input and a `Token::Integer` or `Token::Float` value when successful.
+While all of supporting parser combinators are made available, this should generally be the only
+function you need to invoke.
+
+## Example
+
+```
+use ruby_lexer::parsers::numeric_literal::numeric_literal;
+use ruby_lexer::Token;
+
+let input = "12_345";
+assert_eq!(numeric_literal(input), Ok(("", Token::Integer(12345))));
+
+let input = "-12.34e+4 + 12";
+assert_eq!(numeric_literal(input), Ok((" + 12", Token::Float(-123400.0))));
+```
+
+## ISO Spec
+8.7.6.2 - Numeric Literals
+!*/
 use nom::branch::alt;
 use nom::character::complete::{char, one_of};
 use nom::combinator::{map, opt, value};
