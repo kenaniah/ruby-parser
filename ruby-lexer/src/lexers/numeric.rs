@@ -220,7 +220,7 @@ fn decimal_digit(i: Input) -> CharResult {
 
 /// Constructs a string from a starting character and remaining vector
 fn string_cons(car: char, cdr: Vec<char>) -> String {
-    let mut string = String::with_capacity(cdr.len() + 1);
+    let mut string = String::with_capacity(car.len_utf8() + cdr.len());
     string.push(car);
     string.push_str(&cdr.into_iter().collect::<String>());
     string
