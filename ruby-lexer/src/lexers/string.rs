@@ -218,8 +218,14 @@ mod tests {
         // Success cases
         assert_ok!("''");
         assert_ok!("'\\''");
-        assert_ok!("'This is a normal string.'", "This is a normal string.".to_owned());
-        assert_ok!("'Here\\'s \\a \"handful\" of chars: \\\\ \n \0 東 é é.'", "Here's \\a \"handful\" of chars: \\ \n \0 東 é é.".to_owned());
+        assert_ok!(
+            "'This is a normal string.'",
+            "This is a normal string.".to_owned()
+        );
+        assert_ok!(
+            "'Here\\'s \\a \"handful\" of chars: \\\\ \n \0 東 é é.'",
+            "Here's \\a \"handful\" of chars: \\ \n \0 東 é é.".to_owned()
+        );
         // Semantics
         assert_ok!("'\\a\\'\\\\'", "\\a'\\".to_owned());
     }

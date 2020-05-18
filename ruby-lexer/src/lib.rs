@@ -35,7 +35,7 @@ pub enum Numeric {
 #[derive(Debug, PartialEq)]
 pub enum Token {
     Integer(isize),
-    Float(f64)
+    Float(f64),
 }
 
 /// The type used to describe the lexer's input
