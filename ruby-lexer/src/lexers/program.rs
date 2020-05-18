@@ -1,7 +1,7 @@
 //! Provides parsers for program text
 
 use crate::{CharResult, Input, StringResult};
-use nom::character::complete::{anychar, line_ending, one_of};
+use nom::character::complete::{anychar, char, line_ending, one_of};
 use nom::combinator::map;
 
 /// *line-terminator* | *whitespace* | *comment* | *end_of_program_marker* | *token*
@@ -21,6 +21,14 @@ pub fn whitespace(i: Input) -> CharResult {
 /// `\r`? `\n`
 pub fn line_terminator(i: Input) -> StringResult {
     map(line_ending, |s: &str| s.to_owned())(i)
+}
+
+/// `\` *line_terminator*
+pub fn line_terminator_escape_sequence(i: Input) -> StringResult {
+    let (i, char) = char('\\')(i)?;
+    let (i, mut string) = line_terminator(i)?;
+    string.insert(0, char);
+    Ok((i, string))
 }
 
 #[cfg(test)]
