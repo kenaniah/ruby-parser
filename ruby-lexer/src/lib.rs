@@ -19,6 +19,8 @@ parts of the library have been re-exported under the prelude module.
 
 extern crate nom;
 
+use std::ops::Deref;
+
 #[macro_use]
 mod macros;
 pub mod lexers;

@@ -92,7 +92,7 @@ pub fn unprefixed_decimal_integer_literal(i: Input) -> StringResult {
     let (i, string) = alt((value(String::from("0"), char('0')), |i| {
         let (i, digit) = decimal_digit_except_zero(i)?;
         let (i, rest) = many0(preceded(opt(char('_')), decimal_digit))(i)?;
-        Ok((i, string_cons(digit, rest)))
+        Ok((i, concat(digit, rest)))
     }))(i)?;
     Ok((i, string))
 }
@@ -107,7 +107,7 @@ pub fn prefixed_decimal_integer_literal(i: Input) -> StringResult {
 pub fn digit_decimal_part(i: Input) -> StringResult {
     let (i, digit) = decimal_digit(i)?;
     let (i, rest) = many0(preceded(opt(char('_')), decimal_digit))(i)?;
-    Ok((i, string_cons(digit, rest)))
+    Ok((i, concat(digit, rest)))
 }
 
 /// `0` ( `b` | `B` ) *binary_digit* ( `_`? *binary_digit* )*
@@ -116,7 +116,7 @@ pub fn binary_integer_literal(i: Input) -> NumericResult {
     let (i, rest) = many0(preceded(opt(char('_')), binary_digit))(i)?;
     Ok((
         i,
-        Numeric::Integer(isize::from_str_radix(&string_cons(digit, rest), 2).unwrap()),
+        Numeric::Integer(isize::from_str_radix(&concat(digit, rest), 2).unwrap()),
     ))
 }
 
@@ -126,7 +126,7 @@ pub fn octal_integer_literal(i: Input) -> NumericResult {
     let (i, rest) = many0(preceded(opt(char('_')), octal_digit))(i)?;
     Ok((
         i,
-        Numeric::Integer(isize::from_str_radix(&string_cons(digit, rest), 8).unwrap()),
+        Numeric::Integer(isize::from_str_radix(&concat(digit, rest), 8).unwrap()),
     ))
 }
 
@@ -136,7 +136,7 @@ pub fn hexadecimal_integer_literal(i: Input) -> NumericResult {
     let (i, rest) = many0(preceded(opt(char('_')), hexadecimal_digit))(i)?;
     Ok((
         i,
-        Numeric::Integer(isize::from_str_radix(&string_cons(digit, rest), 16).unwrap()),
+        Numeric::Integer(isize::from_str_radix(&concat(digit, rest), 16).unwrap()),
     ))
 }
 
@@ -218,11 +218,11 @@ fn decimal_digit(i: Input) -> CharResult {
     one_of("0123456789")(i)
 }
 
-/// Constructs a string from a starting character and remaining vector
-fn string_cons(car: char, cdr: Vec<char>) -> String {
-    let mut string = String::with_capacity(car.len_utf8() + cdr.len());
-    string.push(car);
-    string.push_str(&cdr.into_iter().collect::<String>());
+/// Constructs a string from characters
+fn concat(chr: char, rest: Vec<char>) -> String {
+    let mut string = String::with_capacity(chr.len_utf8() + rest.len());
+    string.push(chr);
+    string.push_str(&rest.into_iter().collect::<String>());
     string
 }
 
