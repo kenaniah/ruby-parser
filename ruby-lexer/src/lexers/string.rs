@@ -129,11 +129,6 @@ pub fn alpha_numeric_character(i: Input) -> StringResult {
     stub_string(i)
 }
 
-/// Any UTF-8 scalar value (a Rust `char`)
-pub fn source_character(i: Input) -> CharResult {
-    anychar(i)
-}
-
 fn stub_token(i: Input) -> TokenResult {
     Err(nom::Err::Error((i, nom::error::ErrorKind::Char)))
 }
@@ -158,17 +153,6 @@ fn string_from_2_chars(c1: char, c2: char) -> String {
 mod tests {
     use super::*;
     use nom::error::ErrorKind;
-
-    #[test]
-    fn test_source_character() {
-        use_parser!(source_character, Input, char, ErrorKind);
-        // Success cases
-        assert_ok!("1", '1');
-        assert_ok!("é", 'é'); // U+00e9: 'latin small letter e with acute'
-        assert_ok!("東", '東'); // U+6771: 'CJK Unified Ideograph-6771' "East"
-                                // Combined characters
-        assert_eq!(source_character("é"), Ok(("\u{301}", 'e'))); // U+0065: 'latin small letter e' + U+0301: 'combining acute accent'
-    }
 
     #[test]
     fn test_single_quoted_string_non_escaped_character_sequence() {
