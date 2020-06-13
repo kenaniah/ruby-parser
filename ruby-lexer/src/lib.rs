@@ -11,10 +11,7 @@ All of the parser combinators are structured to semantically reflect the ISO Rub
 but minor deviations from the spec have been made when necessary (namely, re-ordering alternative
 parsers to consume the largest production first).
 
-## Prelude
-
-As a parser combinator library, essentially everything has been marked as public. The most useful
-parts of the library have been re-exported under the prelude module.
+The top-level parser combinators that return tokens are publically exported within the lexers module.
 !*/
 
 extern crate nom;
@@ -23,11 +20,10 @@ extern crate nom_locate;
 #[macro_use]
 mod macros;
 pub mod lexers;
-pub mod prelude;
 
 /// Internal enum used by the numeric_literal parser
 #[derive(Debug, PartialEq)]
-pub enum Numeric {
+pub(crate) enum Numeric {
     Integer(isize),
     Float(f64),
 }
@@ -42,14 +38,14 @@ pub enum Token {
 /// The type used to describe the lexer's input
 pub type Input<'a> = &'a str;
 
-/// Describes a parsed numeric literal
-pub type NumericResult<'a> = nom::IResult<Input<'a>, Numeric>;
-
-/// Describes a parsed character
-pub type CharResult<'a> = nom::IResult<Input<'a>, char>;
-
-/// Describes a parsed string
-pub type StringResult<'a> = nom::IResult<Input<'a>, String>;
-
 /// Describes a parsed token
 pub type TokenResult<'a> = nom::IResult<Input<'a>, Token>;
+
+/// Describes a parsed numeric literal
+pub(crate) type NumericResult<'a> = nom::IResult<Input<'a>, Numeric>;
+
+/// Describes a parsed character
+pub(crate) type CharResult<'a> = nom::IResult<Input<'a>, char>;
+
+/// Describes a parsed string
+pub(crate) type StringResult<'a> = nom::IResult<Input<'a>, String>;

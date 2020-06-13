@@ -1,6 +1,8 @@
 //! Parser combinators for lexing Ruby's syntax
 
-pub mod comment;
-pub mod numeric;
-pub mod program;
-pub mod string;
+mod comment;
+mod numeric;
+mod program;
+mod string;
+
+pub use numeric::numeric_literal;

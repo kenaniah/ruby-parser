@@ -1,6 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
-use ruby_lexer::prelude::numeric_literal;
+use ruby_lexer::lexers::numeric_literal;
 
 // Timings:
 //  s 1e-0
