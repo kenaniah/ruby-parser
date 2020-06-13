@@ -44,8 +44,7 @@ pub fn numeric_literal(i: Input) -> TokenResult {
 }
 
 /// ( `+` | `-` ) *unsigned_number*
-#[doc(visible)]
-pub fn signed_number(i: Input) -> NumericResult {
+pub(crate) fn signed_number(i: Input) -> NumericResult {
     let (i, sign) = opt(one_of("+-"))(i)?;
     let (i, token) = unsigned_number(i)?;
     if sign == Some('-') {
@@ -59,13 +58,13 @@ pub fn signed_number(i: Input) -> NumericResult {
 }
 
 /// *float_literal* | *integer_literal*
-pub fn unsigned_number(i: Input) -> NumericResult {
+pub(crate) fn unsigned_number(i: Input) -> NumericResult {
     // Ordered to match the largest production first
     alt((float_literal, integer_literal))(i)
 }
 
 /// *binary_integer_literal* | *octal_integer_literal* | *hexadecimal_integer_literal* | *decimal_integer_literal*
-pub fn integer_literal(i: Input) -> NumericResult {
+pub(crate) fn integer_literal(i: Input) -> NumericResult {
     // Ordered to match the largest production first
     alt((
         binary_integer_literal,
@@ -76,7 +75,7 @@ pub fn integer_literal(i: Input) -> NumericResult {
 }
 
 /// *prefixed_decimal_integer_literal* | *unprefixed_decimal_integer_literal*
-pub fn decimal_integer_literal(i: Input) -> NumericResult {
+pub(crate) fn decimal_integer_literal(i: Input) -> NumericResult {
     // Ordered to match the largest production first
     map(
         alt((
@@ -88,7 +87,7 @@ pub fn decimal_integer_literal(i: Input) -> NumericResult {
 }
 
 /// `0` | *decimal_digit_except_zero* ( `_`? *decimal_digit* )*
-pub fn unprefixed_decimal_integer_literal(i: Input) -> StringResult {
+pub(crate) fn unprefixed_decimal_integer_literal(i: Input) -> StringResult {
     let (i, string) = alt((value(String::from("0"), char('0')), |i| {
         let (i, digit) = decimal_digit_except_zero(i)?;
         let (i, rest) = many0(preceded(opt(char('_')), decimal_digit))(i)?;
@@ -98,20 +97,20 @@ pub fn unprefixed_decimal_integer_literal(i: Input) -> StringResult {
 }
 
 /// `0` ( `d` | `D` ) *digit_decimal_part*
-pub fn prefixed_decimal_integer_literal(i: Input) -> StringResult {
+pub(crate) fn prefixed_decimal_integer_literal(i: Input) -> StringResult {
     let (i, digits) = preceded(char('0'), preceded(one_of("dD"), digit_decimal_part))(i)?;
     Ok((i, digits))
 }
 
 /// *decimal_digit* ( `_`? *decimal_digit* )*
-pub fn digit_decimal_part(i: Input) -> StringResult {
+pub(crate) fn digit_decimal_part(i: Input) -> StringResult {
     let (i, digit) = decimal_digit(i)?;
     let (i, rest) = many0(preceded(opt(char('_')), decimal_digit))(i)?;
     Ok((i, concat(digit, rest)))
 }
 
 /// `0` ( `b` | `B` ) *binary_digit* ( `_`? *binary_digit* )*
-pub fn binary_integer_literal(i: Input) -> NumericResult {
+pub(crate) fn binary_integer_literal(i: Input) -> NumericResult {
     let (i, digit) = preceded(char('0'), preceded(one_of("bB"), binary_digit))(i)?;
     let (i, rest) = many0(preceded(opt(char('_')), binary_digit))(i)?;
     Ok((
@@ -121,7 +120,7 @@ pub fn binary_integer_literal(i: Input) -> NumericResult {
 }
 
 /// `0` ( `_` | `o` | `O` )? *octal_digit* ( `_`? *octal_digit* )*
-pub fn octal_integer_literal(i: Input) -> NumericResult {
+pub(crate) fn octal_integer_literal(i: Input) -> NumericResult {
     let (i, digit) = preceded(char('0'), preceded(opt(one_of("_oO")), octal_digit))(i)?;
     let (i, rest) = many0(preceded(opt(char('_')), octal_digit))(i)?;
     Ok((
@@ -131,7 +130,7 @@ pub fn octal_integer_literal(i: Input) -> NumericResult {
 }
 
 /// `0` ( `x` | `X` ) *hexadecimal_digit* ( `_`? *hexadecimal_digit* )*
-pub fn hexadecimal_integer_literal(i: Input) -> NumericResult {
+pub(crate) fn hexadecimal_integer_literal(i: Input) -> NumericResult {
     let (i, digit) = preceded(char('0'), preceded(one_of("xX"), hexadecimal_digit))(i)?;
     let (i, rest) = many0(preceded(opt(char('_')), hexadecimal_digit))(i)?;
     Ok((
@@ -141,7 +140,7 @@ pub fn hexadecimal_integer_literal(i: Input) -> NumericResult {
 }
 
 /// *float_literal_with_exponent* | *float_literal_without_exponent*
-pub fn float_literal(i: Input) -> NumericResult {
+pub(crate) fn float_literal(i: Input) -> NumericResult {
     // Ordered to match the largest production first
     map(
         alt((float_literal_with_exponent, float_literal_without_exponent)),
@@ -150,7 +149,7 @@ pub fn float_literal(i: Input) -> NumericResult {
 }
 
 /// *unprefixed_decimal_integer_literal* `.` *digit_decimal_part
-pub fn float_literal_without_exponent(i: Input) -> StringResult {
+pub(crate) fn float_literal_without_exponent(i: Input) -> StringResult {
     let (i, parts) = tuple((
         unprefixed_decimal_integer_literal,
         char('.'),
@@ -164,7 +163,7 @@ pub fn float_literal_without_exponent(i: Input) -> StringResult {
 }
 
 /// *significand_part* *exponent_part*
-pub fn float_literal_with_exponent(i: Input) -> StringResult {
+pub(crate) fn float_literal_with_exponent(i: Input) -> StringResult {
     map(tuple((significand_part, exponent_part)), |t| {
         let mut string = String::with_capacity(t.0.len() + t.1.len());
         string.push_str(&t.0);
@@ -174,7 +173,7 @@ pub fn float_literal_with_exponent(i: Input) -> StringResult {
 }
 
 /// *float_literal_without_exponent* | *unprefixed_decimal_integer_literal*
-pub fn significand_part(i: Input) -> StringResult {
+pub(crate) fn significand_part(i: Input) -> StringResult {
     alt((
         float_literal_without_exponent,
         unprefixed_decimal_integer_literal,
@@ -182,7 +181,7 @@ pub fn significand_part(i: Input) -> StringResult {
 }
 
 /// ( `e` | `E` ) ( `+` | `-` )?  *digit_decimal_part*
-pub fn exponent_part(i: Input) -> StringResult {
+pub(crate) fn exponent_part(i: Input) -> StringResult {
     let (i, parts) = tuple((one_of("eE"), opt(one_of("+-")), digit_decimal_part))(i)?;
     let mut string = String::with_capacity(parts.2.len() + 2);
     string.push(parts.0);
@@ -194,7 +193,7 @@ pub fn exponent_part(i: Input) -> StringResult {
 }
 
 /// `1` | `2` | `3` | `4` | `5` | `6` | `7` | `8` | `9`
-pub fn decimal_digit_except_zero(i: Input) -> CharResult {
+pub(crate) fn decimal_digit_except_zero(i: Input) -> CharResult {
     one_of("123456789")(i)
 }
 
@@ -209,7 +208,7 @@ fn octal_digit(i: Input) -> CharResult {
 }
 
 /// *decimal_digit* | `a` | `b` | `c` | `d` | `e` | `f` | `A` | `B` | `C` | `D` | `E` | `F`
-pub fn hexadecimal_digit(i: Input) -> CharResult {
+pub(crate) fn hexadecimal_digit(i: Input) -> CharResult {
     alt((decimal_digit, one_of("abcdefABCDEF")))(i)
 }
 

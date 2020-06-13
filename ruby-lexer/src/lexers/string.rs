@@ -11,7 +11,7 @@ use nom::sequence::{preceded, tuple};
 use crate::{CharResult, Input, StringResult, Token, TokenResult};
 
 /// `'` *single_quoted_string_character** `'`
-pub fn single_quoted_string(i: Input) -> StringResult {
+pub(crate) fn single_quoted_string(i: Input) -> StringResult {
     let (i, _) = char('\'')(i)?;
     let (i, contents) = many0(single_quoted_string_character)(i)?;
     let (i, _) = char('\'')(i)?;
@@ -23,7 +23,7 @@ pub fn single_quoted_string(i: Input) -> StringResult {
 }
 
 /// *single_quoted_string_non_escaped_character* | *single_quoted_escape_sequence*
-pub fn single_quoted_string_character(i: Input) -> StringResult {
+pub(crate) fn single_quoted_string_character(i: Input) -> StringResult {
     alt((
         map(single_quoted_string_non_escaped_character, |char| {
             char.to_string()
@@ -33,7 +33,7 @@ pub fn single_quoted_string_character(i: Input) -> StringResult {
 }
 
 /// *single_escape_character_sequence* | *single_quoted_string_non_escaped_character_sequence*
-pub fn single_quoted_escape_sequence(i: Input) -> StringResult {
+pub(crate) fn single_quoted_escape_sequence(i: Input) -> StringResult {
     alt((
         single_escape_character_sequence,
         single_quoted_string_non_escaped_character_sequence,
@@ -41,91 +41,91 @@ pub fn single_quoted_escape_sequence(i: Input) -> StringResult {
 }
 
 /// `\` *single_quoted_string_meta_character*
-pub fn single_escape_character_sequence(i: Input) -> StringResult {
+pub(crate) fn single_escape_character_sequence(i: Input) -> StringResult {
     let (i, _) = char('\\')(i)?;
     let (i, char) = single_quoted_string_meta_character(i)?;
     Ok((i, char.to_string()))
 }
 
 /// `\` *single_quoted_string_non_escaped_character*
-pub fn single_quoted_string_non_escaped_character_sequence(i: Input) -> StringResult {
+pub(crate) fn single_quoted_string_non_escaped_character_sequence(i: Input) -> StringResult {
     let (i, char1) = char('\\')(i)?;
     let (i, char2) = single_quoted_string_non_escaped_character(i)?;
     Ok((i, string_from_2_chars(char1, char2)))
 }
 
 /// `'` | `\`
-pub fn single_quoted_string_meta_character(i: Input) -> CharResult {
+pub(crate) fn single_quoted_string_meta_character(i: Input) -> CharResult {
     one_of("'\\")(i)
 }
 
 /// *source_character* **but not** *single_quoted_string_meta_character*
-pub fn single_quoted_string_non_escaped_character(i: Input) -> CharResult {
+pub(crate) fn single_quoted_string_non_escaped_character(i: Input) -> CharResult {
     none_of("'\\")(i)
 }
 
 /// `"` *double_quoted_string_character** `"`
-pub fn double_quoted_string(i: Input) -> StringResult {
+pub(crate) fn double_quoted_string(i: Input) -> StringResult {
     stub_string(i)
 }
 
 /// *source_character* **but not** ( `"` | `#` | `\` ) | `#` **not** ( `$` | `@` | `{` ) | *double_escape_sequence* | *interpolated_character_sequence*
-pub fn double_quoted_string_character(i: Input) -> StringResult {
+pub(crate) fn double_quoted_string_character(i: Input) -> StringResult {
     stub_string(i)
 }
 
 /// *simple_escape_sequence* | *non_escaped_sequence* | *line_terminator_escape_sequence* | *octal_escape_sequence* | *hexadecimal_escape_sequence* | *control_escape_sequence*
-pub fn double_escape_sequence(i: Input) -> StringResult {
+pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
     stub_string(i)
 }
 
 /// `\` *double_escaped_character*
-pub fn simple_escape_sequence(i: Input) -> StringResult {
+pub(crate) fn simple_escape_sequence(i: Input) -> StringResult {
     stub_string(i)
 }
 
 /// `\` | `n` | `t` | `r` | `f` | `v` | `a` | `e` | `b` | `s`
-pub fn double_escaped_character(i: Input) -> CharResult {
+pub(crate) fn double_escaped_character(i: Input) -> CharResult {
     one_of("\\ntrfvaebs")(i)
 }
 
 /// `\` *non_escaped_double_quoted_string_char*
-pub fn non_escaped_sequence(i: Input) -> StringResult {
+pub(crate) fn non_escaped_sequence(i: Input) -> StringResult {
     stub_string(i)
 }
 
 /// *source_character* **but not** ( *alpha_numeric_character* | *line_terminator* )
-pub fn non_escaped_double_quoted_string_char(i: Input) -> StringResult {
+pub(crate) fn non_escaped_double_quoted_string_char(i: Input) -> StringResult {
     stub_string(i)
 }
 
 /// `\` `x` *octal_digit* *octal_digit*? *octal_digit*?
-pub fn octal_escape_sequence(i: Input) -> StringResult {
+pub(crate) fn octal_escape_sequence(i: Input) -> StringResult {
     stub_string(i)
 }
 
 /// `\` *hexadecimal_digit* *hexadecimal_digit*?
-pub fn hexadecimal_escape_sequence(i: Input) -> StringResult {
+pub(crate) fn hexadecimal_escape_sequence(i: Input) -> StringResult {
     stub_string(i)
 }
 
 /// `\` ( `C` `-` | `c` ) *control_escaped_character*
-pub fn control_escape_sequence(i: Input) -> StringResult {
+pub(crate) fn control_escape_sequence(i: Input) -> StringResult {
     stub_string(i)
 }
 
 /// *double_escape_sequence* | `?` | *source_character* **but not** ( `\` | `?` )
-pub fn control_escaped_character(i: Input) -> StringResult {
+pub(crate) fn control_escaped_character(i: Input) -> StringResult {
     stub_string(i)
 }
 
 /// `#` *global_variable_identifier* | `#` *class_variable_identifier* | `#` *instance_variable_identifier* | `#` `{` *computed_statement* `}`
-pub fn interpolated_character_sequence(i: Input) -> StringResult {
+pub(crate) fn interpolated_character_sequence(i: Input) -> StringResult {
     stub_string(i)
 }
 
 /// *uppercase_character* | *lowercase_character* | *decimal_digit*
-pub fn alpha_numeric_character(i: Input) -> StringResult {
+pub(crate) fn alpha_numeric_character(i: Input) -> StringResult {
     stub_string(i)
 }
 

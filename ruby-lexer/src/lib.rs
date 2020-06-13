@@ -18,8 +18,7 @@ parts of the library have been re-exported under the prelude module.
 !*/
 
 extern crate nom;
-
-use std::ops::Deref;
+extern crate nom_locate;
 
 #[macro_use]
 mod macros;
