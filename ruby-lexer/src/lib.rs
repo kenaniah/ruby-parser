@@ -15,7 +15,6 @@ The top-level parser combinators that return tokens are publically exported with
 !*/
 
 extern crate nom;
-extern crate nom_locate;
 
 #[macro_use]
 mod macros;
