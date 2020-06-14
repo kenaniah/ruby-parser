@@ -5,5 +5,5 @@ mod numeric;
 mod program;
 mod string;
 
-pub use numeric::numeric_literal;
 pub use crate::input::position;
+pub use numeric::numeric_literal;

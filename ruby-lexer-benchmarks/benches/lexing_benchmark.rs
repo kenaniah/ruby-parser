@@ -10,9 +10,7 @@ use ruby_lexer::lexers::numeric_literal;
 // ps 1e-12
 
 pub fn numeric_benchmark(c: &mut Criterion) {
-    c.bench_function("parse 0", |b| {
-        b.iter(|| numeric_literal("0".into()))
-    });
+    c.bench_function("parse 0", |b| b.iter(|| numeric_literal("0".into())));
     c.bench_function("parse -0d12_345", |b| {
         b.iter(|| numeric_literal("-0d12_345".into()))
     });

@@ -74,7 +74,7 @@ impl<T: AsBytes, X: Default> TrackedLocation<T, X> {
             line: line,
             char: char,
             input: program,
-            metadata: X::default()
+            metadata: X::default(),
         }
     }
 }

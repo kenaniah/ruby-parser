@@ -18,8 +18,8 @@ extern crate nom;
 
 #[macro_use]
 mod macros;
-pub mod lexers;
 mod input;
+pub mod lexers;
 
 pub use input::TrackedLocation;
 
