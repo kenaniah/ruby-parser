@@ -272,12 +272,12 @@ mod tests {
         // Non-exhaustive cases
         assert_err!(
             "0_1__0",
-            Input::new("__0").with_offset(3).with_char(4),
+            Input::new_with_pos("__0", 3, 1, 4),
             ErrorKind::Eof
         );
         assert_err!(
             "0755 foobar",
-            Input::new(" foobar").with_offset(4).with_char(5),
+            Input::new_with_pos(" foobar", 4, 1, 5),
             ErrorKind::Eof
         );
     }

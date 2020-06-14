@@ -65,17 +65,17 @@ impl<T: AsBytes, X> TrackedLocation<T, X> {
     pub fn metadata(&self) -> &X {
         &self.metadata
     }
-    pub fn with_offset(mut self, offset: usize) -> Self {
-        self.offset = offset;
-        self
-    }
-    pub fn with_line(mut self, line: usize) -> Self {
-        self.line = line;
-        self
-    }
-    pub fn with_char(mut self, char: usize) -> Self {
-        self.char = char;
-        self
+}
+
+impl<T: AsBytes, X: Default> TrackedLocation<T, X> {
+    pub fn new_with_pos(program: T, offset: usize, line: usize, char: usize) -> Self {
+        Self {
+            offset: offset,
+            line: line,
+            char: char,
+            input: program,
+            metadata: X::default()
+        }
     }
 }
 

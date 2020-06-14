@@ -45,15 +45,15 @@ mod tests {
         assert_ok!("東", '東'); // U+6771: 'CJK Unified Ideograph-6771' "East"
         assert_eq!(
             source_character("é".into()),
-            Ok((Input::new("\u{301}").with_offset(1).with_char(2), 'e'))
+            Ok((Input::new_with_pos("\u{301}", 1, 1, 2), 'e'))
         ); // U+0065: 'latin small letter e' + U+0301: 'combining acute accent'
         assert_eq!(
             source_character("é".into()),
-            Ok((Input::new("").with_offset(2).with_char(2), 'é'))
+            Ok((Input::new_with_pos("", 2, 1, 2), 'é'))
         ); // U+00e9: 'latin small letter e with acute'
         assert_eq!(
             source_character("東".into()),
-            Ok((Input::new("").with_offset(3).with_char(2), '東'))
+            Ok((Input::new_with_pos("", 3, 1, 2), '東'))
         ); // U+6771: 'CJK Unified Ideograph-6771' "East"
     }
 }
