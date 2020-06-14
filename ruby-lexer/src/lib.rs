@@ -20,6 +20,7 @@ extern crate nom_locate;
 #[macro_use]
 mod macros;
 pub mod lexers;
+mod input;
 
 /// Internal enum used by the numeric_literal parser
 #[derive(Debug, PartialEq)]
@@ -36,6 +37,7 @@ pub enum Token {
 }
 
 /// The type used to describe the lexer's input
+//pub type Input<'a> = input::TrackedLocation<&'a str>;
 pub type Input<'a> = &'a str;
 
 /// Describes a parsed token
