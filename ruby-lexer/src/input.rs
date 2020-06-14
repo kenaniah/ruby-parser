@@ -1,5 +1,7 @@
 use core::ops::{RangeFrom, RangeTo};
-use nom::{AsBytes, InputLength, InputTake, Slice};
+use nom::error::ErrorKind;
+use nom::error::ParseError;
+use nom::{AsBytes, Err, IResult, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice};
 
 /// Tracks location information and user-defined metadata for nom's source input.
 #[derive(Debug, Clone, Copy)]
@@ -100,5 +102,76 @@ where
     }
     fn take_split(&self, count: usize) -> (Self, Self) {
         (self.slice(count..), self.slice(..count))
+    }
+}
+
+impl<T, X> InputTakeAtPosition for TrackedLocation<T, X>
+where
+    T: InputTakeAtPosition + InputLength + InputIter,
+    Self: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Clone,
+{
+    type Item = <T as InputIter>::Item;
+
+    fn split_at_position_complete<P, E: ParseError<Self>>(
+        &self,
+        predicate: P,
+    ) -> IResult<Self, Self, E>
+    where
+        P: Fn(Self::Item) -> bool,
+    {
+        match self.split_at_position(predicate) {
+            Err(Err::Incomplete(_)) => Ok(self.take_split(self.input_len())),
+            res => res,
+        }
+    }
+
+    fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
+    where
+        P: Fn(Self::Item) -> bool,
+    {
+        match self.input.position(predicate) {
+            Some(n) => Ok(self.take_split(n)),
+            None => Err(Err::Incomplete(nom::Needed::Size(unsafe {
+                std::num::NonZeroUsize::new_unchecked(1)
+            }))),
+        }
+    }
+
+    fn split_at_position1<P, E: ParseError<Self>>(
+        &self,
+        predicate: P,
+        e: ErrorKind,
+    ) -> IResult<Self, Self, E>
+    where
+        P: Fn(Self::Item) -> bool,
+    {
+        match self.input.position(predicate) {
+            Some(0) => Err(Err::Error(E::from_error_kind(self.clone(), e))),
+            Some(n) => Ok(self.take_split(n)),
+            None => Err(Err::Incomplete(nom::Needed::Size(unsafe {
+                std::num::NonZeroUsize::new_unchecked(1)
+            }))),
+        }
+    }
+
+    fn split_at_position1_complete<P, E: ParseError<Self>>(
+        &self,
+        predicate: P,
+        e: ErrorKind,
+    ) -> IResult<Self, Self, E>
+    where
+        P: Fn(Self::Item) -> bool,
+    {
+        match self.input.position(predicate) {
+            Some(0) => Err(Err::Error(E::from_error_kind(self.clone(), e))),
+            Some(n) => Ok(self.take_split(n)),
+            None => {
+                if self.input.input_len() == 0 {
+                    Err(Err::Error(E::from_error_kind(self.clone(), e)))
+                } else {
+                    Ok(self.take_split(self.input_len()))
+                }
+            }
+        }
     }
 }
