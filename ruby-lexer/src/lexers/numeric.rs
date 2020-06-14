@@ -23,10 +23,14 @@ use ruby_lexer::Input;
 use ruby_lexer::Token;
 
 let input = "12_345";
-assert_eq!(numeric_literal(input.into()), Ok((*Input::new("").with_offset(6), Token::Integer(12345))));
+let (remaining, token) = numeric_literal(input.into()).unwrap();
+assert_eq!("", *remaining);
+assert_eq!(Token::Integer(12345), token);
 
 let input = "-12.34e+4 + 12";
-assert_eq!(numeric_literal(input.into()), Ok((*Input::new(" + 12").with_offset(9), Token::Float(-123400.0))));
+let (remaining, token) = numeric_literal(input.into()).unwrap();
+assert_eq!(" + 12", *remaining);
+assert_eq!(Token::Float(-123400.0), token);
 ```
 
 ## ISO Spec
@@ -266,8 +270,16 @@ mod tests {
         assert_ok!("0_755", Numeric::Integer(493));
         assert_ok!("0_00_10", Numeric::Integer(8));
         // Non-exhaustive cases
-        assert_err!("0_1__0", *Input::new("__0").with_offset(3), ErrorKind::Eof);
-        assert_err!("0755 foobar", *Input::new(" foobar").with_offset(4), ErrorKind::Eof);
+        assert_err!(
+            "0_1__0",
+            Input::new("__0").with_offset(3).with_char(3),
+            ErrorKind::Eof
+        );
+        assert_err!(
+            "0755 foobar",
+            Input::new(" foobar").with_offset(4).with_char(4),
+            ErrorKind::Eof
+        );
     }
 
     #[test]

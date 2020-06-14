@@ -65,15 +65,15 @@ impl<T: AsBytes, X> TrackedLocation<T, X> {
     pub fn metadata(&self) -> &X {
         &self.metadata
     }
-    pub fn with_offset(&mut self, offset: usize) -> &Self {
+    pub fn with_offset(mut self, offset: usize) -> Self {
         self.offset = offset;
         self
     }
-    pub fn with_line(&mut self, line: usize) -> &Self {
+    pub fn with_line(mut self, line: usize) -> Self {
         self.line = line;
         self
     }
-    pub fn with_char(&mut self, char: usize) -> &Self {
+    pub fn with_char(mut self, char: usize) -> Self {
         self.char = char;
         self
     }
@@ -262,10 +262,15 @@ macro_rules! impl_slice_range {
                 let iter = memchr::Memchr::new(b'\n', consumed_as_bytes);
                 let number_of_lines = iter.count();
                 let next_line = self.line + number_of_lines;
+                let char_pos = if number_of_lines == 0 {
+                    self.char + consumed.chars().count()
+                } else {
+                    consumed.chars().count()
+                };
 
                 Self {
                     line: next_line,
-                    char: self.char,
+                    char: char_pos,
                     offset: next_offset,
                     input: next_fragment,
                     metadata: self.metadata.clone(),

@@ -43,10 +43,19 @@ mod tests {
         assert_ok!("1", '1');
         assert_ok!("é", 'é'); // U+00e9: 'latin small letter e with acute'
         assert_ok!("東", '東'); // U+6771: 'CJK Unified Ideograph-6771' "East"
-                                // Combined characters
+
+        // Combined characters
         assert_eq!(
             source_character("é".into()),
-            Ok((*Input::new("\u{301}").with_offset(1), 'e'))
+            Ok((Input::new("\u{301}").with_offset(1).with_char(1), 'e'))
         ); // U+0065: 'latin small letter e' + U+0301: 'combining acute accent'
+        assert_eq!(
+            source_character("é".into()),
+            Ok((Input::new("").with_offset(2).with_char(1), 'é'))
+        ); // U+00e9: 'latin small letter e with acute'
+        assert_eq!(
+            source_character("東".into()),
+            Ok((Input::new("").with_offset(3).with_char(1), '東'))
+        ); // U+6771: 'CJK Unified Ideograph-6771' "East"
     }
 }
