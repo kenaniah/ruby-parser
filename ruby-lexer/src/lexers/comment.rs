@@ -20,7 +20,7 @@ pub(crate) fn comment(i: Input) -> StringResult {
 /// `#` *comment_content*?
 pub(crate) fn single_line_comment(i: Input) -> StringResult {
     map(recognize(tuple((char('#'), opt(comment_content)))), |s| {
-        (*s.input()).to_owned()
+        (*s).to_owned()
     })(i)
 }
 
@@ -45,7 +45,7 @@ pub(crate) fn multi_line_comment(i: Input) -> StringResult {
             opt(multi_line_comment_line),
             multi_line_comment_end_line,
         ))),
-        |s| (*s.input()).to_owned(),
+        |s| (*s).to_owned(),
     )(i)
 }
 
@@ -72,7 +72,7 @@ pub(crate) fn multi_line_comment_line(i: Input) -> StringResult {
 /// *comment_content* *line_terminator*
 pub(crate) fn comment_line(i: Input) -> StringResult {
     map(recognize(tuple((comment_content, line_terminator))), |s| {
-        (*s.input()).to_owned()
+        (*s).to_owned()
     })(i)
 }
 
