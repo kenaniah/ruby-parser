@@ -65,6 +65,9 @@ impl<T: AsBytes, X> TrackedLocation<T, X> {
     pub fn metadata(&self) -> &X {
         &self.metadata
     }
+    pub fn beginning_of_line(&self) -> bool {
+        self.char == 1
+    }
 }
 
 impl<T: AsBytes, X: Default> TrackedLocation<T, X> {
@@ -147,7 +150,7 @@ where
         match self.input.position(predicate) {
             Some(n) => Ok(self.take_split(n)),
             None => Err(Err::Incomplete(nom::Needed::Size(unsafe {
-                std::num::NonZeroUsize::new_unchecked(1)
+                1 //std::num::NonZeroUsize::new_unchecked(1)
             }))),
         }
     }
@@ -164,7 +167,7 @@ where
             Some(0) => Err(Err::Error(E::from_error_kind(self.clone(), e))),
             Some(n) => Ok(self.take_split(n)),
             None => Err(Err::Incomplete(nom::Needed::Size(unsafe {
-                std::num::NonZeroUsize::new_unchecked(1)
+                1 //std::num::NonZeroUsize::new_unchecked(1)
             }))),
         }
     }
