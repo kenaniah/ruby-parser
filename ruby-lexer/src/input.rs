@@ -1,7 +1,10 @@
-use core::ops::{RangeFrom, RangeTo};
-use nom::error::ErrorKind;
-use nom::error::ParseError;
-use nom::{AsBytes, Err, IResult, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice};
+use core::ops::{Range, RangeFrom, RangeFull, RangeTo};
+use core::str::{CharIndices, Chars};
+use nom::error::{ErrorKind, ParseError};
+use nom::{
+    AsBytes, Compare, CompareResult, Err, IResult, InputIter, InputLength, InputTake,
+    InputTakeAtPosition, Offset, Slice,
+};
 
 /// Tracks location information and user-defined metadata for nom's source input.
 #[derive(Debug, Clone, Copy)]
@@ -175,3 +178,89 @@ where
         }
     }
 }
+
+impl<'a, X> InputIter for TrackedLocation<&'a str, X> {
+    type Item = char;
+    type Iter = CharIndices<'a>;
+    type IterElem = Chars<'a>;
+
+    fn iter_indices(&self) -> Self::Iter {
+        self.input.iter_indices()
+    }
+    fn iter_elements(&self) -> Self::IterElem {
+        self.input.iter_elements()
+    }
+    fn position<P>(&self, predicate: P) -> Option<usize>
+    where
+        P: Fn(Self::Item) -> bool,
+    {
+        self.input.position(predicate)
+    }
+    fn slice_index(&self, count: usize) -> Option<usize> {
+        self.input.slice_index(count)
+    }
+}
+
+impl<A: Compare<B>, B: Into<TrackedLocation<B>>, X> Compare<B> for TrackedLocation<A, X> {
+    fn compare(&self, other: B) -> CompareResult {
+        self.input.compare(other.into().input)
+    }
+    fn compare_no_case(&self, other: B) -> CompareResult {
+        self.input.compare_no_case(other.into().input)
+    }
+}
+
+impl<T, X> Offset for TrackedLocation<T, X> {
+    fn offset(&self, second: &Self) -> usize {
+        second.offset - self.offset
+    }
+}
+
+macro_rules! impl_slice_range {
+    ( $fragment_type:ty, $range_type:ty, $can_return_self:expr ) => {
+        impl<'a, X: Clone> Slice<$range_type> for TrackedLocation<$fragment_type, X> {
+            fn slice(&self, range: $range_type) -> Self {
+                if $can_return_self(&range) {
+                    return self.clone();
+                }
+                let next_fragment = self.input.slice(range);
+                let consumed_len = self.input.offset(&next_fragment);
+                if consumed_len == 0 {
+                    return Self {
+                        line: self.line,
+                        char: self.char,
+                        offset: self.offset,
+                        input: next_fragment,
+                        metadata: self.metadata.clone(),
+                    };
+                }
+
+                let consumed = self.input.slice(..consumed_len);
+                let next_offset = self.offset + consumed_len;
+
+                let consumed_as_bytes = consumed.as_bytes();
+                let iter = memchr::Memchr::new(b'\n', consumed_as_bytes);
+                let number_of_lines = iter.count();
+                let next_line = self.line + number_of_lines;
+
+                Self {
+                    line: next_line,
+                    char: self.char,
+                    offset: next_offset,
+                    input: next_fragment,
+                    metadata: self.metadata.clone(),
+                }
+            }
+        }
+    };
+}
+
+macro_rules! impl_slice_ranges {
+    ( $fragment_type:ty ) => {
+        impl_slice_range! {$fragment_type, Range<usize>, |_| false }
+        impl_slice_range! {$fragment_type, RangeTo<usize>, |_| false }
+        impl_slice_range! {$fragment_type, RangeFrom<usize>, |range:&RangeFrom<usize>| range.start == 0}
+        impl_slice_range! {$fragment_type, RangeFull, |_| true}
+    }
+}
+impl_slice_ranges! {&'a str}

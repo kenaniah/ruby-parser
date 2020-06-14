@@ -10,3 +10,4 @@ edition = "2018"
 nom = "6.0.0-alpha1"
 #nom_locate = "2.0.0"
 nom_locate = { git = "https://github.com/kenaniah/nom_locate" }
+memchr = "2.2.3"

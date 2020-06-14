@@ -421,6 +421,7 @@ checksum = "7fe5bd57d1d7414c6b5ed48563a2c855d995ff777729dcd91c369ec7fea395ae"
 name = "ruby-lexer"
 version = "0.1.0"
 dependencies = [
+ "memchr",
  "nom 6.0.0-alpha1",
  "nom_locate",
 ]
