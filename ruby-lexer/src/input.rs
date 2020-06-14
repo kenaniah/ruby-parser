@@ -33,7 +33,7 @@ impl<T: AsBytes> TrackedLocation<T, ()> {
         Self {
             offset: 0,
             line: 1,
-            char: 0,
+            char: 1,
             input: program,
             metadata: (),
         }
@@ -45,7 +45,7 @@ impl<T: AsBytes, X> TrackedLocation<T, X> {
         Self {
             offset: 0,
             line: 1,
-            char: 0,
+            char: 1,
             input: program,
             metadata: metadata,
         }
@@ -262,15 +262,15 @@ macro_rules! impl_slice_range {
                 let iter = memchr::Memchr::new(b'\n', consumed_as_bytes);
                 let number_of_lines = iter.count();
                 let next_line = self.line + number_of_lines;
-                let char_pos = if number_of_lines == 0 {
+                let next_char = if number_of_lines == 0 {
                     self.char + consumed.chars().count()
                 } else {
-                    consumed.chars().count()
+                    consumed.chars().rev().position(|c| c == '\n').unwrap()
                 };
 
                 Self {
                     line: next_line,
-                    char: char_pos,
+                    char: next_char,
                     offset: next_offset,
                     input: next_fragment,
                     metadata: self.metadata.clone(),
