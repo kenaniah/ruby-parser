@@ -1,9 +1,9 @@
 use core::ops::{Range, RangeFrom, RangeFull, RangeTo};
-use core::str::{CharIndices, Chars};
+use core::str::{CharIndices, Chars, FromStr};
 use nom::error::{ErrorKind, ParseError};
 use nom::{
-    AsBytes, Compare, CompareResult, Err, IResult, InputIter, InputLength, InputTake,
-    InputTakeAtPosition, Offset, Slice,
+    AsBytes, Compare, CompareResult, Err, ExtendInto, FindSubstring, FindToken, IResult, InputIter,
+    InputLength, InputTake, InputTakeAtPosition, Offset, ParseTo, Slice,
 };
 
 /// Tracks location information and user-defined metadata for nom's source input.
@@ -201,6 +201,14 @@ impl<'a, X> InputIter for TrackedLocation<&'a str, X> {
     }
 }
 
+impl<'a> IntoIterator for TrackedLocation<&'a str> {
+    type Item = char;
+    type IntoIter = Chars<'a>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.input.chars()
+    }
+}
+
 impl<A: Compare<B>, B: Into<TrackedLocation<B>>, X> Compare<B> for TrackedLocation<A, X> {
     fn compare(&self, other: B) -> CompareResult {
         self.input.compare(other.into().input)
@@ -264,3 +272,53 @@ macro_rules! impl_slice_ranges {
     }
 }
 impl_slice_ranges! {&'a str}
+
+impl<T: FindToken<Token>, Token, X> FindToken<Token> for TrackedLocation<T, X> {
+    fn find_token(&self, token: Token) -> bool {
+        self.input.find_token(token)
+    }
+}
+
+impl<'a, T: FindSubstring<&'a str>, X> FindSubstring<&'a str> for TrackedLocation<T, X> {
+    fn find_substring(&self, substr: &'a str) -> Option<usize> {
+        self.input.find_substring(substr)
+    }
+}
+
+impl<R: FromStr, T: ParseTo<R>, X> ParseTo<R> for TrackedLocation<T, X> {
+    fn parse_to(&self) -> Option<R> {
+        self.input.parse_to()
+    }
+}
+
+impl<T: ToString, X> std::fmt::Display for TrackedLocation<T, X> {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+        fmt.write_str(&self.input.to_string())
+    }
+}
+
+impl<'a, I, E, T, X> ExtendInto for TrackedLocation<T, X>
+where
+    E: Default + Extend<I>,
+    T: ExtendInto<Item = I, Extender = E>,
+    Self: Clone + IntoIterator<Item = I>,
+{
+    type Item = I;
+    type Extender = E;
+
+    fn new_builder(&self) -> Self::Extender {
+        Self::Extender::default()
+    }
+
+    fn extend_into(&self, acc: &mut Self::Extender) {
+        acc.extend(self.clone().into_iter())
+    }
+}
+
+pub fn position<T, E>(i: T) -> IResult<T, T, E>
+where
+    E: ParseError<T>,
+    T: InputIter + InputTake,
+{
+    nom::bytes::complete::take(0usize)(i)
+}
