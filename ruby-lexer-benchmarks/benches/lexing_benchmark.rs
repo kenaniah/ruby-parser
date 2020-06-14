@@ -11,16 +11,16 @@ use ruby_lexer::lexers::numeric_literal;
 
 pub fn numeric_benchmark(c: &mut Criterion) {
     c.bench_function("parse 0", |b| {
-        b.iter(|| numeric_literal("0"))
+        b.iter(|| numeric_literal("0".into()))
     });
     c.bench_function("parse -0d12_345", |b| {
-        b.iter(|| numeric_literal("-0d12_345"))
+        b.iter(|| numeric_literal("-0d12_345".into()))
     });
     c.bench_function("parse +1825_345e-12", |b| {
-        b.iter(|| numeric_literal("+1825_345e-12"))
+        b.iter(|| numeric_literal("+1825_345e-12".into()))
     });
     c.bench_function("parse foobar", |b| {
-        b.iter(|| numeric_literal("foobar"))
+        b.iter(|| numeric_literal("foobar".into()))
     });
 }
 

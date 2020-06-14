@@ -22,6 +22,8 @@ mod macros;
 pub mod lexers;
 mod input;
 
+pub use input::TrackedLocation;
+
 /// Internal enum used by the numeric_literal parser
 #[derive(Debug, PartialEq)]
 pub(crate) enum Numeric {
@@ -36,11 +38,9 @@ pub enum Token {
     Float(f64),
 }
 
-pub type Foobar<'a> = input::TrackedLocation<&'a str>;
-
 /// The type used to describe the lexer's input
-//pub type Input<'a> = input::TrackedLocation<&'a str>;
-pub type Input<'a> = &'a str;
+pub type Input<'a> = TrackedLocation<&'a str>;
+//pub type Input<'a> = &'a str;
 
 /// Describes a parsed token
 pub type TokenResult<'a> = nom::IResult<Input<'a>, Token>;

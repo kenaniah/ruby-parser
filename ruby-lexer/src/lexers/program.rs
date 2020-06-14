@@ -20,7 +20,7 @@ pub(crate) fn whitespace(i: Input) -> CharResult {
 
 /// `\r`? `\n`
 pub(crate) fn line_terminator(i: Input) -> StringResult {
-    map(line_ending, |s: &str| s.to_owned())(i)
+    map(line_ending, |s: Input| (*s.input()).to_owned())(i)
 }
 
 /// `\` *line_terminator*
@@ -44,6 +44,6 @@ mod tests {
         assert_ok!("é", 'é'); // U+00e9: 'latin small letter e with acute'
         assert_ok!("東", '東'); // U+6771: 'CJK Unified Ideograph-6771' "East"
         // Combined characters
-        assert_eq!(source_character("é"), Ok(("\u{301}", 'e'))); // U+0065: 'latin small letter e' + U+0301: 'combining acute accent'
+        assert_eq!(source_character("é".into()), Ok(("\u{301}".into(), 'e'))); // U+0065: 'latin small letter e' + U+0301: 'combining acute accent'
     }
 }

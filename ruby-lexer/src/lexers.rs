@@ -6,3 +6,4 @@ mod program;
 mod string;
 
 pub use numeric::numeric_literal;
+pub use crate::input::position;

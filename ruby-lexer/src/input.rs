@@ -1,4 +1,4 @@
-use core::ops::{Range, RangeFrom, RangeFull, RangeTo};
+use core::ops::{Deref, Range, RangeFrom, RangeFull, RangeTo};
 use core::str::{CharIndices, Chars, FromStr};
 use nom::error::{ErrorKind, ParseError};
 use nom::{
@@ -21,7 +21,7 @@ pub struct TrackedLocation<T, X = ()> {
     pub metadata: X,
 }
 
-impl<T, X> core::ops::Deref for TrackedLocation<T, X> {
+impl<T, X> Deref for TrackedLocation<T, X> {
     type Target = T;
     fn deref(&self) -> &Self::Target {
         &self.input
@@ -315,6 +315,7 @@ where
     }
 }
 
+/// Captures the current position within the input
 pub fn position<T, E>(i: T) -> IResult<T, T, E>
 where
     E: ParseError<T>,

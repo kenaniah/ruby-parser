@@ -14,16 +14,16 @@ macro_rules! use_parser {
 #[macro_export]
 macro_rules! assert_ok {
     ($input:expr) => {
-        let res = parser($input);
+        let res = parser($input.into());
         if res.is_err() {
             panic!("\nExpected parsing to succeed...\n     input: {:?}\n    result: {:?}\n  expected: Ok", $input, res.unwrap_err())
         }
     };
     ($input:expr, $result:expr) => {
         _type_check_ok($result);
-        let res = parser($input);
+        let res = parser($input.into());
         if res.is_ok() {
-            assert_eq!(parser($input).unwrap().1, $result)
+            assert_eq!(parser($input.into()).unwrap().1, $result)
         } else {
             panic!("\nExpected parsing to succeed...\n     input: {:?}\n    result: {:?}\n  expected: {:?}", $input, res.unwrap_err(), $result)
         }
@@ -34,7 +34,7 @@ macro_rules! assert_ok {
 #[macro_export]
 macro_rules! assert_err {
     ($input:expr) => {
-        let res = parser($input);
+        let res = parser($input.into());
         if res.is_ok() {
             panic!(
                 "\nExpected parsing to fail...\n     input: {:?}\n    result: {:?}\n  expected: Err",
@@ -46,8 +46,8 @@ macro_rules! assert_err {
     ($input:expr, $remaining:expr, $result:expr) => {
         _type_check_err($result);
         assert_eq!(
-            parser($input).unwrap_err(),
-            nom::Err::Error(($remaining, $result))
+            parser($input.into()).unwrap_err(),
+            nom::Err::Error(($remaining.into(), $result))
         )
     };
 }
