@@ -222,10 +222,7 @@ mod tests {
         );
         assert_eq!(
             single_quoted_string("''".into()),
-            Ok((
-                Input::new("").with_offset(2).with_char(3),
-                "".to_owned()
-            ))
+            Ok((Input::new("").with_offset(2).with_char(3), "".to_owned()))
         );
         assert_eq!(
             single_quoted_string("'\n'".into()),
