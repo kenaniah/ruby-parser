@@ -212,5 +212,27 @@ mod tests {
         );
         // Semantics
         assert_ok!("'\\a\\'\\\\'", "\\a'\\".to_owned());
+        // Positioning
+        assert_eq!(
+            single_quoted_string("'One\nTwo\nThree'".into()),
+            Ok((
+                Input::new("").with_offset(15).with_line(3).with_char(7),
+                "One\nTwo\nThree".to_owned()
+            ))
+        );
+        assert_eq!(
+            single_quoted_string("''".into()),
+            Ok((
+                Input::new("").with_offset(2).with_char(3),
+                "".to_owned()
+            ))
+        );
+        assert_eq!(
+            single_quoted_string("'\n'".into()),
+            Ok((
+                Input::new("").with_offset(3).with_line(2).with_char(2),
+                "\n".to_owned()
+            ))
+        );
     }
 }

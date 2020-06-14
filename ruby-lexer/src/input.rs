@@ -265,7 +265,7 @@ macro_rules! impl_slice_range {
                 let next_char = if number_of_lines == 0 {
                     self.char + consumed.chars().count()
                 } else {
-                    consumed.chars().rev().position(|c| c == '\n').unwrap()
+                    1 + consumed.chars().rev().position(|c| c == '\n').unwrap()
                 };
 
                 Self {
