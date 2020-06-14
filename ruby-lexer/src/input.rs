@@ -1,4 +1,5 @@
-use nom::AsBytes;
+use core::ops::{RangeFrom, RangeTo};
+use nom::{AsBytes, InputLength, InputTake, Slice};
 
 /// Tracks location information and user-defined metadata for nom's source input.
 #[derive(Debug, Clone, Copy)]
@@ -58,5 +59,46 @@ impl<T: AsBytes, X> TrackedLocation<T, X> {
     }
     pub fn metadata(&self) -> &X {
         &self.metadata
+    }
+}
+
+impl<T: AsBytes, X: Default> From<T> for TrackedLocation<T, X> {
+    fn from(program: T) -> Self {
+        Self::new_with_metadata(program, X::default())
+    }
+}
+
+impl<T: PartialEq, X> PartialEq for TrackedLocation<T, X> {
+    fn eq(&self, other: &Self) -> bool {
+        self.offset == other.offset
+            && self.line == other.line
+            && self.char == other.char
+            && self.input == other.input
+    }
+}
+
+impl<T: Eq, X> Eq for TrackedLocation<T, X> {}
+
+impl<T: AsBytes, X> AsBytes for TrackedLocation<T, X> {
+    fn as_bytes(&self) -> &[u8] {
+        self.input.as_bytes()
+    }
+}
+
+impl<T: InputLength, X> InputLength for TrackedLocation<T, X> {
+    fn input_len(&self) -> usize {
+        self.input.input_len()
+    }
+}
+
+impl<T, X> InputTake for TrackedLocation<T, X>
+where
+    Self: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
+{
+    fn take(&self, count: usize) -> Self {
+        self.slice(..count)
+    }
+    fn take_split(&self, count: usize) -> (Self, Self) {
+        (self.slice(count..), self.slice(..count))
     }
 }

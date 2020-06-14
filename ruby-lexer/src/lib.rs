@@ -36,6 +36,8 @@ pub enum Token {
     Float(f64),
 }
 
+pub type Foobar<'a> = input::TrackedLocation<&'a str>;
+
 /// The type used to describe the lexer's input
 //pub type Input<'a> = input::TrackedLocation<&'a str>;
 pub type Input<'a> = &'a str;
