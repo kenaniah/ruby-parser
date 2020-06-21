@@ -2,9 +2,11 @@
 #[macro_export]
 macro_rules! use_parser {
     ($func:ident, $input_type:ty, $ok_type:ty, $err_type:ty) => {
+        #[allow(dead_code)]
         fn parser(i: $input_type) -> nom::IResult<$input_type, $ok_type, ($input_type, $err_type)> {
             nom::combinator::all_consuming($func)(i)
         };
+        #[allow(dead_code)]
         fn partial_parser(i: $input_type) -> nom::IResult<$input_type, $ok_type, ($input_type, $err_type)> {
             $func(i)
         };

@@ -3,8 +3,7 @@
 use crate::lexers::program::line_terminator;
 use crate::lexers::program::source_character;
 use crate::lexers::program::whitespace;
-use crate::CharResult;
-use crate::{Input, StringResult};
+use crate::{CharResult, Input, StringResult, Token, TokenResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
@@ -13,18 +12,14 @@ use nom::combinator::not;
 use nom::combinator::opt;
 use nom::combinator::peek;
 use nom::combinator::recognize;
-use nom::error::ParseError;
 use nom::multi::many0;
 use nom::multi::many1;
-use nom::multi::many_till;
 use nom::sequence::tuple;
-use nom::IResult;
-
-use crate::nom::InputLength;
 
 /// *single_line_comment* | *multi_line_comment*
-pub(crate) fn comment(i: Input) -> StringResult {
-    alt((single_line_comment, multi_line_comment))(i)
+pub fn comment(i: Input) -> TokenResult {
+    let (i, content) = alt((single_line_comment, multi_line_comment))(i)?;
+    Ok((i, Token::Comment(content)))
 }
 
 /// `#` *comment_content*?
@@ -49,7 +44,7 @@ pub(crate) fn line_content(i: Input) -> StringResult {
 }
 
 fn _line_content(i: Input) -> CharResult {
-    peek(not(tag("\n")))(i)?;
+    peek(not(char('\n')))(i)?;
     source_character(i)
 }
 
@@ -110,17 +105,6 @@ pub(crate) fn comment_line(i: Input) -> StringResult {
     })(i)
 }
 
-pub(crate) fn eof<I: Copy + InputLength, E: ParseError<I>>(input: I) -> IResult<I, I, E> {
-    if input.input_len() == 0 {
-        Ok((input, input))
-    } else {
-        Err(nom::Err::Error(E::from_error_kind(
-            input,
-            nom::error::ErrorKind::Eof,
-        )))
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -139,5 +123,10 @@ mod tests {
         assert_ok!("#This is a comment\n", "#This is a comment\n".to_owned());
         assert_ok!("# Additional space\n", "# Additional space\n".to_owned());
         assert_partial!("# With newline\nfoobar\n", "# With newline\n".to_owned());
+    }
+
+    #[test]
+    fn test_multi_line_comment() {
+        todo!()
     }
 }
