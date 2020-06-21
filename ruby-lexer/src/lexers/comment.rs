@@ -17,19 +17,21 @@ pub fn comment(i: Input) -> TokenResult {
 
 /// `#` *comment_content*?
 pub(crate) fn single_line_comment(i: Input) -> StringResult {
-    map(tuple((char('#'), opt(comment_content))), |t| {
-        let mut s = String::new();
-        s.push(t.0);
-        if let Some(str) = t.1 {
-            s.push_str(&str);
-        }
-        s
-    })(i)
+    map(
+        recognize(tuple((char('#'), opt(comment_content), opt(char('\n'))))),
+        |s| {
+            let mut str = (*s).to_owned();
+            if str.ends_with('\n') {
+                str.pop();
+            }
+            str
+        },
+    )(i)
 }
 
 /// *line_content*
 pub(crate) fn comment_content(i: Input) -> StringResult {
-    map(tuple((line_content, opt(char('\n')))), |t| t.0)(i)
+    line_content(i)
 }
 
 /// ( *source_character*+ ) **but not** ( *source_character** *line_terminator* *source_character** )
@@ -115,6 +117,7 @@ mod tests {
         assert_err!("  # meh");
         // Success cases
         assert_ok!("#", "#".to_owned());
+        assert_ok!("#\n", "#".to_owned());
         assert_ok!("# No newline", "# No newline".to_owned());
         assert_ok!("#This is a comment\n", "#This is a comment".to_owned());
         assert_ok!("# Additional space\n", "# Additional space".to_owned());
