@@ -17,16 +17,9 @@ pub fn comment(i: Input) -> TokenResult {
 
 /// `#` *comment_content*?
 pub(crate) fn single_line_comment(i: Input) -> StringResult {
-    map(
-        recognize(tuple((char('#'), opt(comment_content), opt(char('\n'))))),
-        |s| {
-            let mut str = (*s).to_owned();
-            if str.ends_with('\n') {
-                str.pop();
-            }
-            str
-        },
-    )(i)
+    map(recognize(tuple((char('#'), opt(comment_content)))), |s| {
+        (*s).to_owned()
+    })(i)
 }
 
 /// *line_content*
@@ -42,16 +35,16 @@ pub(crate) fn line_content(i: Input) -> StringResult {
 }
 
 fn _line_content(i: Input) -> CharResult {
-    peek(not(char('\n')))(i)?;
+    peek(not(line_terminator))(i)?;
     source_character(i)
 }
 
-/// *multi_line_comment_begin_line* *multi_line_comment_line*? *multi_line_comment_end_line*
+/// *multi_line_comment_begin_line* *multi_line_comment_line** *multi_line_comment_end_line*
 pub(crate) fn multi_line_comment(i: Input) -> StringResult {
     map(
         recognize(tuple((
             multi_line_comment_begin_line,
-            opt(multi_line_comment_line),
+            many0(multi_line_comment_line),
             multi_line_comment_end_line,
         ))),
         |s| (*s).to_owned(),
@@ -85,7 +78,7 @@ pub(crate) fn multi_line_comment_end_line(i: Input) -> StringResult {
 /// *whitespace*+ *comment_content*
 pub(crate) fn rest_of_begin_end_line(i: Input) -> StringResult {
     map(
-        recognize(tuple((many0(whitespace), comment_content))),
+        recognize(tuple((many1(whitespace), comment_content))),
         |s| (*s).to_owned(),
     )(i)
 }
@@ -96,9 +89,9 @@ pub(crate) fn multi_line_comment_line(i: Input) -> StringResult {
     comment_line(i)
 }
 
-/// *comment_content* *line_terminator*
+/// *comment_content*? *line_terminator*
 pub(crate) fn comment_line(i: Input) -> StringResult {
-    map(recognize(tuple((comment_content, line_terminator))), |s| {
+    map(recognize(tuple((opt(comment_content), line_terminator))), |s| {
         (*s).to_owned()
     })(i)
 }
@@ -115,17 +108,31 @@ mod tests {
         assert_err!("");
         assert_err!("foobar");
         assert_err!("  # meh");
+        assert_err!("#\n");
+        assert_err!("# Newline should not be consumed\n");
         // Success cases
         assert_ok!("#", "#".to_owned());
-        assert_ok!("#\n", "#".to_owned());
         assert_ok!("# No newline", "# No newline".to_owned());
-        assert_ok!("#This is a comment\n", "#This is a comment".to_owned());
-        assert_ok!("# Additional space\n", "# Additional space".to_owned());
+        assert_ok!("#This is a comment", "#This is a comment".to_owned());
         assert_partial!("# With newline\nfoobar\n", "# With newline".to_owned());
     }
 
     #[test]
     fn test_multi_line_comment() {
-        todo!()
+        use_parser!(multi_line_comment, Input, String, ErrorKind);
+        // Parse errors
+        assert_err!("  =begin\n=end");
+        assert_err!("=begin\n  =end");
+        assert_err!("=begin\n");
+        assert_err!("=begins\n=end");
+        assert_err!("=begin\nanother line\n  =end");
+        // Success cases
+        assert_ok!("=begin\n=end");
+        assert_ok!("=begin\n=end\n");
+        assert_ok!("=begin\n=end extra");
+        assert_ok!("=begin\n=end extra\n");
+        assert_ok!("=begin extra\n=end extra\n");
+        assert_ok!("=begin extra\n\tcontent line\n=end extra\n");
+        assert_ok!("=begin extra\n\tcontent line\n\n\nanother_line\n\n=end extra\n");
     }
 }
