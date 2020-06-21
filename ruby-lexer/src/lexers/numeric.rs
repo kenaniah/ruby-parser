@@ -1,10 +1,9 @@
+use crate::{CharResult, Input, Numeric, NumericResult, StringResult, Token, TokenResult};
 use nom::branch::alt;
 use nom::character::complete::{char, one_of};
 use nom::combinator::{map, opt, value};
 use nom::multi::many0;
 use nom::sequence::{preceded, tuple};
-
-use crate::{CharResult, Input, Numeric, NumericResult, StringResult, Token, TokenResult};
 
 /**
 Provides support for lexing Ruby's numeric literal formats.

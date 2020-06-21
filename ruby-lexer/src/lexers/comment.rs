@@ -1,19 +1,12 @@
 //! Provides parsers for comments
 
-use crate::lexers::program::line_terminator;
-use crate::lexers::program::source_character;
-use crate::lexers::program::whitespace;
+use crate::lexers::program::{line_terminator, source_character, whitespace};
 use crate::{CharResult, Input, StringResult, Token, TokenResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::map;
-use nom::combinator::not;
-use nom::combinator::opt;
-use nom::combinator::peek;
-use nom::combinator::recognize;
-use nom::multi::many0;
-use nom::multi::many1;
+use nom::combinator::{map, not, opt, peek, recognize};
+use nom::multi::{many0, many1};
 use nom::sequence::tuple;
 
 /// *single_line_comment* | *multi_line_comment*
@@ -24,16 +17,19 @@ pub fn comment(i: Input) -> TokenResult {
 
 /// `#` *comment_content*?
 pub(crate) fn single_line_comment(i: Input) -> StringResult {
-    map(recognize(tuple((char('#'), opt(comment_content)))), |s| {
-        (*s).to_owned()
+    map(tuple((char('#'), opt(comment_content))), |t| {
+        let mut s = String::new();
+        s.push(t.0);
+        if let Some(str) = t.1 {
+            s.push_str(&str);
+        }
+        s
     })(i)
 }
 
 /// *line_content*
 pub(crate) fn comment_content(i: Input) -> StringResult {
-    map(recognize(tuple((line_content, opt(char('\n'))))), |s| {
-        (*s).to_owned()
-    })(i)
+    map(tuple((line_content, opt(char('\n')))), |t| t.0)(i)
 }
 
 /// ( *source_character*+ ) **but not** ( *source_character** *line_terminator* *source_character** )
@@ -120,9 +116,9 @@ mod tests {
         // Success cases
         assert_ok!("#", "#".to_owned());
         assert_ok!("# No newline", "# No newline".to_owned());
-        assert_ok!("#This is a comment\n", "#This is a comment\n".to_owned());
-        assert_ok!("# Additional space\n", "# Additional space\n".to_owned());
-        assert_partial!("# With newline\nfoobar\n", "# With newline\n".to_owned());
+        assert_ok!("#This is a comment\n", "#This is a comment".to_owned());
+        assert_ok!("# Additional space\n", "# Additional space".to_owned());
+        assert_partial!("# With newline\nfoobar\n", "# With newline".to_owned());
     }
 
     #[test]

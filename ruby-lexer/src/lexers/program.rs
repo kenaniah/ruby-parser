@@ -1,5 +1,4 @@
 //! Provides parsers for program text
-
 use crate::{CharResult, Input, StringResult};
 use nom::character::complete::{anychar, char, line_ending, one_of};
 use nom::combinator::map;
