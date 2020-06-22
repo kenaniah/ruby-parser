@@ -4,7 +4,7 @@ Provides support for lexing Ruby's string literal formats.
 
 use nom::branch::alt;
 use nom::character::complete::{anychar, char, none_of, one_of};
-use nom::combinator::{map, opt, value};
+use nom::combinator::{map, opt, recognize, value};
 use nom::multi::many0;
 use nom::sequence::{preceded, tuple};
 
@@ -81,7 +81,10 @@ pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
 
 /// `\` *double_escaped_character*
 pub(crate) fn simple_escape_sequence(i: Input) -> StringResult {
-    stub_string(i)
+    map(
+        recognize(tuple((char('\\'), double_escaped_character))),
+        |s| (*s).to_owned(),
+    )(i)
 }
 
 /// `\` | `n` | `t` | `r` | `f` | `v` | `a` | `e` | `b` | `s`

@@ -150,7 +150,7 @@ where
         match self.input.position(predicate) {
             Some(n) => Ok(self.take_split(n)),
             None => Err(Err::Incomplete(nom::Needed::Size(unsafe {
-                1 //std::num::NonZeroUsize::new_unchecked(1)
+                std::num::NonZeroUsize::new_unchecked(1)
             }))),
         }
     }
@@ -167,7 +167,7 @@ where
             Some(0) => Err(Err::Error(E::from_error_kind(self.clone(), e))),
             Some(n) => Ok(self.take_split(n)),
             None => Err(Err::Incomplete(nom::Needed::Size(unsafe {
-                1 //std::num::NonZeroUsize::new_unchecked(1)
+                std::num::NonZeroUsize::new_unchecked(1)
             }))),
         }
     }
