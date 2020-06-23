@@ -2,15 +2,14 @@
 Provides support for lexing Ruby's string literal formats.
 !*/
 
-use crate::lexers::program::line_terminator;
-use crate::lexers::program::line_terminator_escape_sequence;
+use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
+use crate::lexers::program::{line_terminator, line_terminator_escape_sequence};
 use nom::branch::alt;
+use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
-use nom::combinator::not;
-use nom::combinator::peek;
-use nom::combinator::{map, opt, recognize, verify};
+use nom::combinator::{map, not, opt, peek, recognize, verify};
 use nom::multi::many0;
-use nom::sequence::{preceded, tuple};
+use nom::sequence::tuple;
 
 use crate::{CharResult, Input, StringResult, Token, TokenResult};
 
@@ -137,22 +136,51 @@ pub(crate) fn non_escaped_double_quoted_string_char(i: Input) -> StringResult {
 
 /// `\` `x` *octal_digit* *octal_digit*? *octal_digit*?
 pub(crate) fn octal_escape_sequence(i: Input) -> StringResult {
-    stub_string(i)
+    map(
+        recognize(tuple((
+            tag("\\x"),
+            octal_digit,
+            opt(octal_digit),
+            opt(octal_digit),
+        ))),
+        |s| (*s).to_owned(),
+    )(i)
 }
 
 /// `\` *hexadecimal_digit* *hexadecimal_digit*?
 pub(crate) fn hexadecimal_escape_sequence(i: Input) -> StringResult {
-    stub_string(i)
+    map(
+        recognize(tuple((
+            char('\\'),
+            hexadecimal_digit,
+            opt(hexadecimal_digit),
+        ))),
+        |s| (*s).to_owned(),
+    )(i)
 }
 
 /// `\` ( `C` `-` | `c` ) *control_escaped_character*
 pub(crate) fn control_escape_sequence(i: Input) -> StringResult {
-    stub_string(i)
+    map(
+        recognize(tuple((
+            char('\\'),
+            alt((tag("C-"), tag("c"))),
+            control_escaped_character,
+        ))),
+        |s: Input| (*s).to_owned(),
+    )(i)
 }
 
 /// *double_escape_sequence* | `?` | *source_character* **but not** ( `\` | `?` )
 pub(crate) fn control_escaped_character(i: Input) -> StringResult {
-    stub_string(i)
+    map(
+        recognize(alt((
+            double_escape_sequence,
+            map(tag("?"), |s: Input| (*s).to_owned()),
+            map(none_of("\\?"), |c: char| c.to_string()),
+        ))),
+        |s: Input| (*s).to_owned(),
+    )(i)
 }
 
 /// `#` *global_variable_identifier* | `#` *class_variable_identifier* | `#` *instance_variable_identifier* | `#` `{` *computed_statement* `}`
@@ -165,15 +193,7 @@ pub(crate) fn alpha_numeric_character(i: Input) -> CharResult {
     verify(anychar, |c: &char| c.is_ascii_alphanumeric())(i)
 }
 
-fn stub_token(i: Input) -> TokenResult {
-    Err(nom::Err::Error((i, nom::error::ErrorKind::Char)))
-}
-
 fn stub_string(i: Input) -> StringResult {
-    Err(nom::Err::Error((i, nom::error::ErrorKind::Char)))
-}
-
-fn stub_char(i: Input) -> CharResult {
     Err(nom::Err::Error((i, nom::error::ErrorKind::Char)))
 }
 

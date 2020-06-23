@@ -202,12 +202,12 @@ pub(crate) fn decimal_digit_except_zero(i: Input) -> CharResult {
 }
 
 /// `0` | `1`
-fn binary_digit(i: Input) -> CharResult {
+pub(crate) fn binary_digit(i: Input) -> CharResult {
     verify(anychar, |c: &char| c.is_digit(2))(i)
 }
 
 /// `0` | `1` | `2` | `3` | `4` | `5` | `6` | `7`
-fn octal_digit(i: Input) -> CharResult {
+pub(crate) fn octal_digit(i: Input) -> CharResult {
     verify(anychar, |c: &char| c.is_digit(8))(i)
 }
 
@@ -217,7 +217,7 @@ pub(crate) fn hexadecimal_digit(i: Input) -> CharResult {
 }
 
 /// `0` | `1` | `2` | `3` | `4` | `5` | `6` | `7` | `8` | `9`
-fn decimal_digit(i: Input) -> CharResult {
+pub(crate) fn decimal_digit(i: Input) -> CharResult {
     verify(anychar, |c: &char| c.is_ascii_digit())(i)
 }
 
