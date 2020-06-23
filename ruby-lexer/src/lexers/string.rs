@@ -4,7 +4,7 @@ Provides support for lexing Ruby's string literal formats.
 
 use nom::branch::alt;
 use nom::character::complete::{anychar, char, none_of, one_of};
-use nom::combinator::{map, opt, recognize, value};
+use nom::combinator::{map, opt, recognize, verify};
 use nom::multi::many0;
 use nom::sequence::{preceded, tuple};
 
@@ -128,8 +128,8 @@ pub(crate) fn interpolated_character_sequence(i: Input) -> StringResult {
 }
 
 /// *uppercase_character* | *lowercase_character* | *decimal_digit*
-pub(crate) fn alpha_numeric_character(i: Input) -> StringResult {
-    stub_string(i)
+pub(crate) fn alpha_numeric_character(i: Input) -> CharResult {
+    verify(anychar, |c: &char| c.is_ascii_alphanumeric())(i)
 }
 
 fn stub_token(i: Input) -> TokenResult {

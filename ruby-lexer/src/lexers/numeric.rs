@@ -1,7 +1,7 @@
 use crate::{CharResult, Input, Numeric, NumericResult, StringResult, Token, TokenResult};
 use nom::branch::alt;
-use nom::character::complete::{char, one_of};
-use nom::combinator::{map, opt, value};
+use nom::character::complete::{anychar, char, one_of};
+use nom::combinator::{map, opt, value, verify};
 use nom::multi::many0;
 use nom::sequence::{preceded, tuple};
 
@@ -203,22 +203,22 @@ pub(crate) fn decimal_digit_except_zero(i: Input) -> CharResult {
 
 /// `0` | `1`
 fn binary_digit(i: Input) -> CharResult {
-    one_of("01")(i)
+    verify(anychar, |c: &char| c.is_digit(2))(i)
 }
 
 /// `0` | `1` | `2` | `3` | `4` | `5` | `6` | `7`
 fn octal_digit(i: Input) -> CharResult {
-    one_of("01234567")(i)
+    verify(anychar, |c: &char| c.is_digit(8))(i)
 }
 
 /// *decimal_digit* | `a` | `b` | `c` | `d` | `e` | `f` | `A` | `B` | `C` | `D` | `E` | `F`
 pub(crate) fn hexadecimal_digit(i: Input) -> CharResult {
-    alt((decimal_digit, one_of("abcdefABCDEF")))(i)
+    verify(anychar, |c: &char| c.is_ascii_hexdigit())(i)
 }
 
 /// `0` | `1` | `2` | `3` | `4` | `5` | `6` | `7` | `8` | `9`
 fn decimal_digit(i: Input) -> CharResult {
-    one_of("0123456789")(i)
+    verify(anychar, |c: &char| c.is_ascii_digit())(i)
 }
 
 /// Constructs a string from characters
