@@ -11,7 +11,7 @@ use nom::combinator::{map, not, opt, peek, recognize, verify};
 use nom::multi::many0;
 use nom::sequence::tuple;
 
-use crate::{CharResult, Input, StringResult, Token, TokenResult};
+use crate::{CharResult, Input, StringResult};
 
 /// `'` *single_quoted_string_character** `'`
 pub fn single_quoted_string(i: Input) -> StringResult {
@@ -183,7 +183,7 @@ pub(crate) fn control_escaped_character(i: Input) -> StringResult {
     )(i)
 }
 
-/// `#` *global_variable_identifier* | `#` *class_variable_identifier* | `#` *instance_variable_identifier* | `#` `{` *computed_statement* `}`
+/// `#` *global_variable_identifier* | `#` *class_variable_identifier* | `#` *instance_variable_identifier* | `#` `{` *compound_statement* `}`
 pub(crate) fn interpolated_character_sequence(i: Input) -> StringResult {
     stub_string(i)
 }

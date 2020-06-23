@@ -1,4 +1,4 @@
-/// Defines the functions used by the `assert_ok!` and `assert_err!` macros
+/// Defines the functions used by the `assert_ok!`, `assert_partial!`, and `assert_err!` macros
 #[macro_export]
 macro_rules! use_parser {
     ($func:ident, $input_type:ty, $ok_type:ty, $err_type:ty) => {

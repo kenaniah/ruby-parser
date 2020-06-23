@@ -4,8 +4,25 @@ use crate::{CharResult, Input, StringResult};
 use nom::character::complete::{anychar, char, line_ending, one_of};
 use nom::combinator::map;
 
-/// *line-terminator* | *whitespace* | *comment* | *end_of_program_marker* | *token*
-pub(crate) fn input_element() {}
+// /// *compound_statement*
+// pub fn program(i: Input) {
+//     compound_statement(i)
+// }
+//
+// /// *statement_list*? *separator_list*?
+// pub(crate) fn compound_statement(i: Input) {}
+//
+// /// *statement* ( *separator_list* *statement* )*
+// pub(crate) fn statement_list(i: Input){}
+//
+// /// *separator*+
+// pub(crate) fn separator_list(i: Input){}
+//
+// /// `;` | *line_terminator*
+// pub(crate) fn separator(i: Input){}
+//
+// /// *line_terminator* | *whitespace* | *comment* | *end_of_program_marker* | *token*
+// pub(crate) fn input_element(i: Input) {}
 
 /// Any UTF-8 scalar value (a Rust `char`)
 pub(crate) fn source_character(i: Input) -> CharResult {
