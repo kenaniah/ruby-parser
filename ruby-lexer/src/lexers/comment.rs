@@ -85,7 +85,7 @@ pub(crate) fn rest_of_begin_end_line(i: Input) -> StringResult {
 
 /// *comment_line* **but not** *multi_line_comment_end_line*
 pub(crate) fn multi_line_comment_line(i: Input) -> StringResult {
-    not(multi_line_comment_end_line)(i)?;
+    peek(not(multi_line_comment_end_line))(i)?;
     comment_line(i)
 }
 

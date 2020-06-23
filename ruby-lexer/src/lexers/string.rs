@@ -2,8 +2,12 @@
 Provides support for lexing Ruby's string literal formats.
 !*/
 
+use crate::lexers::program::line_terminator;
+use crate::lexers::program::line_terminator_escape_sequence;
 use nom::branch::alt;
 use nom::character::complete::{anychar, char, none_of, one_of};
+use nom::combinator::not;
+use nom::combinator::peek;
 use nom::combinator::{map, opt, recognize, verify};
 use nom::multi::many0;
 use nom::sequence::{preceded, tuple};
@@ -11,7 +15,7 @@ use nom::sequence::{preceded, tuple};
 use crate::{CharResult, Input, StringResult, Token, TokenResult};
 
 /// `'` *single_quoted_string_character** `'`
-pub(crate) fn single_quoted_string(i: Input) -> StringResult {
+pub fn single_quoted_string(i: Input) -> StringResult {
     let (i, _) = char('\'')(i)?;
     let (i, contents) = many0(single_quoted_string_character)(i)?;
     let (i, _) = char('\'')(i)?;
@@ -65,18 +69,40 @@ pub(crate) fn single_quoted_string_non_escaped_character(i: Input) -> CharResult
 }
 
 /// `"` *double_quoted_string_character** `"`
-pub(crate) fn double_quoted_string(i: Input) -> StringResult {
-    stub_string(i)
+pub fn double_quoted_string(i: Input) -> StringResult {
+    let (i, _) = char('"')(i)?;
+    let (i, contents) = many0(double_quoted_string_character)(i)?;
+    let (i, _) = char('"')(i)?;
+    let mut string = String::new();
+    for s in contents {
+        string.push_str(&s);
+    }
+    Ok((i, string))
 }
 
 /// *source_character* **but not** ( `"` | `#` | `\` ) | `#` **not** ( `$` | `@` | `{` ) | *double_escape_sequence* | *interpolated_character_sequence*
 pub(crate) fn double_quoted_string_character(i: Input) -> StringResult {
-    stub_string(i)
+    alt((
+        map(none_of("\"#\\"), |char| char.to_string()),
+        map(
+            recognize(tuple((char('#'), none_of("$@{}")))),
+            |s: Input| (*s).to_owned(),
+        ),
+        double_escape_sequence,
+        interpolated_character_sequence,
+    ))(i)
 }
 
 /// *simple_escape_sequence* | *non_escaped_sequence* | *line_terminator_escape_sequence* | *octal_escape_sequence* | *hexadecimal_escape_sequence* | *control_escape_sequence*
 pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
-    stub_string(i)
+    alt((
+        simple_escape_sequence,
+        non_escaped_sequence,
+        line_terminator_escape_sequence,
+        octal_escape_sequence,
+        hexadecimal_escape_sequence,
+        control_escape_sequence,
+    ))(i)
 }
 
 /// `\` *double_escaped_character*
@@ -94,12 +120,19 @@ pub(crate) fn double_escaped_character(i: Input) -> CharResult {
 
 /// `\` *non_escaped_double_quoted_string_char*
 pub(crate) fn non_escaped_sequence(i: Input) -> StringResult {
-    stub_string(i)
+    map(
+        recognize(tuple((char('\\'), non_escaped_double_quoted_string_char))),
+        |s| (*s).to_owned(),
+    )(i)
 }
 
 /// *source_character* **but not** ( *alpha_numeric_character* | *line_terminator* )
 pub(crate) fn non_escaped_double_quoted_string_char(i: Input) -> StringResult {
-    stub_string(i)
+    peek(not(alt((
+        map(alpha_numeric_character, |c: char| c.to_string()),
+        line_terminator,
+    ))))(i)?;
+    map(anychar, |c: char| c.to_string())(i)
 }
 
 /// `\` `x` *octal_digit* *octal_digit*? *octal_digit*?
