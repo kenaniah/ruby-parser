@@ -129,8 +129,8 @@ mod tests {
         // Success cases
         assert_ok!("=begin\n=end");
         assert_ok!("=begin\n=end\n");
-        assert_ok!("=begin\n=end extra");
-        assert_ok!("=begin\n=end extra\n");
+        assert_ok!("=begin\r\n=end extra");
+        assert_ok!("=begin\n=end extra\r\n");
         assert_ok!("=begin extra\n=end extra\n");
         assert_ok!("=begin extra\n\tcontent line\n=end extra\n");
         assert_ok!("=begin extra\n\tcontent line\n\n\nanother_line\n\n=end extra\n");

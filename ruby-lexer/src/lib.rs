@@ -36,6 +36,7 @@ pub enum Token {
     Comment(String),
     Integer(isize),
     Float(f64),
+    EndOfProgram
 }
 
 /// The type used to describe the lexer's input

@@ -1,8 +1,10 @@
 //! Provides parsers for program text
-
-use crate::{CharResult, Input, StringResult};
+use crate::{CharResult, Input, StringResult, Token, TokenResult};
+use nom::branch::alt;
+use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, line_ending, one_of};
-use nom::combinator::map;
+use nom::combinator::{map, opt, recognize};
+use nom::sequence::tuple;
 
 // /// *compound_statement*
 // pub fn program(i: Input) {
@@ -30,9 +32,14 @@ pub(crate) fn source_character(i: Input) -> CharResult {
 }
 
 /// 0x09 | 0x0b | 0x0c | 0x0d | 0x20 | *line_terminator_escape_sequence*
-pub(crate) fn whitespace(i: Input) -> CharResult {
-    //' ' | '\t' | '\x0b' | '\x0c' | '\r'
-    one_of(" \t\x0b\x0c\r")(i)
+pub(crate) fn whitespace(i: Input) -> StringResult {
+    map(
+        recognize(alt((
+            map(one_of(" \t\x0b\x0c\r"), |c: char| c.to_string()),
+            line_terminator_escape_sequence,
+        ))),
+        |s| (*s).to_owned(),
+    )(i)
 }
 
 /// `\r`? `\n`
@@ -42,10 +49,19 @@ pub(crate) fn line_terminator(i: Input) -> StringResult {
 
 /// `\` *line_terminator*
 pub(crate) fn line_terminator_escape_sequence(i: Input) -> StringResult {
-    let (i, char) = char('\\')(i)?;
-    let (i, mut string) = line_terminator(i)?;
-    string.insert(0, char);
-    Ok((i, string))
+    map(recognize(tuple((char('\\'), line_terminator))), |s| {
+        (*s).to_owned()
+    })(i)
+}
+
+/// [ beginning of a line ] `__END__` ( *line_terminator* | [ end of a program ] )
+pub(crate) fn end_of_program_marker(i: Input) -> TokenResult {
+    if !i.beginning_of_line() {
+        return Err(nom::Err::Error((i, nom::error::ErrorKind::Space)));
+    }
+    let (i, _) = tag("__END__")(i)?;
+    let (i, _) = opt(line_terminator)(i)?;
+    Ok((i, Token::EndOfProgram))
 }
 
 #[cfg(test)]
@@ -72,5 +88,57 @@ mod tests {
             source_character("東".into()),
             Ok((Input::new_with_pos("", 3, 1, 2), '東'))
         ); // U+6771: 'CJK Unified Ideograph-6771' "East"
+    }
+
+    #[test]
+    fn test_line_terminator() {
+        use_parser!(line_terminator, Input, String, ErrorKind);
+        // Success cases
+        assert_ok!("\n");
+        assert_ok!("\r\n");
+        // Failure cases
+        assert_err!("");
+        assert_err!(" ");
+        assert_err!("\r");
+    }
+
+    #[test]
+    fn test_line_terminator_escape_sequence() {
+        use_parser!(line_terminator_escape_sequence, Input, String, ErrorKind);
+        // Success cases
+        assert_ok!("\\\n");
+        assert_ok!("\\\r\n");
+        // Failure cases
+        assert_err!("\n");
+        assert_err!("\r");
+        assert_err!("\r\n");
+    }
+
+    #[test]
+    fn test_whitespace() {
+        use_parser!(whitespace, Input, String, ErrorKind);
+        // Success cases
+        assert_ok!(" ");
+        assert_ok!("\t");
+        assert_ok!("\r");
+        assert_ok!("\x0b");
+        assert_ok!("\x0c");
+        assert_ok!("\\\n");
+        assert_ok!("\\\r\n");
+        // Failure cases
+        assert_err!("\n");
+        assert_err!("\r\n");
+    }
+
+    #[test]
+    fn test_end_of_program_marker() {
+        use_parser!(end_of_program_marker, Input, Token, ErrorKind);
+        // Success cases
+        assert_ok!("__END__");
+        assert_ok!("__END__\n");
+        assert_ok!("__END__\r\n");
+        // Failure cases
+        assert_err!("__end__");
+        assert_err!("__END__ing");
     }
 }
