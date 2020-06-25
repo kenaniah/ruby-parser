@@ -1,6 +1,7 @@
 use crate::{CharResult, Input, StringResult, TokenResult};
 use nom::character::complete::anychar;
-use nom::combinator::verify;
+use nom::combinator::{map, recognize, verify};
+use nom::sequence::tuple;
 
 /// *local_variable_identifier* | *global_variable_identifier* | *class_variable_identifier* | *instance_variable_identifier* | *constant_identifier* | *method_only_identifier* | *assignment_like_method_identifier*
 pub fn identifier(i: Input) -> TokenResult {
@@ -29,7 +30,17 @@ pub(crate) fn instance_variable_identifier(i: Input) -> StringResult {
 
 /// *uppercase_character* *identifier_character**
 pub(crate) fn constant_identifier(i: Input) -> StringResult {
-    stub_string(i)
+    map(
+        recognize(tuple((title_case_character, identifier_character))),
+        |s| (*s).to_owned(),
+    )(i)
+}
+
+/// Returns any UTF-8 upper case or title case character
+fn title_case_character(i: Input) -> CharResult {
+    // Note: MRI also supports using unicode title case characters (in addition to uppercase)
+    // rust currently does not have title case detection available in its internal unicode lib
+    verify(anychar, |c: &char| c.is_uppercase())(i)
 }
 
 /// ( *constant_identifier* | *local_variable_identifier* ) ( `!` | `?` )
@@ -113,5 +124,11 @@ mod tests {
         assert_ok!("東", '東');
         assert_ok!("δ", 'δ');
         assert_ok!("Δ", 'Δ');
+    }
+
+    #[test]
+    fn test_constant_identifier() {
+        use_parser!(constant_identifier, Input, String, ErrorKind);
+        unimplemented!()
     }
 }
