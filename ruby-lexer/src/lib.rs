@@ -34,9 +34,16 @@ pub(crate) enum Numeric {
 #[derive(Debug, PartialEq)]
 pub enum Token {
     Comment(String),
+    LocalVariable(String),
+    GlobalVariable(String),
+    ClassVariable(String),
+    InstanceVariable(String),
+    Constant(String),
+    MethodIdentifier(String),
+    AssignmentMethodIdentifier(String),
     Integer(isize),
     Float(f64),
-    EndOfProgram
+    EndOfProgram,
 }
 
 /// The type used to describe the lexer's input

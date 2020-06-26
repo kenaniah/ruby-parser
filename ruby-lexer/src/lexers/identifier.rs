@@ -1,56 +1,112 @@
-use crate::{CharResult, Input, StringResult, TokenResult};
-use nom::character::complete::anychar;
+use crate::{CharResult, Input, StringResult, Token, TokenResult};
+use nom::branch::alt;
+use nom::bytes::complete::tag;
+use nom::character::complete::{anychar, char, one_of};
 use nom::combinator::{map, recognize, verify};
+use nom::multi::many0;
 use nom::sequence::tuple;
 
 /// *local_variable_identifier* | *global_variable_identifier* | *class_variable_identifier* | *instance_variable_identifier* | *constant_identifier* | *method_only_identifier* | *assignment_like_method_identifier*
 pub fn identifier(i: Input) -> TokenResult {
-    stub_token(i)
+    // Reordered to use the longest production
+    alt((
+        method_only_identifier,
+        assignment_like_method_identifier,
+        local_variable_identifier,
+        global_variable_identifier,
+        class_variable_identifier,
+        instance_variable_identifier,
+        constant_identifier,
+    ))(i)
 }
 
 /// ( *lowercase_character* | `_` ) *identifier_character**
-pub(crate) fn local_variable_identifier(i: Input) -> StringResult {
-    stub_string(i)
-}
-
-/// `$` *identifier_start_character* *identifier_character**
-pub(crate) fn global_variable_identifier(i: Input) -> StringResult {
-    stub_string(i)
-}
-
-/// `@@` *identifier_start_character* *identifier_character**
-pub(crate) fn class_variable_identifier(i: Input) -> StringResult {
-    stub_string(i)
-}
-
-/// `@` *identifier_start_character* *identifier_character**
-pub(crate) fn instance_variable_identifier(i: Input) -> StringResult {
-    stub_string(i)
-}
-
-/// *uppercase_character* *identifier_character**
-pub(crate) fn constant_identifier(i: Input) -> StringResult {
+pub(crate) fn local_variable_identifier(i: Input) -> TokenResult {
     map(
-        recognize(tuple((title_case_character, identifier_character))),
-        |s| (*s).to_owned(),
+        recognize(tuple((
+            alt((lowercase_character, char('_'))),
+            many0(identifier_character),
+        ))),
+        |s| Token::LocalVariable((*s).to_owned()),
     )(i)
 }
 
-/// Returns any UTF-8 upper case or title case character
-fn title_case_character(i: Input) -> CharResult {
+/// `$` *identifier_start_character* *identifier_character**
+pub(crate) fn global_variable_identifier(i: Input) -> TokenResult {
+    map(
+        recognize(tuple((
+            char('$'),
+            identifier_start_character,
+            many0(identifier_character),
+        ))),
+        |s| Token::GlobalVariable((*s).to_owned()),
+    )(i)
+}
+
+/// `@@` *identifier_start_character* *identifier_character**
+pub(crate) fn class_variable_identifier(i: Input) -> TokenResult {
+    map(
+        recognize(tuple((
+            tag("@@"),
+            identifier_start_character,
+            many0(identifier_character),
+        ))),
+        |s| Token::ClassVariable((*s).to_owned()),
+    )(i)
+}
+
+/// `@` *identifier_start_character* *identifier_character**
+pub(crate) fn instance_variable_identifier(i: Input) -> TokenResult {
+    map(
+        recognize(tuple((
+            char('@'),
+            identifier_start_character,
+            many0(identifier_character),
+        ))),
+        |s| Token::InstanceVariable((*s).to_owned()),
+    )(i)
+}
+
+/// *uppercase_character* *identifier_character**
+pub(crate) fn constant_identifier(i: Input) -> TokenResult {
+    map(
+        recognize(tuple((uppercase_character, many0(identifier_character)))),
+        |s| Token::Constant((*s).to_owned()),
+    )(i)
+}
+
+/// Returns any UTF-8 upper case character
+fn uppercase_character(i: Input) -> CharResult {
     // Note: MRI also supports using unicode title case characters (in addition to uppercase)
     // rust currently does not have title case detection available in its internal unicode lib
     verify(anychar, |c: &char| c.is_uppercase())(i)
 }
 
+/// Returns any UTF-8 lower case character
+fn lowercase_character(i: Input) -> CharResult {
+    verify(anychar, |c: &char| c.is_lowercase())(i)
+}
+
 /// ( *constant_identifier* | *local_variable_identifier* ) ( `!` | `?` )
-pub(crate) fn method_only_identifier(i: Input) -> StringResult {
-    stub_string(i)
+pub(crate) fn method_only_identifier(i: Input) -> TokenResult {
+    map(
+        recognize(tuple((
+            alt((constant_identifier, local_variable_identifier)),
+            one_of("!?"),
+        ))),
+        |s| Token::MethodIdentifier((*s).to_owned()),
+    )(i)
 }
 
 /// ( *constant_identifier* | *local_variable_identifier* ) `=`
-pub(crate) fn assignment_like_method_identifier(i: Input) -> StringResult {
-    stub_string(i)
+pub(crate) fn assignment_like_method_identifier(i: Input) -> TokenResult {
+    map(
+        recognize(tuple((
+            alt((constant_identifier, local_variable_identifier)),
+            char('='),
+        ))),
+        |s| Token::AssignmentMethodIdentifier((*s).to_owned()),
+    )(i)
 }
 
 /// *lowercase_character* | *uppercase_character* | *decimal_digit* | `_`
@@ -65,14 +121,6 @@ pub(crate) fn identifier_start_character(i: Input) -> CharResult {
     verify(anychar, |c: &char| {
         *c == '_' || c.is_ascii_alphabetic() || !c.is_ascii()
     })(i)
-}
-
-fn stub_string(i: Input) -> StringResult {
-    Err(nom::Err::Error((i, nom::error::ErrorKind::Complete)))
-}
-
-fn stub_token(i: Input) -> TokenResult {
-    Err(nom::Err::Error((i, nom::error::ErrorKind::Complete)))
 }
 
 #[cfg(test)]
@@ -127,8 +175,73 @@ mod tests {
     }
 
     #[test]
+    fn test_identifier() {
+        use_parser!(identifier, Input, Token, ErrorKind);
+        //Parse errors
+        //Success cases
+        unimplemented!();
+    }
+
+    #[test]
+    fn test_local_variable_identifier() {
+        use_parser!(local_variable_identifier, Input, Token, ErrorKind);
+        //Parse errors
+        //Success cases
+        unimplemented!();
+    }
+
+    #[test]
+    fn test_global_variable_identifier() {
+        use_parser!(global_variable_identifier, Input, Token, ErrorKind);
+        //Parse errors
+        //Success cases
+        unimplemented!();
+    }
+
+    #[test]
+    fn test_class_variable_identifier() {
+        use_parser!(class_variable_identifier, Input, Token, ErrorKind);
+        //Parse errors
+        //Success cases
+        unimplemented!();
+    }
+
+    #[test]
+    fn test_instance_variable_identifier() {
+        use_parser!(instance_variable_identifier, Input, Token, ErrorKind);
+        //Parse errors
+        //Success cases
+        unimplemented!();
+    }
+
+    #[test]
     fn test_constant_identifier() {
-        use_parser!(constant_identifier, Input, String, ErrorKind);
-        unimplemented!()
+        use_parser!(constant_identifier, Input, Token, ErrorKind);
+        //Parse errors
+        assert_err!("_PREFIXED");
+        assert_err!("lowercase");
+        assert_err!("$VAR");
+        assert_err!("😀");
+        //Success cases
+        assert_ok!("FOOBAR");
+        assert_ok!("CamelCase");
+        assert_ok!("A");
+        assert_ok!("Δ");
+    }
+
+    #[test]
+    fn test_method_only_identifier() {
+        use_parser!(method_only_identifier, Input, Token, ErrorKind);
+        //Parse errors
+        //Success cases
+        unimplemented!();
+    }
+
+    #[test]
+    fn test_assignment_like_method_identifier() {
+        use_parser!(assignment_like_method_identifier, Input, Token, ErrorKind);
+        //Parse errors
+        //Success cases
+        unimplemented!();
     }
 }
