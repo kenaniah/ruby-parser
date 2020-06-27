@@ -1,9 +1,9 @@
 use crate::lexers::identifier;
-use crate::{Input, Token, TokenResult};
+use crate::{Input, ParseResult, Token, TokenResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::one_of;
-use nom::combinator::recognize;
+use nom::combinator::{map, recognize};
 
 /// *keyword* | *identifier* | *punctuator* | *operator* | *literal*
 pub fn token(i: Input) -> TokenResult {
@@ -56,9 +56,22 @@ pub(crate) fn assignment_operator(i: Input) -> TokenResult {
     unimplemented!()
 }
 
-/// `&&` | `||` | `^` | `&` | `|` | `<<` | `>>` | `+` | `-` | `%` | `/` | `%` | `**`
-pub(crate) fn assignment_operator_name(i: Input) -> TokenResult {
-    unimplemented!()
+/// `&&` | `||` | `^` | `&` | `|` | `<<` | `>>` | `+` | `-` | `%` | `/` | `**`
+pub(crate) fn assignment_operator_name(i: Input) -> ParseResult {
+    alt((
+        tag("&&"),
+        tag("||"),
+        tag("^"),
+        tag("&"),
+        tag("|"),
+        tag("<<"),
+        tag(">>"),
+        tag("+"),
+        tag("-"),
+        tag("%"),
+        tag("/"),
+        tag("**"),
+    ))(i)
 }
 
 #[cfg(test)]

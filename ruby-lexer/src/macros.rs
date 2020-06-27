@@ -1,6 +1,18 @@
 /// Defines the functions used by the `assert_ok!`, `assert_partial!`, and `assert_err!` macros
 #[macro_export]
 macro_rules! use_parser {
+    ($func:ident, $input_type:ty, $ok_type:ty => $deref_type:ty, $err_type:ty) => {
+        #[allow(dead_code)]
+        fn parser(i: $input_type) -> nom::IResult<$input_type, $deref_type, ($input_type, $err_type)> {
+            nom::combinator::map(nom::combinator::all_consuming($func), |r: $ok_type| *r)(i)
+        };
+        #[allow(dead_code)]
+        fn partial_parser(i: $input_type) -> nom::IResult<$input_type, $deref_type, ($input_type, $err_type)> {
+            nom::combinator::map($func, |r: $ok_type| *r)(i)
+        };
+        fn _type_check_ok(_expected: $deref_type) {}
+        fn _type_check_err(_expected: $err_type) {}
+    };
     ($func:ident, $input_type:ty, $ok_type:ty, $err_type:ty) => {
         #[allow(dead_code)]
         fn parser(i: $input_type) -> nom::IResult<$input_type, $ok_type, ($input_type, $err_type)> {
