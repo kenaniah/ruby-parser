@@ -1,7 +1,3 @@
-/*!
-Provides support for lexing Ruby's string literal formats.
-!*/
-
 use crate::{CharResult, Input, StringResult};
 use nom::branch::alt;
 use nom::character::complete::{char, none_of, one_of};
