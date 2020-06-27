@@ -32,14 +32,11 @@ pub(crate) fn source_character(i: Input) -> CharResult {
 }
 
 /// 0x09 | 0x0b | 0x0c | 0x0d | 0x20 | *line_terminator_escape_sequence*
-pub(crate) fn whitespace(i: Input) -> StringResult {
-    map(
-        recognize(alt((
-            map(one_of(" \t\x0b\x0c\r"), |c: char| c.to_string()),
-            line_terminator_escape_sequence,
-        ))),
-        |s| (*s).to_owned(),
-    )(i)
+pub(crate) fn whitespace(i: Input) -> ParseResult {
+    recognize(alt((
+        map(one_of(" \t\x0b\x0c\r"), |c: char| c.to_string()),
+        line_terminator_escape_sequence,
+    )))(i)
 }
 
 /// `\r`? `\n`
@@ -116,7 +113,7 @@ mod tests {
 
     #[test]
     fn test_whitespace() {
-        use_parser!(whitespace, Input, String, ErrorKind);
+        use_parser!(whitespace, Input, Input, ErrorKind);
         // Success cases
         assert_ok!(" ");
         assert_ok!("\t");
