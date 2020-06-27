@@ -41,6 +41,26 @@ pub(crate) fn punctuator(i: Input) -> TokenResult {
     Ok((i, token))
 }
 
+/// `!` | `!=` | `!~` | `&&` | `||` | *operator_method_name* | `=` | *assignment_operator*
+pub(crate) fn operator(i: Input) -> TokenResult {
+    unimplemented!()
+}
+
+/// `^` | `&` | `|` | `<=>` | `==` | `===` | `=~` | `>` | `>=` | `<` | `<=` | `<<` | `>>` | `+` | `-` | `*` | `/` | `%` | `**` | `~` | `+@` | `-@` | `[]` | `[]=` | ```
+pub(crate) fn operator_method_name(i: Input) -> TokenResult {
+    unimplemented!()
+}
+
+/// *assignment_operator_name* `=`
+pub(crate) fn assignment_operator(i: Input) -> TokenResult {
+    unimplemented!()
+}
+
+/// `&&` | `||` | `^` | `&` | `|` | `<<` | `>>` | `+` | `-` | `%` | `/` | `%` | `**`
+pub(crate) fn assignment_operator_name(i: Input) -> TokenResult {
+    unimplemented!()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -51,6 +71,7 @@ mod tests {
         use_parser!(token, Input, Token, ErrorKind);
         // Identifiers
         assert_ok!("東", Token::LocalVariableIdentifier("東".to_owned()));
+        assert_ok!("@_", Token::InstanceVariableIdentifier("@_".to_owned()));
         assert_ok!("$foo", Token::GlobalVariableIdentifier("$foo".to_owned()));
         // Punctuation
         assert_ok!("[", Token::LeftBracket);
