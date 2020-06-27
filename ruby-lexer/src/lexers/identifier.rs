@@ -82,9 +82,9 @@ fn uppercase_character(i: Input) -> CharResult {
     verify(anychar, |c: &char| c.is_uppercase())(i)
 }
 
-/// Returns any UTF-8 lower case character
+/// Returns any UTF-8 non-upper case character
 fn lowercase_character(i: Input) -> CharResult {
-    verify(anychar, |c: &char| c.is_lowercase())(i)
+    verify(anychar, |c: &char| c.is_lowercase() || (!c.is_ascii() && !c.is_uppercase()))(i)
 }
 
 /// ( *constant_identifier* | *local_variable_identifier* ) ( `!` | `?` )
@@ -178,40 +178,90 @@ mod tests {
     fn test_identifier() {
         use_parser!(identifier, Input, Token, ErrorKind);
         //Parse errors
+        assert_err!("=");
+        assert_err!("@");
+        assert_err!("var\t");
         //Success cases
-        unimplemented!();
+        assert_ok!("_", Token::LocalVariable("_".to_owned()));
+        assert_ok!("local", Token::LocalVariable("local".to_owned()));
+        assert_ok!("local_Variable", Token::LocalVariable("local_Variable".to_owned()));
+        assert_ok!("ClassName", Token::Constant("ClassName".to_owned()));
+        assert_ok!("FOO", Token::Constant("FOO".to_owned()));
+        assert_ok!("@_", Token::InstanceVariable("@_".to_owned()));
+        assert_ok!("@@prop", Token::ClassVariable("@@prop".to_owned()));
+        assert_ok!("$_foo", Token::GlobalVariable("$_foo".to_owned()));
+        assert_ok!("is_valid?", Token::MethodIdentifier("is_valid?".to_owned()));
+        assert_ok!("bang!", Token::MethodIdentifier("bang!".to_owned()));
+        assert_ok!("var=", Token::AssignmentMethodIdentifier("var=".to_owned()));
     }
 
     #[test]
     fn test_local_variable_identifier() {
         use_parser!(local_variable_identifier, Input, Token, ErrorKind);
         //Parse errors
+        assert_err!("A");
+        assert_err!("02var");
+        assert_err!("02var\0");
+        assert_err!("var.");
+        assert_err!("var=");
+        assert_err!("var!");
+        assert_err!("var?");
         //Success cases
-        unimplemented!();
+        assert_ok!("_");
+        assert_ok!("_foo");
+        assert_ok!("_FOO");
+        assert_ok!("_2392");
+        assert_ok!("var");
+        assert_ok!("var_2");
+        assert_ok!("😀");
     }
 
     #[test]
     fn test_global_variable_identifier() {
         use_parser!(global_variable_identifier, Input, Token, ErrorKind);
         //Parse errors
+        assert_err!("var");
+        assert_err!("$$var");
+        assert_err!("$$");
+        assert_err!("$?");
+        assert_err!("$!");
         //Success cases
-        unimplemented!();
+        assert_ok!("$_");
+        assert_ok!("$var");
+        assert_ok!("$VAR_");
+        assert_ok!("$東");
     }
 
     #[test]
     fn test_class_variable_identifier() {
         use_parser!(class_variable_identifier, Input, Token, ErrorKind);
         //Parse errors
+        assert_err!("var");
+        assert_err!("@@");
+        assert_err!("@var");
+        assert_err!("@@$foo");
+        assert_err!("@@var?");
         //Success cases
-        unimplemented!();
+        assert_ok!("@@var");
+        assert_ok!("@@_");
+        assert_ok!("@@FOO");
+        assert_ok!("@@東");
     }
 
     #[test]
     fn test_instance_variable_identifier() {
         use_parser!(instance_variable_identifier, Input, Token, ErrorKind);
         //Parse errors
+        assert_err!("var");
+        assert_err!("@");
+        assert_err!("@@var");
+        assert_err!("@$foo");
+        assert_err!("@var?");
         //Success cases
-        unimplemented!();
+        assert_ok!("@var");
+        assert_ok!("@_");
+        assert_ok!("@FOO");
+        assert_ok!("@東");
     }
 
     #[test]
@@ -222,6 +272,7 @@ mod tests {
         assert_err!("lowercase");
         assert_err!("$VAR");
         assert_err!("😀");
+        assert_err!("C\0");
         //Success cases
         assert_ok!("FOOBAR");
         assert_ok!("CamelCase");
@@ -233,15 +284,28 @@ mod tests {
     fn test_method_only_identifier() {
         use_parser!(method_only_identifier, Input, Token, ErrorKind);
         //Parse errors
+        assert_err!("var");
+        assert_err!("var!?");
         //Success cases
-        unimplemented!();
+        assert_ok!("var!");
+        assert_ok!("var?");
+        assert_ok!("Var?");
+        assert_ok!("VAR!");
+        assert_ok!("😀?");
     }
 
     #[test]
     fn test_assignment_like_method_identifier() {
         use_parser!(assignment_like_method_identifier, Input, Token, ErrorKind);
         //Parse errors
+        assert_err!("=");
+        assert_err!("var");
+        assert_err!("0=");
+        assert_err!("var==");
         //Success cases
-        unimplemented!();
+        assert_ok!("var=");
+        assert_ok!("VAR=");
+        assert_ok!("_=");
+        assert_ok!("😀=");
     }
 }
