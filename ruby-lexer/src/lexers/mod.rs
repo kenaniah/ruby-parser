@@ -8,7 +8,7 @@ mod program;
 mod string;
 mod token;
 
-pub use crate::input::position;
+pub use crate::structs::tracked_location::position;
 pub use comment::comment;
 pub use identifier::identifier;
 pub use keyword::keyword;

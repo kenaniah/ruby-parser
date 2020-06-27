@@ -18,19 +18,13 @@ extern crate nom;
 
 #[macro_use]
 mod macros;
-mod input;
+mod enums;
 pub mod lexers;
-mod token;
+mod structs;
 
-pub use input::TrackedLocation;
-pub use token::Token;
-
-/// Internal enum used by the numeric_literal parser
-#[derive(Debug, PartialEq)]
-pub(crate) enum Numeric {
-    Integer(isize),
-    Float(f64),
-}
+pub(crate) use enums::numeric::Numeric;
+pub use enums::token::Token;
+pub use structs::tracked_location::TrackedLocation;
 
 /// The type used to describe the lexer's input
 pub type Input<'a> = TrackedLocation<&'a str>;
