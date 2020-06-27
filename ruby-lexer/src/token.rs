@@ -9,9 +9,12 @@ pub enum Token {
     ConstantIdentifier(String),
     MethodIdentifier(String),
     AssignmentMethodIdentifier(String),
-    // Numeric
+    // Numeric literals
     Integer(isize),
     Float(f64),
+    // String literals
+    SingleQuotedString(String),
+    DoubleQuotedString(String),
     // Punctuation
     /// [
     LeftBracket,

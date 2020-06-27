@@ -13,5 +13,5 @@ pub use comment::comment;
 pub use identifier::identifier;
 pub use keyword::keyword;
 pub use numeric::numeric_literal;
-pub use string::{double_quoted_string, single_quoted_string};
+pub use string::string_literal;
 pub use token::token;

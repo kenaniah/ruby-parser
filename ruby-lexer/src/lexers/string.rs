@@ -4,6 +4,7 @@ Provides support for lexing Ruby's string literal formats.
 
 use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
 use crate::lexers::program::{line_terminator, line_terminator_escape_sequence};
+use crate::{Token, TokenResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
@@ -13,8 +14,20 @@ use nom::sequence::tuple;
 
 use crate::{CharResult, Input, StringResult};
 
+/// *single_quoted_string* | *double_quoted_string* | *quoted_non_expanded_literal_string* | *quoted_expanded_literal_string* | *here_document* | *external_command_execution*
+pub fn string_literal(i: Input) -> TokenResult {
+    alt((
+        map(single_quoted_string, |s| Token::SingleQuotedString(s)),
+        map(double_quoted_string, |s| Token::DoubleQuotedString(s)),
+        // quoted_non_expanded_literal_string,
+        // quoted_expanded_literal_string,
+        // here_document,
+        // external_command_execution,
+    ))(i)
+}
+
 /// `'` *single_quoted_string_character** `'`
-pub fn single_quoted_string(i: Input) -> StringResult {
+pub(crate) fn single_quoted_string(i: Input) -> StringResult {
     let (i, _) = char('\'')(i)?;
     let (i, contents) = many0(single_quoted_string_character)(i)?;
     let (i, _) = char('\'')(i)?;
@@ -68,7 +81,7 @@ pub(crate) fn single_quoted_string_non_escaped_character(i: Input) -> CharResult
 }
 
 /// `"` *double_quoted_string_character** `"`
-pub fn double_quoted_string(i: Input) -> StringResult {
+pub(crate) fn double_quoted_string(i: Input) -> StringResult {
     let (i, _) = char('"')(i)?;
     let (i, contents) = many0(double_quoted_string_character)(i)?;
     let (i, _) = char('"')(i)?;
