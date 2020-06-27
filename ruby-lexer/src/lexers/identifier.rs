@@ -27,7 +27,7 @@ pub(crate) fn local_variable_identifier(i: Input) -> TokenResult {
             alt((lowercase_character, char('_'))),
             many0(identifier_character),
         ))),
-        |s| Token::LocalVariable((*s).to_owned()),
+        |s| Token::LocalVariableIdentifier((*s).to_owned()),
     )(i)
 }
 
@@ -39,7 +39,7 @@ pub(crate) fn global_variable_identifier(i: Input) -> TokenResult {
             identifier_start_character,
             many0(identifier_character),
         ))),
-        |s| Token::GlobalVariable((*s).to_owned()),
+        |s| Token::GlobalVariableIdentifier((*s).to_owned()),
     )(i)
 }
 
@@ -51,7 +51,7 @@ pub(crate) fn class_variable_identifier(i: Input) -> TokenResult {
             identifier_start_character,
             many0(identifier_character),
         ))),
-        |s| Token::ClassVariable((*s).to_owned()),
+        |s| Token::ClassVariableIdentifier((*s).to_owned()),
     )(i)
 }
 
@@ -63,7 +63,7 @@ pub(crate) fn instance_variable_identifier(i: Input) -> TokenResult {
             identifier_start_character,
             many0(identifier_character),
         ))),
-        |s| Token::InstanceVariable((*s).to_owned()),
+        |s| Token::InstanceVariableIdentifier((*s).to_owned()),
     )(i)
 }
 
@@ -71,7 +71,7 @@ pub(crate) fn instance_variable_identifier(i: Input) -> TokenResult {
 pub(crate) fn constant_identifier(i: Input) -> TokenResult {
     map(
         recognize(tuple((uppercase_character, many0(identifier_character)))),
-        |s| Token::Constant((*s).to_owned()),
+        |s| Token::ConstantIdentifier((*s).to_owned()),
     )(i)
 }
 
@@ -131,14 +131,14 @@ mod tests {
     #[test]
     fn test_identifier_character() {
         use_parser!(identifier_character, Input, char, ErrorKind);
-        //Parse errors
+        // Parse errors
         assert_err!("");
         assert_err!(" ");
         assert_err!("=");
         assert_err!("!");
         assert_err!("\n");
         assert_err!("\0");
-        //Success cases
+        // Success cases
         assert_ok!("_");
         assert_ok!("a");
         assert_ok!("Z");
@@ -154,7 +154,7 @@ mod tests {
     #[test]
     fn test_identifier_start_character() {
         use_parser!(identifier_start_character, Input, char, ErrorKind);
-        //Parse errors
+        // Parse errors
         assert_err!("");
         assert_err!(" ");
         assert_err!("=");
@@ -163,7 +163,7 @@ mod tests {
         assert_err!("9");
         assert_err!("\n");
         assert_err!("\0");
-        //Success cases
+        // Success cases
         assert_ok!("_");
         assert_ok!("a");
         assert_ok!("Z");
@@ -177,19 +177,19 @@ mod tests {
     #[test]
     fn test_identifier() {
         use_parser!(identifier, Input, Token, ErrorKind);
-        //Parse errors
+        // Parse errors
         assert_err!("=");
         assert_err!("@");
         assert_err!("var\t");
-        //Success cases
-        assert_ok!("_", Token::LocalVariable("_".to_owned()));
-        assert_ok!("local", Token::LocalVariable("local".to_owned()));
-        assert_ok!("local_Variable", Token::LocalVariable("local_Variable".to_owned()));
-        assert_ok!("ClassName", Token::Constant("ClassName".to_owned()));
-        assert_ok!("FOO", Token::Constant("FOO".to_owned()));
-        assert_ok!("@_", Token::InstanceVariable("@_".to_owned()));
-        assert_ok!("@@prop", Token::ClassVariable("@@prop".to_owned()));
-        assert_ok!("$_foo", Token::GlobalVariable("$_foo".to_owned()));
+        // Success cases
+        assert_ok!("_", Token::LocalVariableIdentifier("_".to_owned()));
+        assert_ok!("local", Token::LocalVariableIdentifier("local".to_owned()));
+        assert_ok!("local_Variable", Token::LocalVariableIdentifier("local_Variable".to_owned()));
+        assert_ok!("ClassName", Token::ConstantIdentifier("ClassName".to_owned()));
+        assert_ok!("FOO", Token::ConstantIdentifier("FOO".to_owned()));
+        assert_ok!("@_", Token::InstanceVariableIdentifier("@_".to_owned()));
+        assert_ok!("@@prop", Token::ClassVariableIdentifier("@@prop".to_owned()));
+        assert_ok!("$_foo", Token::GlobalVariableIdentifier("$_foo".to_owned()));
         assert_ok!("is_valid?", Token::MethodIdentifier("is_valid?".to_owned()));
         assert_ok!("bang!", Token::MethodIdentifier("bang!".to_owned()));
         assert_ok!("var=", Token::AssignmentMethodIdentifier("var=".to_owned()));
@@ -198,7 +198,7 @@ mod tests {
     #[test]
     fn test_local_variable_identifier() {
         use_parser!(local_variable_identifier, Input, Token, ErrorKind);
-        //Parse errors
+        // Parse errors
         assert_err!("A");
         assert_err!("02var");
         assert_err!("02var\0");
@@ -206,7 +206,7 @@ mod tests {
         assert_err!("var=");
         assert_err!("var!");
         assert_err!("var?");
-        //Success cases
+        // Success cases
         assert_ok!("_");
         assert_ok!("_foo");
         assert_ok!("_FOO");
@@ -219,13 +219,13 @@ mod tests {
     #[test]
     fn test_global_variable_identifier() {
         use_parser!(global_variable_identifier, Input, Token, ErrorKind);
-        //Parse errors
+        // Parse errors
         assert_err!("var");
         assert_err!("$$var");
         assert_err!("$$");
         assert_err!("$?");
         assert_err!("$!");
-        //Success cases
+        // Success cases
         assert_ok!("$_");
         assert_ok!("$var");
         assert_ok!("$VAR_");
@@ -235,13 +235,13 @@ mod tests {
     #[test]
     fn test_class_variable_identifier() {
         use_parser!(class_variable_identifier, Input, Token, ErrorKind);
-        //Parse errors
+        // Parse errors
         assert_err!("var");
         assert_err!("@@");
         assert_err!("@var");
         assert_err!("@@$foo");
         assert_err!("@@var?");
-        //Success cases
+        // Success cases
         assert_ok!("@@var");
         assert_ok!("@@_");
         assert_ok!("@@FOO");
@@ -251,13 +251,13 @@ mod tests {
     #[test]
     fn test_instance_variable_identifier() {
         use_parser!(instance_variable_identifier, Input, Token, ErrorKind);
-        //Parse errors
+        // Parse errors
         assert_err!("var");
         assert_err!("@");
         assert_err!("@@var");
         assert_err!("@$foo");
         assert_err!("@var?");
-        //Success cases
+        // Success cases
         assert_ok!("@var");
         assert_ok!("@_");
         assert_ok!("@FOO");
@@ -267,13 +267,13 @@ mod tests {
     #[test]
     fn test_constant_identifier() {
         use_parser!(constant_identifier, Input, Token, ErrorKind);
-        //Parse errors
+        // Parse errors
         assert_err!("_PREFIXED");
         assert_err!("lowercase");
         assert_err!("$VAR");
         assert_err!("😀");
         assert_err!("C\0");
-        //Success cases
+        // Success cases
         assert_ok!("FOOBAR");
         assert_ok!("CamelCase");
         assert_ok!("A");
@@ -283,10 +283,10 @@ mod tests {
     #[test]
     fn test_method_only_identifier() {
         use_parser!(method_only_identifier, Input, Token, ErrorKind);
-        //Parse errors
+        // Parse errors
         assert_err!("var");
         assert_err!("var!?");
-        //Success cases
+        // Success cases
         assert_ok!("var!");
         assert_ok!("var?");
         assert_ok!("Var?");
@@ -297,12 +297,12 @@ mod tests {
     #[test]
     fn test_assignment_like_method_identifier() {
         use_parser!(assignment_like_method_identifier, Input, Token, ErrorKind);
-        //Parse errors
+        // Parse errors
         assert_err!("=");
         assert_err!("var");
         assert_err!("0=");
         assert_err!("var==");
-        //Success cases
+        // Success cases
         assert_ok!("var=");
         assert_ok!("VAR=");
         assert_ok!("_=");

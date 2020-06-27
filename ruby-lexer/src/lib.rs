@@ -19,8 +19,10 @@ extern crate nom;
 #[macro_use]
 mod macros;
 mod input;
+mod token;
 pub mod lexers;
 
+pub use token::Token;
 pub use input::TrackedLocation;
 
 /// Internal enum used by the numeric_literal parser
@@ -28,22 +30,6 @@ pub use input::TrackedLocation;
 pub(crate) enum Numeric {
     Integer(isize),
     Float(f64),
-}
-
-/// Defines the tokens that are returned as a result of lexing
-#[derive(Debug, PartialEq)]
-pub enum Token {
-    Comment(String),
-    LocalVariable(String),
-    GlobalVariable(String),
-    ClassVariable(String),
-    InstanceVariable(String),
-    Constant(String),
-    MethodIdentifier(String),
-    AssignmentMethodIdentifier(String),
-    Integer(isize),
-    Float(f64),
-    EndOfProgram,
 }
 
 /// The type used to describe the lexer's input
