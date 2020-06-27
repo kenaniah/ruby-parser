@@ -1,4 +1,4 @@
-use crate::lexers::{identifier, numeric_literal, string_literal};
+use crate::lexers::{identifier, keyword, numeric_literal, string_literal};
 use crate::{Input, ParseResult, Token, TokenResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -8,12 +8,7 @@ use nom::sequence::tuple;
 
 /// *keyword* | *identifier* | *punctuator* | *operator* | *literal*
 pub fn token(i: Input) -> TokenResult {
-    alt((
-        //keyword,
-        identifier, punctuator,
-        //operator,
-        //literal
-    ))(i)
+    alt((keyword, identifier, punctuator, operator, literal))(i)
 }
 
 /// *numeric_literal* | *string_literal* | *array_literal* | *regular_expression_literal* | *symbol*
