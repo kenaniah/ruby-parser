@@ -127,10 +127,8 @@ pub(crate) fn non_escaped_sequence(i: Input) -> StringResult {
 
 /// *source_character* **but not** ( *alpha_numeric_character* | *line_terminator* )
 pub(crate) fn non_escaped_double_quoted_string_char(i: Input) -> StringResult {
-    peek(not(alt((
-        map(alpha_numeric_character, |c: char| c.to_string()),
-        line_terminator,
-    ))))(i)?;
+    peek(not(alpha_numeric_character))(i)?;
+    peek(not(line_terminator))(i)?;
     map(anychar, |c: char| c.to_string())(i)
 }
 

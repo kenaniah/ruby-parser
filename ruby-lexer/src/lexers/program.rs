@@ -1,5 +1,5 @@
 //! Provides parsers for program text
-use crate::{CharResult, Input, StringResult, Token, TokenResult};
+use crate::{CharResult, Input, ParseResult, StringResult, Token, TokenResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, line_ending, one_of};
@@ -43,8 +43,8 @@ pub(crate) fn whitespace(i: Input) -> StringResult {
 }
 
 /// `\r`? `\n`
-pub(crate) fn line_terminator(i: Input) -> StringResult {
-    map(line_ending, |s: Input| (*s).to_owned())(i)
+pub(crate) fn line_terminator(i: Input) -> ParseResult {
+    line_ending(i)
 }
 
 /// `\` *line_terminator*
@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn test_line_terminator() {
-        use_parser!(line_terminator, Input, String, ErrorKind);
+        use_parser!(line_terminator, Input, Input, ErrorKind);
         // Success cases
         assert_ok!("\n");
         assert_ok!("\r\n");
