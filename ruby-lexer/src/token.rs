@@ -42,6 +42,7 @@ pub enum Token {
     /// ?
     QuestionMark,
     // Program
+    Operator(String),
     Comment(String),
     EndOfProgram,
 }

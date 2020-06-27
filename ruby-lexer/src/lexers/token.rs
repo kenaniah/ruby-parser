@@ -2,8 +2,9 @@ use crate::lexers::identifier;
 use crate::{Input, ParseResult, Token, TokenResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::one_of;
+use nom::character::complete::{char, one_of};
 use nom::combinator::{map, recognize};
+use nom::sequence::tuple;
 
 /// *keyword* | *identifier* | *punctuator* | *operator* | *literal*
 pub fn token(i: Input) -> TokenResult {
@@ -43,17 +44,49 @@ pub(crate) fn punctuator(i: Input) -> TokenResult {
 
 /// `!` | `!=` | `!~` | `&&` | `||` | *operator_method_name* | `=` | *assignment_operator*
 pub(crate) fn operator(i: Input) -> TokenResult {
-    unimplemented!()
+    map(
+        recognize(alt((
+            assignment_operator,
+            operator_method_name,
+            tag("="),
+            tag("||"),
+            tag("&&"),
+            tag("!~"),
+            tag("!="),
+            tag("!"),
+        ))),
+        |s: Input| Token::Operator((*s).to_owned()),
+    )(i)
 }
 
 /// `^` | `&` | `|` | `<=>` | `==` | `===` | `=~` | `>` | `>=` | `<` | `<=` | `<<` | `>>` | `+` | `-` | `*` | `/` | `%` | `**` | `~` | `+@` | `-@` | `[]` | `[]=` | ```
-pub(crate) fn operator_method_name(i: Input) -> TokenResult {
-    unimplemented!()
+pub(crate) fn operator_method_name(i: Input) -> ParseResult {
+    recognize(alt((
+        tag("<=>"),
+        tag("==="),
+        tag("=="),
+        tag("=~"),
+        tag(">="),
+        tag(">>"),
+        tag("<="),
+        tag("<<"),
+        tag("**"),
+        tag(">"),
+        tag("<"),
+        tag("^"),
+        tag("&"),
+        tag("|"),
+        tag("+"),
+        tag("-"),
+        tag("*"),
+        tag("/"),
+        tag("%"),
+    )))(i)
 }
 
 /// *assignment_operator_name* `=`
-pub(crate) fn assignment_operator(i: Input) -> TokenResult {
-    unimplemented!()
+pub(crate) fn assignment_operator(i: Input) -> ParseResult {
+    recognize(tuple((assignment_operator_name, char('='))))(i)
 }
 
 /// `&&` | `||` | `^` | `&` | `|` | `<<` | `>>` | `+` | `-` | `%` | `/` | `**`
