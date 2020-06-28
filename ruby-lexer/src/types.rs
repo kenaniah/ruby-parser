@@ -1,12 +1,15 @@
 use crate::{Numeric, Token, TrackedLocation};
 
-/// The type used to describe the lexer's input
+/// Describes the lexer's input type
 pub type Input<'a> = TrackedLocation<&'a str>;
 
-/// Describes a parsed token
+/// Describes a list of parsed tokens
+pub type TokenStreamResult<'a> = nom::IResult<Input<'a>, Vec<Token>>;
+
+/// Describes a single parsed token
 pub type TokenResult<'a> = nom::IResult<Input<'a>, Token>;
 
-/// Describes a parse result
+/// Describes a non-compatible parsing result type (input and output types match)
 pub(crate) type ParseResult<'a> = nom::IResult<Input<'a>, Input<'a>>;
 
 /// Describes a parsed numeric literal
