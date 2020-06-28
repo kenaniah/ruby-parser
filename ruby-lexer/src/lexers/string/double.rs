@@ -1,13 +1,11 @@
 use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
-use crate::lexers::program::whitespace;
 use crate::lexers::program::{line_terminator, line_terminator_escape_sequence};
 use crate::{CharResult, Input, ParseResult, StringResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
-use nom::combinator::{map, not, opt, peek, recognize, verify};
-use nom::multi::{many0, many1};
-use nom::sequence::preceded;
+use nom::combinator::{map, not, peek, recognize, verify};
+use nom::multi::{many0, many1, many_m_n, separated_list1};
 use nom::sequence::tuple;
 use std::convert::TryFrom;
 
@@ -90,10 +88,7 @@ pub(crate) fn non_escaped_double_quoted_string_char(i: Input) -> CharResult {
 /// `\` *octal_digit* *octal_digit*? *octal_digit*?
 pub(crate) fn octal_escape_sequence(i: Input) -> CharResult {
     map(
-        tuple((
-            char('\\'),
-            recognize(tuple((octal_digit, opt(octal_digit), opt(octal_digit)))),
-        )),
+        tuple((char('\\'), recognize(many_m_n(1, 3, octal_digit)))),
         |t| char_from_radix(*t.1, 8),
     )(i)
 }
@@ -101,10 +96,7 @@ pub(crate) fn octal_escape_sequence(i: Input) -> CharResult {
 /// `\` `x` *hexadecimal_digit* *hexadecimal_digit*?
 pub(crate) fn hexadecimal_escape_sequence(i: Input) -> CharResult {
     map(
-        tuple((
-            tag("\\x"),
-            recognize(tuple((hexadecimal_digit, opt(hexadecimal_digit)))),
-        )),
+        tuple((tag("\\x"), recognize(many_m_n(1, 2, hexadecimal_digit)))),
         |t| char_from_radix(*t.1, 16),
     )(i)
 }
@@ -122,15 +114,13 @@ pub(crate) fn multiple_unicode_escape_sequence(i: Input) -> StringResult {
         tuple((
             tag("\\u{"),
             many0(char(' ')),
-            unicode_hex_digits,
-            many0(preceded(many1(char(' ')), unicode_hex_digits)),
+            separated_list1(many1(char(' ')), unicode_hex_digits),
             many0(char(' ')),
             tag("}"),
         )),
         |t| {
             let mut str = String::new();
-            str.push(char_from_radix(*t.2, 16));
-            for chr in t.3 {
+            for chr in t.2 {
                 str.push(char_from_radix(*chr, 16));
             }
             str
@@ -140,12 +130,7 @@ pub(crate) fn multiple_unicode_escape_sequence(i: Input) -> StringResult {
 
 /// *hexadecimal_digit* *hexadecimal_digit* *hexadecimal_digit* *hexadecimal_digit*
 pub(crate) fn unicode_hex_digits(i: Input) -> ParseResult {
-    recognize(tuple((
-        hexadecimal_digit,
-        hexadecimal_digit,
-        hexadecimal_digit,
-        hexadecimal_digit,
-    )))(i)
+    recognize(many_m_n(4, 4, hexadecimal_digit))(i)
 }
 
 /// `\` ( `C` `-` | `c` ) *control_escaped_character*
