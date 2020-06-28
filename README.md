@@ -5,7 +5,10 @@ using parser combinators.
 
 ## Differences from MRI
 
- * Control characters can be recursively escaped
+ * Control characters can be recursively escaped:
+   ```ruby
+   "\C-\C-\n" # => "\n"
+   ```
 
 ## Implementation Notes
 
