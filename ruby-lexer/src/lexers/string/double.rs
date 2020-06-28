@@ -108,7 +108,7 @@ pub(crate) fn single_unicode_escape_sequence(i: Input) -> CharResult {
     })(i)
 }
 
-/// `\u{` *whitespace** *unicode_hex_digits* ( *whitespace*+ *unicode_hex_digits* )* *whitespace** `}`
+/// `\u{` 0x20* *unicode_hex_digits* ( 0x20+ *unicode_hex_digits* )* 0x20* `}`
 pub(crate) fn multiple_unicode_escape_sequence(i: Input) -> StringResult {
     map(
         tuple((
