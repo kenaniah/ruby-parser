@@ -372,6 +372,7 @@ mod tests {
         // Escape sequences
         assert_ok!("\\C-\\\\", "\u{1C}".to_owned());
         assert_ok!("\\C-\\M-\\\\", "\u{9C}".to_owned());
+        assert_ok!("\\C-\n", "\u{0A}".to_owned());
         assert_ok!("\\C-\\n", "\u{0A}".to_owned());
         assert_ok!("\\M-\\C-\\n", "\u{8A}".to_owned());
         assert_ok!("\\C-\\t", "\t".to_owned());
