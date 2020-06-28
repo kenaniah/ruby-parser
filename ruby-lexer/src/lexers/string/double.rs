@@ -1,6 +1,6 @@
 use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
 use crate::lexers::program::{line_terminator, line_terminator_escape_sequence};
-use crate::{CharResult, Input, StringResult};
+use crate::{CharResult, Input, ParseResult, StringResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
@@ -37,8 +37,8 @@ pub(crate) fn double_quoted_string_character(i: Input) -> StringResult {
 pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
     // Should be evaluated
     alt((
-        simple_escape_sequence,
-        non_escaped_sequence,
+        map(simple_escape_sequence, |c| c.to_string()),
+        map(non_escaped_sequence, |s| (*s).to_owned()),
         line_terminator_escape_sequence,
         octal_escape_sequence,
         hexadecimal_escape_sequence,
@@ -47,11 +47,22 @@ pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
 }
 
 /// `\` *double_escaped_character*
-pub(crate) fn simple_escape_sequence(i: Input) -> StringResult {
-    map(
-        recognize(tuple((char('\\'), double_escaped_character))),
-        |s| (*s).to_owned(),
-    )(i)
+pub(crate) fn simple_escape_sequence(i: Input) -> CharResult {
+    map(tuple((char('\\'), double_escaped_character)), |t| {
+        match t.1 {
+            '\\' => '\\',
+            'n' => '\n',
+            't' => '\t',
+            'r' => '\r',
+            'f' => '\x0c',
+            'v' => '\x0b',
+            'a' => '\x07',
+            'e' => '\x1b',
+            'b' => '\x08',
+            's' => ' ',
+            _ => unreachable!(),
+        }
+    })(i)
 }
 
 /// `\` | `n` | `t` | `r` | `f` | `v` | `a` | `e` | `b` | `s`
@@ -60,18 +71,15 @@ pub(crate) fn double_escaped_character(i: Input) -> CharResult {
 }
 
 /// `\` *non_escaped_double_quoted_string_char*
-pub(crate) fn non_escaped_sequence(i: Input) -> StringResult {
-    map(
-        recognize(tuple((char('\\'), non_escaped_double_quoted_string_char))),
-        |s| (*s).to_owned(),
-    )(i)
+pub(crate) fn non_escaped_sequence(i: Input) -> ParseResult {
+    recognize(tuple((char('\\'), non_escaped_double_quoted_string_char)))(i)
 }
 
 /// *source_character* **but not** ( *alpha_numeric_character* | *line_terminator* )
-pub(crate) fn non_escaped_double_quoted_string_char(i: Input) -> StringResult {
+pub(crate) fn non_escaped_double_quoted_string_char(i: Input) -> CharResult {
     peek(not(alpha_numeric_character))(i)?;
     peek(not(line_terminator))(i)?;
-    map(anychar, |c: char| c.to_string())(i)
+    anychar(i)
 }
 
 /// `\` `x` *octal_digit* *octal_digit*? *octal_digit*?
@@ -136,4 +144,58 @@ pub(crate) fn alpha_numeric_character(i: Input) -> CharResult {
 
 fn stub_string(i: Input) -> StringResult {
     Err(nom::Err::Error((i, nom::error::ErrorKind::Char)))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use nom::error::ErrorKind;
+
+    #[test]
+    fn test_double_quoted_string() {
+        use_parser!(double_quoted_string, Input, String, ErrorKind);
+        // Parse errors
+        // Success cases
+    }
+
+    #[test]
+    fn test_double_quoted_string_characer() {
+        use_parser!(double_quoted_string_character, Input, String, ErrorKind);
+        // Parse errors
+        // Success cases
+    }
+
+    #[test]
+    fn test_double_escape_sequence() {
+        use_parser!(double_escape_sequence, Input, String, ErrorKind);
+        // Parse errors
+        // Success cases
+    }
+
+    #[test]
+    fn test_non_escaped_sequence() {
+        use_parser!(non_escaped_sequence, Input, Input => &str, ErrorKind);
+        // Parse errors
+        // Success cases
+    }
+
+    #[test]
+    fn test_simple_escape_sequence() {
+        use_parser!(simple_escape_sequence, Input, char, ErrorKind);
+        // Parse errors
+        assert_err!("");
+        assert_err!("s");
+        assert_err!("v");
+        // Success cases
+        assert_ok!("\\\\", '\\');
+        assert_ok!("\\n", '\n');
+        assert_ok!("\\t", '\t');
+        assert_ok!("\\r", '\r');
+        assert_ok!("\\f", '\x0c');
+        assert_ok!("\\v", '\x0b');
+        assert_ok!("\\a", '\x07');
+        assert_ok!("\\e", '\x1b');
+        assert_ok!("\\b", '\x08');
+        assert_ok!("\\s", ' ');
+    }
 }
