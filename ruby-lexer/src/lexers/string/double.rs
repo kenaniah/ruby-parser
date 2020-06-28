@@ -4,7 +4,7 @@ use crate::{CharResult, Input, ParseResult, StringResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
-use nom::combinator::{map, not, peek, recognize, verify};
+use nom::combinator::{map, not, peek, recognize};
 use nom::multi::{many0, many1, many_m_n, separated_list1};
 use nom::sequence::preceded;
 use nom::sequence::tuple;
@@ -79,9 +79,9 @@ pub(crate) fn non_escaped_sequence(i: Input) -> CharResult {
     preceded(char('\\'), non_escaped_double_quoted_string_char)(i)
 }
 
-/// *source_character* **but not** ( *double_escaped_character* | *line_terminator* )
+/// *source_character* **but not** ( [ any escaping character ] | *line_terminator* )
 pub(crate) fn non_escaped_double_quoted_string_char(i: Input) -> CharResult {
-    peek(not(one_of("\\ntrfvaebsxuc")))(i)?;
+    peek(not(one_of("\\ntrfvaebsxucCM01234567")))(i)?;
     peek(not(line_terminator))(i)?;
     anychar(i)
 }
@@ -222,7 +222,24 @@ mod tests {
     fn test_non_escaped_sequence() {
         use_parser!(non_escaped_sequence, Input, char, ErrorKind);
         // Parse errors
+        assert_err!("\\");
+        assert_err!("\\\\");
+        assert_err!("\\n");
+        assert_err!("\\r");
+        assert_err!("\\v");
+        assert_err!("\\c");
+        assert_err!("\\C");
+        assert_err!("\\M");
+        assert_err!("\\\n");
+        assert_err!("\\0");
+        assert_err!("\\7");
         // Success cases
+        assert_ok!("\\A", 'A');
+        assert_ok!("\\😀", '😀');
+        assert_ok!("\\z", 'z');
+        assert_ok!("\\N", 'N');
+        assert_ok!("\\8", '8');
+        assert_ok!("\\9", '9');
     }
 
     #[test]
@@ -335,6 +352,7 @@ mod tests {
         assert_err!("a");
         // Success cases
         assert_ok!("\\C- ", "\0".to_owned());
+        assert_ok!("\\C-5", "\u{15}".to_owned());
         assert_ok!("\\cA", "\u{01}".to_owned());
         assert_ok!("\\C-A", "\u{01}".to_owned());
         assert_ok!("\\M- ", "\u{A0}".to_owned());
