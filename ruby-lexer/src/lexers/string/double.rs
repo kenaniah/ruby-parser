@@ -1,11 +1,13 @@
 use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
+use crate::lexers::program::whitespace;
 use crate::lexers::program::{line_terminator, line_terminator_escape_sequence};
 use crate::{CharResult, Input, ParseResult, StringResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
 use nom::combinator::{map, not, opt, peek, recognize, verify};
-use nom::multi::many0;
+use nom::multi::{many0, many1};
+use nom::sequence::preceded;
 use nom::sequence::tuple;
 use std::convert::TryFrom;
 
@@ -44,6 +46,7 @@ pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
         map(octal_escape_sequence, |c| c.to_string()),
         map(hexadecimal_escape_sequence, |c| c.to_string()),
         map(single_unicode_escape_sequence, |c| c.to_string()),
+        multiple_unicode_escape_sequence,
         control_escape_sequence,
     ))(i)
 }
@@ -91,7 +94,7 @@ pub(crate) fn octal_escape_sequence(i: Input) -> CharResult {
             char('\\'),
             recognize(tuple((octal_digit, opt(octal_digit), opt(octal_digit)))),
         )),
-        |t| char::try_from(u32::from_str_radix(&t.1, 8).unwrap()).unwrap(),
+        |t| char_from_radix(*t.1, 8),
     )(i)
 }
 
@@ -102,24 +105,47 @@ pub(crate) fn hexadecimal_escape_sequence(i: Input) -> CharResult {
             tag("\\x"),
             recognize(tuple((hexadecimal_digit, opt(hexadecimal_digit)))),
         )),
-        |t| char::try_from(u32::from_str_radix(&t.1, 16).unwrap()).unwrap(),
+        |t| char_from_radix(*t.1, 16),
     )(i)
 }
 
-/// `\u` *hexadecimal_digit* *hexadecimal_digit* *hexadecimal_digit* *hexadecimal_digit*
+/// `\u` *unicode_hex_digits*
 pub(crate) fn single_unicode_escape_sequence(i: Input) -> CharResult {
+    map(tuple((tag("\\u"), unicode_hex_digits)), |t| {
+        char_from_radix(*t.1, 16)
+    })(i)
+}
+
+/// `\u{` *whitespace** *unicode_hex_digits* ( *whitespace*+ *unicode_hex_digits* )* *whitespace** `}`
+pub(crate) fn multiple_unicode_escape_sequence(i: Input) -> StringResult {
     map(
         tuple((
-            tag("\\u"),
-            recognize(tuple((
-                hexadecimal_digit,
-                hexadecimal_digit,
-                hexadecimal_digit,
-                hexadecimal_digit,
-            ))),
+            tag("\\u{"),
+            many0(char(' ')),
+            unicode_hex_digits,
+            many0(preceded(many1(char(' ')), unicode_hex_digits)),
+            many0(char(' ')),
+            tag("}"),
         )),
-        |t| char::try_from(u32::from_str_radix(&t.1, 16).unwrap()).unwrap(),
+        |t| {
+            let mut str = String::new();
+            str.push(char_from_radix(*t.2, 16));
+            for chr in t.3 {
+                str.push(char_from_radix(*chr, 16));
+            }
+            str
+        },
     )(i)
+}
+
+/// *hexadecimal_digit* *hexadecimal_digit* *hexadecimal_digit* *hexadecimal_digit*
+pub(crate) fn unicode_hex_digits(i: Input) -> ParseResult {
+    recognize(tuple((
+        hexadecimal_digit,
+        hexadecimal_digit,
+        hexadecimal_digit,
+        hexadecimal_digit,
+    )))(i)
 }
 
 /// `\` ( `C` `-` | `c` ) *control_escaped_character*
@@ -155,6 +181,11 @@ pub(crate) fn interpolated_character_sequence(i: Input) -> StringResult {
 /// *uppercase_character* | *lowercase_character* | *decimal_digit*
 pub(crate) fn alpha_numeric_character(i: Input) -> CharResult {
     verify(anychar, |c: &char| c.is_ascii_alphanumeric())(i)
+}
+
+// Converts the value of an escape sequence into a character
+fn char_from_radix(i: &str, radix: u32) -> char {
+    char::try_from(u32::from_str_radix(i, radix).unwrap()).unwrap()
 }
 
 fn stub_string(i: Input) -> StringResult {
@@ -272,5 +303,23 @@ mod tests {
         assert_ok!("\\uaBcD", '\u{ABCD}');
         assert_ok!("\\u7FFF", '\u{7FFF}');
         assert_ok!("\\uFFFF", '\u{FFFF}');
+    }
+
+    #[test]
+    fn test_multiple_unicode_escape_sequence() {
+        use_parser!(multiple_unicode_escape_sequence, Input, String, ErrorKind);
+        // Parse errors
+        assert_err!("\\u");
+        assert_err!("\\u1234");
+        assert_err!("\\u{123}");
+        assert_err!("\\u{12345}");
+        assert_err!("\\u{1234 12}");
+        assert_err!("\\u{FFFG}");
+        // Success cases
+        assert_ok!("\\u{0000}", "\0".to_owned());
+        assert_ok!("\\u{0020}", " ".to_owned());
+        assert_ok!("\\u{1234 aBCD}", "\u{1234}\u{ABCD}".to_owned());
+        assert_ok!("\\u{  aBcD }", "\u{ABCD}".to_owned());
+        assert_ok!("\\u{7FFF   ffff   000A }", "\u{7FFF}\u{FFFF}\n".to_owned());
     }
 }
