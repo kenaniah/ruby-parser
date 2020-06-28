@@ -4,7 +4,7 @@ use crate::{CharResult, Input, ParseResult, StringResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
-use nom::combinator::{map, not, peek, recognize, verify};
+use nom::combinator::{map, not, opt, peek, recognize, verify};
 use nom::multi::{many0, many1, many_m_n, separated_list1};
 use nom::sequence::tuple;
 use std::convert::TryFrom;
@@ -133,16 +133,32 @@ pub(crate) fn unicode_hex_digits(i: Input) -> ParseResult {
     recognize(many_m_n(4, 4, hexadecimal_digit))(i)
 }
 
-/// `\` ( `C` `-` | `c` ) *control_escaped_character*
+/// ( `\` ( `C-` | `c` ) **and/or** `\M-` ) *control_escaped_character*
 pub(crate) fn control_escape_sequence(i: Input) -> StringResult {
-    map(
-        recognize(tuple((
-            char('\\'),
-            alt((tag("C-"), tag("c"))),
-            control_escaped_character,
-        ))),
-        |s: Input| (*s).to_owned(),
-    )(i)
+    let (i, ((ctrl, meta), escape)) = tuple((
+        alt((
+            map(
+                alt((
+                    tag("\\C-\\M-"),
+                    tag("\\c\\M-"),
+                    tag("\\M-\\C-"),
+                    tag("\\M-\\c"),
+                )),
+                |_| (true, true),
+            ),
+            map(alt((tag("\\C-"), tag("\\c"))), |_| (true, false)),
+            map(tag("\\M-"), |_| (false, true)),
+        )),
+        control_escaped_character,
+    ))(i)?;
+    println!("ctrl: {:?}, meta: {:?}, escape: {:?}", ctrl, meta, escape);
+    match (ctrl, meta, &escape[..]) {
+        (true, false, "?") => Ok((i, "\x7F".to_owned())),
+        (true, false, _) => Ok((i, "ctrl".to_owned())),
+        (true, true, _) => Ok((i, "ctrl+meta".to_owned())),
+        (false, true, _) => Ok((i, "meta".to_owned())),
+        (false, false, _) => unreachable!(),
+    }
 }
 
 /// *double_escape_sequence* | `?` | *source_character* **but not** ( `\` | `?` )
@@ -306,5 +322,25 @@ mod tests {
         assert_ok!("\\u{1234 aBCD}", "\u{1234}\u{ABCD}".to_owned());
         assert_ok!("\\u{  aBcD }", "\u{ABCD}".to_owned());
         assert_ok!("\\u{7FFF   ffff   000A }", "\u{7FFF}\u{FFFF}\n".to_owned());
+    }
+
+    #[test]
+    fn test_control_escape_sequence() {
+        use_parser!(control_escape_sequence, Input, String, ErrorKind);
+        // Parse errors
+        assert_err!("\\c");
+        assert_err!("\\C");
+        assert_err!("\\C-");
+        assert_err!("\\C-\\M-");
+        assert_err!("\\c-a");
+        assert_err!("a");
+        // Success cases
+        assert_ok!("\\cA");
+        assert_ok!("\\C-A");
+        assert_ok!("\\M-B");
+        assert_ok!("\\M-\\C-C");
+        assert_ok!("\\c\\M-D");
+        assert_ok!("\\c?", "\x7F".to_owned());
+        assert_ok!("\\C-?", "\x7F".to_owned());
     }
 }
