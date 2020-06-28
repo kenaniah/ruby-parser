@@ -151,35 +151,29 @@ pub(crate) fn control_escape_sequence(i: Input) -> StringResult {
         )),
         control_escaped_character,
     ))(i)?;
-    println!("ctrl: {:?}, meta: {:?}, escape: {:?}", ctrl, meta, escape);
-    match (ctrl, meta, &escape[..]) {
-        (true, false, "?") => Ok((i, "\x7F".to_owned())),
-        (true, false, c) => Ok((
+    let chr: u8 = escape.chars().next().unwrap() as u8;
+    match (ctrl, meta, chr) {
+        (true, false, 0x3F) => Ok((i, "\x7F".to_owned())),
+        (true, false, _) => Ok((
             i,
-            ((c.chars().next().unwrap() as u8 & 0x9F) as char).to_string(),
+            ((if chr < 0x20 { chr } else { chr & 0x9F }) as char).to_string(),
         )),
-        (true, true, c) => Ok((
+        (true, true, _) => Ok((
             i,
-            (((c.chars().next().unwrap() as u8 & 0x9F) | 0x80) as char).to_string(),
+            (((if chr < 0x20 { chr } else { chr & 0x9F }) | 0x80) as char).to_string(),
         )),
-        (false, true, c) => Ok((
-            i,
-            (((c.chars().next().unwrap() as u8 & 0xFF) | 0x80) as char).to_string(),
-        )),
+        (false, true, _) => Ok((i, (((chr & 0xFF) | 0x80) as char).to_string())),
         (false, false, _) => unreachable!(),
     }
 }
 
 /// *double_escape_sequence* | `?` | *source_character* **but not** ( `\` | `?` )
 pub(crate) fn control_escaped_character(i: Input) -> StringResult {
-    map(
-        recognize(alt((
-            double_escape_sequence,
-            map(tag("?"), |s: Input| (*s).to_owned()),
-            map(none_of("\\?"), |c: char| c.to_string()),
-        ))),
-        |s: Input| (*s).to_owned(),
-    )(i)
+    alt((
+        double_escape_sequence,
+        map(tag("?"), |s: Input| (*s).to_owned()),
+        map(none_of("\\?"), |c: char| c.to_string()),
+    ))(i)
 }
 
 /// `#` *global_variable_identifier* | `#` *class_variable_identifier* | `#` *instance_variable_identifier* | `#` `{` *compound_statement* `}`
@@ -358,7 +352,14 @@ mod tests {
         assert_ok!("\\M-\\C-?", "\u{9F}".to_owned());
         assert_ok!("\\c?", "\u{7F}".to_owned());
         assert_ok!("\\C-?", "\u{7F}".to_owned());
-        assert_ok!("\\M-\\C-東", "\u{91}".to_owned()); // Should only look at the first byte
-        assert_ok!("\\M-😅", "\u{85}".to_owned()); // Should only look at the first byte
+        // Multibytes should only look at the first byte
+        assert_ok!("\\M-\\C-東", "\u{91}".to_owned());
+        assert_ok!("\\M-😅", "\u{85}".to_owned());
+        // Escape sequences
+        assert_ok!("\\C-\\\\", "\u{1C}".to_owned());
+        assert_ok!("\\C-\\M-\\\\", "\u{9C}".to_owned());
+        assert_ok!("\\C-\\n", "\u{0A}".to_owned());
+        assert_ok!("\\M-\\C-\\n", "\u{8A}".to_owned());
+        assert_ok!("\\C-\\t", "\t".to_owned());
     }
 }
