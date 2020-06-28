@@ -9,7 +9,7 @@ pub type TokenStreamResult<'a> = nom::IResult<Input<'a>, Vec<Token>>;
 /// Describes a single parsed token
 pub type TokenResult<'a> = nom::IResult<Input<'a>, Token>;
 
-/// Describes a non-compatible parsing result type (input and output types match)
+/// Describes a nom-compatible parsing result type (input and output types match)
 pub(crate) type ParseResult<'a> = nom::IResult<Input<'a>, Input<'a>>;
 
 /// Describes a parsed numeric literal
