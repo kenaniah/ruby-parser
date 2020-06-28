@@ -39,7 +39,7 @@ pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
     alt((
         map(simple_escape_sequence, |c| c.to_string()),
         map(non_escaped_sequence, |s| (*s).to_owned()),
-        line_terminator_escape_sequence,
+        map(line_terminator_escape_sequence, |_s| String::new()),
         octal_escape_sequence,
         hexadecimal_escape_sequence,
         control_escape_sequence,

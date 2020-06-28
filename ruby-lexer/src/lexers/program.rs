@@ -33,10 +33,10 @@ pub(crate) fn source_character(i: Input) -> CharResult {
 
 /// 0x09 | 0x0b | 0x0c | 0x0d | 0x20 | *line_terminator_escape_sequence*
 pub(crate) fn whitespace(i: Input) -> ParseResult {
-    recognize(alt((
-        map(one_of(" \t\x0b\x0c\r"), |c: char| c.to_string()),
+    alt((
+        recognize(one_of(" \t\x0b\x0c\r")),
         line_terminator_escape_sequence,
-    )))(i)
+    ))(i)
 }
 
 /// `\r`? `\n`
@@ -45,10 +45,8 @@ pub(crate) fn line_terminator(i: Input) -> ParseResult {
 }
 
 /// `\` *line_terminator*
-pub(crate) fn line_terminator_escape_sequence(i: Input) -> StringResult {
-    map(recognize(tuple((char('\\'), line_terminator))), |s| {
-        (*s).to_owned()
-    })(i)
+pub(crate) fn line_terminator_escape_sequence(i: Input) -> ParseResult {
+    recognize(tuple((char('\\'), line_terminator)))(i)
 }
 
 /// [ beginning of a line ] `__END__` ( *line_terminator* | [ end of a program ] )
@@ -101,7 +99,7 @@ mod tests {
 
     #[test]
     fn test_line_terminator_escape_sequence() {
-        use_parser!(line_terminator_escape_sequence, Input, String, ErrorKind);
+        use_parser!(line_terminator_escape_sequence, Input, Input, ErrorKind);
         // Success cases
         assert_ok!("\\\n");
         assert_ok!("\\\r\n");
