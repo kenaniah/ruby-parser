@@ -4,7 +4,7 @@ use crate::{CharResult, Input, ParseResult, StringResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
-use nom::combinator::{map, not, opt, peek, recognize, verify};
+use nom::combinator::{map, not, peek, recognize, verify};
 use nom::multi::{many0, many1, many_m_n, separated_list1};
 use nom::sequence::tuple;
 use std::convert::TryFrom;
@@ -154,9 +154,18 @@ pub(crate) fn control_escape_sequence(i: Input) -> StringResult {
     println!("ctrl: {:?}, meta: {:?}, escape: {:?}", ctrl, meta, escape);
     match (ctrl, meta, &escape[..]) {
         (true, false, "?") => Ok((i, "\x7F".to_owned())),
-        (true, false, _) => Ok((i, "ctrl".to_owned())),
-        (true, true, _) => Ok((i, "ctrl+meta".to_owned())),
-        (false, true, _) => Ok((i, "meta".to_owned())),
+        (true, false, c) => Ok((
+            i,
+            ((c.chars().next().unwrap() as u8 & 0x9F) as char).to_string(),
+        )),
+        (true, true, c) => Ok((
+            i,
+            (((c.chars().next().unwrap() as u8 & 0x9F) | 0x80) as char).to_string(),
+        )),
+        (false, true, c) => Ok((
+            i,
+            (((c.chars().next().unwrap() as u8 & 0xFF) | 0x80) as char).to_string(),
+        )),
         (false, false, _) => unreachable!(),
     }
 }
@@ -335,12 +344,21 @@ mod tests {
         assert_err!("\\c-a");
         assert_err!("a");
         // Success cases
-        assert_ok!("\\cA");
-        assert_ok!("\\C-A");
-        assert_ok!("\\M-B");
-        assert_ok!("\\M-\\C-C");
-        assert_ok!("\\c\\M-D");
-        assert_ok!("\\c?", "\x7F".to_owned());
-        assert_ok!("\\C-?", "\x7F".to_owned());
+        assert_ok!("\\C- ", "\0".to_owned());
+        assert_ok!("\\cA", "\u{01}".to_owned());
+        assert_ok!("\\C-A", "\u{01}".to_owned());
+        assert_ok!("\\M- ", "\u{A0}".to_owned());
+        assert_ok!("\\M-b", "\u{E2}".to_owned());
+        assert_ok!("\\M-B", "\u{C2}".to_owned());
+        assert_ok!("\\M-\\C-c", "\u{83}".to_owned());
+        assert_ok!("\\M-\\C-C", "\u{83}".to_owned());
+        assert_ok!("\\c\\M-D", "\u{84}".to_owned());
+        assert_ok!("\\M-?", "\u{BF}".to_owned());
+        assert_ok!("\\M-\\C- ", "\u{80}".to_owned());
+        assert_ok!("\\M-\\C-?", "\u{9F}".to_owned());
+        assert_ok!("\\c?", "\u{7F}".to_owned());
+        assert_ok!("\\C-?", "\u{7F}".to_owned());
+        assert_ok!("\\M-\\C-東", "\u{91}".to_owned()); // Should only look at the first byte
+        assert_ok!("\\M-😅", "\u{85}".to_owned()); // Should only look at the first byte
     }
 }

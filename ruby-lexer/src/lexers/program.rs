@@ -1,9 +1,9 @@
 //! Provides parsers for program text
-use crate::{CharResult, Input, ParseResult, StringResult, Token, TokenResult};
+use crate::{CharResult, Input, ParseResult, Token, TokenResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, line_ending, one_of};
-use nom::combinator::{map, opt, recognize};
+use nom::combinator::{opt, recognize};
 use nom::sequence::tuple;
 
 // /// *compound_statement*
