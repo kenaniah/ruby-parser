@@ -41,7 +41,7 @@ pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
         map(non_escaped_sequence, |s| (*s).to_owned()),
         map(line_terminator_escape_sequence, |_s| String::new()),
         map(octal_escape_sequence, |c| c.to_string()),
-        hexadecimal_escape_sequence,
+        map(hexadecimal_escape_sequence, |c| c.to_string()),
         control_escape_sequence,
     ))(i)
 }
@@ -90,21 +90,21 @@ pub(crate) fn octal_escape_sequence(i: Input) -> CharResult {
             recognize(tuple((octal_digit, opt(octal_digit), opt(octal_digit)))),
         )),
         |t| {
-            print!("{:?}: ", *t.1);
             u16_as_char(u16::from_str_radix(&t.1, 8).unwrap())
         },
     )(i)
 }
 
 /// `\` `x` *hexadecimal_digit* *hexadecimal_digit*?
-pub(crate) fn hexadecimal_escape_sequence(i: Input) -> StringResult {
+pub(crate) fn hexadecimal_escape_sequence(i: Input) -> CharResult {
     map(
-        recognize(tuple((
+        tuple((
             tag("\\x"),
-            hexadecimal_digit,
-            opt(hexadecimal_digit),
-        ))),
-        |s| (*s).to_owned(),
+            recognize(tuple((hexadecimal_digit, opt(hexadecimal_digit)))),
+        )),
+        |t| {
+            u16_as_char(u16::from_str_radix(&t.1, 16).unwrap())
+        },
     )(i)
 }
 
@@ -198,10 +198,10 @@ mod tests {
         assert_ok!("\\n", '\n');
         assert_ok!("\\t", '\t');
         assert_ok!("\\r", '\r');
-        assert_ok!("\\f", '\x0c');
-        assert_ok!("\\v", '\x0b');
+        assert_ok!("\\f", '\x0C');
+        assert_ok!("\\v", '\x0B');
         assert_ok!("\\a", '\x07');
-        assert_ok!("\\e", '\x1b');
+        assert_ok!("\\e", '\x1B');
         assert_ok!("\\b", '\x08');
         assert_ok!("\\s", ' ');
     }
@@ -215,6 +215,7 @@ mod tests {
         assert_err!("\\0a");
         assert_err!("\\9");
         assert_err!("\\1234");
+        assert_err!("\\x0");
         // Success cases
         assert_ok!("\\0", '\0');
         assert_ok!("\\000", '\0');
@@ -226,4 +227,26 @@ mod tests {
         assert_ok!("\\374", '\u{FC}');
         assert_ok!("\\776", '\u{FE}'); // Ruby truncates to just the last byte
     }
+
+    #[test]
+    fn test_hexadecimal_escape_sequence() {
+        use_parser!(hexadecimal_escape_sequence, Input, char, ErrorKind);
+        // Parse errors
+        assert_err!("\\");
+        assert_err!("\\x");
+        assert_err!("\\xh");
+        assert_err!("\\xFFa");
+        assert_err!("\\XFF");
+        // Success cases
+        assert_ok!("\\x0", '\0');
+        assert_ok!("\\x00", '\0');
+        assert_ok!("\\x7", '\u{07}');
+        assert_ok!("\\x20", ' ');
+        assert_ok!("\\x0A", '\n');
+        assert_ok!("\\x36", '6');
+        assert_ok!("\\x72", '\x72');
+        assert_ok!("\\xfa", '\u{FA}');
+        assert_ok!("\\xFF", '\u{FF}');
+    }
+
 }
