@@ -377,5 +377,6 @@ mod tests {
         assert_ok!("\\M-\\C-\\n", "\u{8A}".to_owned());
         assert_ok!("\\C-\\t", "\t".to_owned());
         assert_ok!("\\C-\\z", "\u{1A}".to_owned());
+        assert_ok!("\\C-\\C-\\n", "\u{0A}".to_owned());
     }
 }

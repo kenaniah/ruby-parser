@@ -7,7 +7,7 @@ using parser combinators.
 
  * Control characters can be recursively escaped:
    ```ruby
-   "\C-\C-\n" # => "\n"
+   "\C-\C-\\n" # => "\n"
    ```
 
 ## Implementation Notes
