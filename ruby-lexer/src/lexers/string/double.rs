@@ -7,6 +7,7 @@ use nom::character::complete::{anychar, char, none_of, one_of};
 use nom::combinator::{map, not, opt, peek, recognize, verify};
 use nom::multi::many0;
 use nom::sequence::tuple;
+use std::convert::TryFrom;
 
 /// `"` *double_quoted_string_character** `"`
 pub(crate) fn double_quoted_string(i: Input) -> StringResult {
@@ -42,6 +43,7 @@ pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
         map(line_terminator_escape_sequence, |_s| String::new()),
         map(octal_escape_sequence, |c| c.to_string()),
         map(hexadecimal_escape_sequence, |c| c.to_string()),
+        map(single_unicode_escape_sequence, |c| c.to_string()),
         control_escape_sequence,
     ))(i)
 }
@@ -89,9 +91,7 @@ pub(crate) fn octal_escape_sequence(i: Input) -> CharResult {
             char('\\'),
             recognize(tuple((octal_digit, opt(octal_digit), opt(octal_digit)))),
         )),
-        |t| {
-            u16_as_char(u16::from_str_radix(&t.1, 8).unwrap())
-        },
+        |t| char::try_from(u32::from_str_radix(&t.1, 8).unwrap()).unwrap(),
     )(i)
 }
 
@@ -102,9 +102,23 @@ pub(crate) fn hexadecimal_escape_sequence(i: Input) -> CharResult {
             tag("\\x"),
             recognize(tuple((hexadecimal_digit, opt(hexadecimal_digit)))),
         )),
-        |t| {
-            u16_as_char(u16::from_str_radix(&t.1, 16).unwrap())
-        },
+        |t| char::try_from(u32::from_str_radix(&t.1, 16).unwrap()).unwrap(),
+    )(i)
+}
+
+/// `\u` *hexadecimal_digit* *hexadecimal_digit* *hexadecimal_digit* *hexadecimal_digit*
+pub(crate) fn single_unicode_escape_sequence(i: Input) -> CharResult {
+    map(
+        tuple((
+            tag("\\u"),
+            recognize(tuple((
+                hexadecimal_digit,
+                hexadecimal_digit,
+                hexadecimal_digit,
+                hexadecimal_digit,
+            ))),
+        )),
+        |t| char::try_from(u32::from_str_radix(&t.1, 16).unwrap()).unwrap(),
     )(i)
 }
 
@@ -141,12 +155,6 @@ pub(crate) fn interpolated_character_sequence(i: Input) -> StringResult {
 /// *uppercase_character* | *lowercase_character* | *decimal_digit*
 pub(crate) fn alpha_numeric_character(i: Input) -> CharResult {
     verify(anychar, |c: &char| c.is_ascii_alphanumeric())(i)
-}
-
-// Ruby truncates anything over 255 to just the last byte
-fn u16_as_char(x: u16) -> char {
-    let bytes: [u8; 2] = unsafe { std::mem::transmute(x.to_be()) };
-    char::from(bytes[1])
 }
 
 fn stub_string(i: Input) -> StringResult {
@@ -225,7 +233,7 @@ mod tests {
         assert_ok!("\\77", '?');
         assert_ok!("\\150", 'h');
         assert_ok!("\\374", '\u{FC}');
-        assert_ok!("\\776", '\u{FE}'); // Ruby truncates to just the last byte
+        assert_ok!("\\776", '\u{1FE}'); // MRI truncates to just the last byte (\xFE)
     }
 
     #[test]
@@ -249,4 +257,20 @@ mod tests {
         assert_ok!("\\xFF", '\u{FF}');
     }
 
+    #[test]
+    fn test_single_unicode_escape_sequence() {
+        use_parser!(single_unicode_escape_sequence, Input, char, ErrorKind);
+        // Parse errors
+        assert_err!("\\u");
+        assert_err!("\\u123");
+        assert_err!("\\u12345");
+        assert_err!("\\uFFFG");
+        // Success cases
+        assert_ok!("\\u0000", '\0');
+        assert_ok!("\\u0020", ' ');
+        assert_ok!("\\u1234", '\u{1234}');
+        assert_ok!("\\uaBcD", '\u{ABCD}');
+        assert_ok!("\\u7FFF", '\u{7FFF}');
+        assert_ok!("\\uFFFF", '\u{FFFF}');
+    }
 }
