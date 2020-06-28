@@ -40,7 +40,7 @@ pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
         map(simple_escape_sequence, |c| c.to_string()),
         map(non_escaped_sequence, |s| (*s).to_owned()),
         map(line_terminator_escape_sequence, |_s| String::new()),
-        octal_escape_sequence,
+        map(octal_escape_sequence, |c| c.to_string()),
         hexadecimal_escape_sequence,
         control_escape_sequence,
     ))(i)
@@ -82,24 +82,25 @@ pub(crate) fn non_escaped_double_quoted_string_char(i: Input) -> CharResult {
     anychar(i)
 }
 
-/// `\` `x` *octal_digit* *octal_digit*? *octal_digit*?
-pub(crate) fn octal_escape_sequence(i: Input) -> StringResult {
+/// `\` *octal_digit* *octal_digit*? *octal_digit*?
+pub(crate) fn octal_escape_sequence(i: Input) -> CharResult {
     map(
-        recognize(tuple((
-            tag("\\x"),
-            octal_digit,
-            opt(octal_digit),
-            opt(octal_digit),
-        ))),
-        |s| (*s).to_owned(),
+        tuple((
+            char('\\'),
+            recognize(tuple((octal_digit, opt(octal_digit), opt(octal_digit)))),
+        )),
+        |t| {
+            print!("{:?}: ", *t.1);
+            u16_as_char(u16::from_str_radix(&t.1, 8).unwrap())
+        },
     )(i)
 }
 
-/// `\` *hexadecimal_digit* *hexadecimal_digit*?
+/// `\` `x` *hexadecimal_digit* *hexadecimal_digit*?
 pub(crate) fn hexadecimal_escape_sequence(i: Input) -> StringResult {
     map(
         recognize(tuple((
-            char('\\'),
+            tag("\\x"),
             hexadecimal_digit,
             opt(hexadecimal_digit),
         ))),
@@ -140,6 +141,12 @@ pub(crate) fn interpolated_character_sequence(i: Input) -> StringResult {
 /// *uppercase_character* | *lowercase_character* | *decimal_digit*
 pub(crate) fn alpha_numeric_character(i: Input) -> CharResult {
     verify(anychar, |c: &char| c.is_ascii_alphanumeric())(i)
+}
+
+// Ruby truncates anything over 255 to just the last byte
+fn u16_as_char(x: u16) -> char {
+    let bytes: [u8; 2] = unsafe { std::mem::transmute(x.to_be()) };
+    char::from(bytes[1])
 }
 
 fn stub_string(i: Input) -> StringResult {
@@ -197,5 +204,26 @@ mod tests {
         assert_ok!("\\e", '\x1b');
         assert_ok!("\\b", '\x08');
         assert_ok!("\\s", ' ');
+    }
+
+    #[test]
+    fn test_octal_escape_sequence() {
+        use_parser!(octal_escape_sequence, Input, char, ErrorKind);
+        // Parse errors
+        assert_err!("\\");
+        assert_err!("\\9");
+        assert_err!("\\0a");
+        assert_err!("\\9");
+        assert_err!("\\1234");
+        // Success cases
+        assert_ok!("\\0", '\0');
+        assert_ok!("\\000", '\0');
+        assert_ok!("\\7", '\u{7}');
+        assert_ok!("\\40", ' ');
+        assert_ok!("\\040", ' ');
+        assert_ok!("\\77", '?');
+        assert_ok!("\\150", 'h');
+        assert_ok!("\\374", '\u{FC}');
+        assert_ok!("\\776", '\u{FE}'); // Ruby truncates to just the last byte
     }
 }
