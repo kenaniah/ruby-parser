@@ -6,6 +6,7 @@ use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
 use nom::combinator::{map, not, peek, recognize, verify};
 use nom::multi::{many0, many1, many_m_n, separated_list1};
+use nom::sequence::preceded;
 use nom::sequence::tuple;
 use std::convert::TryFrom;
 
@@ -39,13 +40,13 @@ pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
     // Should be evaluated
     alt((
         map(simple_escape_sequence, |c| c.to_string()),
-        map(non_escaped_sequence, |s| (*s).to_owned()),
         map(line_terminator_escape_sequence, |_s| String::new()),
         map(octal_escape_sequence, |c| c.to_string()),
         map(hexadecimal_escape_sequence, |c| c.to_string()),
         map(single_unicode_escape_sequence, |c| c.to_string()),
         multiple_unicode_escape_sequence,
         control_escape_sequence,
+        map(non_escaped_sequence, |c| c.to_string()),
     ))(i)
 }
 
@@ -74,13 +75,13 @@ pub(crate) fn double_escaped_character(i: Input) -> CharResult {
 }
 
 /// `\` *non_escaped_double_quoted_string_char*
-pub(crate) fn non_escaped_sequence(i: Input) -> ParseResult {
-    recognize(tuple((char('\\'), non_escaped_double_quoted_string_char)))(i)
+pub(crate) fn non_escaped_sequence(i: Input) -> CharResult {
+    preceded(char('\\'), non_escaped_double_quoted_string_char)(i)
 }
 
-/// *source_character* **but not** ( *alpha_numeric_character* | *line_terminator* )
+/// *source_character* **but not** ( *double_escaped_character* | *line_terminator* )
 pub(crate) fn non_escaped_double_quoted_string_char(i: Input) -> CharResult {
-    peek(not(alpha_numeric_character))(i)?;
+    peek(not(one_of("\\ntrfvaebsxuc")))(i)?;
     peek(not(line_terminator))(i)?;
     anychar(i)
 }
@@ -182,11 +183,6 @@ pub(crate) fn interpolated_character_sequence(i: Input) -> StringResult {
     stub_string(i)
 }
 
-/// *uppercase_character* | *lowercase_character* | *decimal_digit*
-pub(crate) fn alpha_numeric_character(i: Input) -> CharResult {
-    verify(anychar, |c: &char| c.is_ascii_alphanumeric())(i)
-}
-
 // Converts the value of an escape sequence into a character
 fn char_from_radix(i: &str, radix: u32) -> char {
     char::try_from(u32::from_str_radix(i, radix).unwrap()).unwrap()
@@ -224,7 +220,7 @@ mod tests {
 
     #[test]
     fn test_non_escaped_sequence() {
-        use_parser!(non_escaped_sequence, Input, Input => &str, ErrorKind);
+        use_parser!(non_escaped_sequence, Input, char, ErrorKind);
         // Parse errors
         // Success cases
     }
@@ -361,7 +357,6 @@ mod tests {
         assert_ok!("\\C-\\n", "\u{0A}".to_owned());
         assert_ok!("\\M-\\C-\\n", "\u{8A}".to_owned());
         assert_ok!("\\C-\\t", "\t".to_owned());
-        // Recursion
-        assert_ok!("\\C-\\C-\\n", "\u{0A}".to_owned());
+        assert_ok!("\\C-\\z", "\u{1A}".to_owned());
     }
 }
