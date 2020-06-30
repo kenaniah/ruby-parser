@@ -1,30 +1,49 @@
 //! Provides parsers for program text
-use crate::{CharResult, Input, ParseResult, Token, TokenResult};
+use crate::lexers::comment::comment;
+use crate::lexers::token::token;
+use crate::{CharResult, Input, ParseResult, Token, TokenResult, TokenStreamResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, line_ending, one_of};
-use nom::combinator::{opt, recognize};
+use nom::combinator::{map, opt, recognize};
+use nom::multi::many1;
 use nom::sequence::tuple;
 
 // /// *compound_statement*
-// pub fn program(i: Input) {
-//     compound_statement(i)
-// }
-//
-// /// *statement_list*? *separator_list*?
-// pub(crate) fn compound_statement(i: Input) {}
-//
-// /// *statement* ( *separator_list* *statement* )*
-// pub(crate) fn statement_list(i: Input){}
-//
-// /// *separator*+
-// pub(crate) fn separator_list(i: Input){}
-//
-// /// `;` | *line_terminator*
-// pub(crate) fn separator(i: Input){}
-//
-// /// *line_terminator* | *whitespace* | *comment* | *end_of_program_marker* | *token*
-// pub(crate) fn input_element(i: Input) {}
+pub fn program(i: Input) -> TokenStreamResult {
+    compound_statement(i)
+}
+
+/// *statement_list*? *separator_list*?
+pub(crate) fn compound_statement(i: Input) -> TokenStreamResult {
+    stub_token_stream(i)
+}
+
+/// *statement* ( *separator_list* *statement* )*
+pub(crate) fn statement_list(i: Input) -> TokenStreamResult {
+    stub_token_stream(i)
+}
+
+/// *separator*+
+pub(crate) fn separator_list(i: Input) -> ParseResult {
+    recognize(many1(separator))(i)
+}
+
+/// `;` | *line_terminator*
+pub(crate) fn separator(i: Input) -> ParseResult {
+    alt((line_terminator, recognize(char(';'))))(i)
+}
+
+/// *line_terminator* | *whitespace* | *comment* | *end_of_program_marker* | *token*
+pub(crate) fn input_element(i: Input) -> TokenResult {
+    alt((
+        map(line_terminator, |_| Token::LineTerminator),
+        map(whitespace, |_| Token::Whitespace),
+        token,
+        comment,
+        end_of_program_marker,
+    ))(i)
+}
 
 /// Any UTF-8 scalar value (a Rust `char`)
 pub(crate) fn source_character(i: Input) -> CharResult {
@@ -57,6 +76,10 @@ pub(crate) fn end_of_program_marker(i: Input) -> TokenResult {
     let (i, _) = tag("__END__")(i)?;
     let (i, _) = opt(line_terminator)(i)?;
     Ok((i, Token::EndOfProgram))
+}
+
+fn stub_token_stream(i: Input) -> TokenStreamResult {
+    Err(nom::Err::Error((i, nom::error::ErrorKind::Char)))
 }
 
 #[cfg(test)]

@@ -45,6 +45,8 @@ pub enum Token {
     /// ?
     QuestionMark,
     // Program
+    LineTerminator,
+    Whitespace,
     Operator(String),
     Comment(String),
     EndOfProgram,
