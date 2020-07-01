@@ -1,12 +1,13 @@
 //! Provides parsers for program text
 use crate::lexers::comment::comment;
+use crate::lexers::statement::statement;
 use crate::lexers::token::token;
 use crate::{CharResult, Input, ParseResult, Token, TokenResult, TokenStreamResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, line_ending, one_of};
 use nom::combinator::{map, opt, recognize};
-use nom::multi::many1;
+use nom::multi::{many1, separated_list0};
 use nom::sequence::tuple;
 
 // /// *compound_statement*
@@ -21,7 +22,9 @@ pub(crate) fn compound_statement(i: Input) -> TokenStreamResult {
 
 /// *statement* ( *separator_list* *statement* )*
 pub(crate) fn statement_list(i: Input) -> TokenStreamResult {
-    stub_token_stream(i)
+    map(separated_list0(separator_list, statement), |statements| {
+        statements.into_iter().flatten().collect()
+    })(i)
 }
 
 /// *separator*+
