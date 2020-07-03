@@ -18,7 +18,7 @@ pub fn statement(i: Input) -> StatementResult {
 }
 
 pub(crate) fn expression_statement(i: Input) -> StatementResult {
-    expression(i) // as StatementResult
+    expression(i) as StatementResult
 }
 
 pub(crate) fn alias_statement(i: Input) -> StatementResult {
