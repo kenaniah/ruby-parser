@@ -14,10 +14,13 @@ pub type Input<'a> = TrackedLocation<&'a str>;
 pub type TokenResult<'a> = Parsed<'a, Token>;
 
 /// Describes a list of parsed tokens
-pub type TokenVecResult<'a> = VecResult<'a, Token>;
+pub type CompoundStatementResult<'a> = VecResult<'a, Token>;
 
 /// Describes a parsed character
 pub(crate) type CharResult<'a> = Parsed<'a, char>;
+
+/// Describes a parsed expression
+pub(crate) type ExpressionResult<'a> = Parsed<'a, Vec<Token>>;
 
 /// Describes a parsed numeric literal
 pub(crate) type NumericResult<'a> = Parsed<'a, Numeric>;

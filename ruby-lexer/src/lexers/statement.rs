@@ -1,4 +1,5 @@
 use crate::{Input, StatementResult};
+use crate::lexers::expression;
 use nom::branch::alt;
 
 /// *expression_statement* | *alias_statement* | *undef_statement* | *if_modifier_statement* | *unless_modifier_statement* | *while_modifier_statement* | *until_modifier_statement* | *rescue_modifier_statement* | *assignment_statement*
@@ -17,7 +18,7 @@ pub fn statement(i: Input) -> StatementResult {
 }
 
 pub(crate) fn expression_statement(i: Input) -> StatementResult {
-    stub(i)
+    expression(i) // as StatementResult
 }
 
 pub(crate) fn alias_statement(i: Input) -> StatementResult {
