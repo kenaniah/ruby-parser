@@ -14,10 +14,13 @@ using parser combinators.
 
 #### Expressions / Statements / Groups
 
- * Expressions should be `Vec<Token>`.
- * Should parenthetical groups just be a nested expression?
- * Should statements be any different than expressions?
- * Should a program just be a list of statements?
+ * There is no semantic difference between an expression and a statement in this lib
+ * `Token::Block` contains a list of statements (each item is considered a statement)
+ * `Token::Expression` contains a list of tokens that make up an individual statement
+ * These tokens may be nested via parenthesis:
+ ```ruby
+ (2 + (4 - 8)) * 5
+ ```
 
 #### Lexing partial inputs
 
