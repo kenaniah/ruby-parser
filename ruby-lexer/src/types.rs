@@ -28,9 +28,6 @@ pub(crate) type NumericResult<'a> = Parsed<'a, Numeric>;
 /// Describes a nom-compatible parsing result type (input and output types match)
 pub(crate) type ParseResult<'a> = Parsed<'a, Input<'a>>;
 
-/// Describes a parsed statement
-pub(crate) type StatementResult<'a> = Parsed<'a, Vec<Token>>;
-
 /// Describes a parsed string
 pub(crate) type StringResult<'a> = Parsed<'a, String>;
 

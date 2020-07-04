@@ -28,7 +28,6 @@ pub use enums::token::Token;
 pub use nom::error::ErrorKind;
 pub use structs::tracked_location::TrackedLocation;
 pub(crate) use types::{
-    CharResult, ExpressionResult, NumericResult, ParseResult, StatementResult, StringResult,
-    TokenResult,
+    CharResult, ExpressionResult, NumericResult, ParseResult, StringResult, TokenResult,
 };
-pub use types::{CompoundStatementResult, Input, Expression};
+pub use types::{CompoundStatementResult, Expression, Input};
