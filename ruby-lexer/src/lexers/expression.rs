@@ -41,9 +41,10 @@ pub fn expression(i: Input) -> TokenResult {
     ))(i)
 }
 
+/// `(` *compound_statement* `)`
 pub(crate) fn grouping_expression(i: Input) -> TokenResult {
     map(
-        tuple((char('('), alt((compound_statement, expression)), char(')'))),
+        tuple((char('('), compound_statement, char(')'))),
         |t| t.1,
     )(i)
 }
@@ -78,8 +79,12 @@ mod tests {
             Token::Block(vec![Token::Block(vec![Token::False])])
         );
         assert_ok!(
-            "(2;; 5;)",
+            "(;2\n\t5;;)",
             Token::Block(vec![Token::Integer(2), Token::Integer(5)])
+        );
+        assert_ok!(
+            "(;)",
+            Token::Block(vec![])
         );
     }
 }

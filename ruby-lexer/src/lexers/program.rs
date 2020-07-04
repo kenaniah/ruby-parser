@@ -24,6 +24,7 @@ pub(crate) fn compound_statement(i: Input) -> TokenResult {
 
 /// *statement* ( *separator_list* *statement* )*
 pub(crate) fn statement_list(i: Input) -> TokenResult {
+    let (i, _) = opt(separator_list)(i)?;
     map(separated_list0(separator_list, statement), |statements| {
         Token::Block(statements)
     })(i)
