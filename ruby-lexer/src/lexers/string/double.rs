@@ -10,8 +10,7 @@ use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
 use nom::combinator::{map, not, peek, recognize};
 use nom::multi::{many0, many1, many_m_n, separated_list1};
-use nom::sequence::preceded;
-use nom::sequence::tuple;
+use nom::sequence::{preceded, tuple};
 use std::convert::TryFrom;
 
 /// `"` *double_quoted_string_character** `"`
@@ -52,15 +51,12 @@ pub(crate) fn double_quoted_string(i: Input) -> TokenResult {
 /// *source_character* **but not** ( `"` | `#` | `\` ) | `#` **not** ( `$` | `@` | `{` ) | *double_escape_sequence* | *interpolated_character_sequence*
 pub(crate) fn double_quoted_string_character(i: Input) -> InterpolatedResult {
     alt((
-        map(none_of("\"#\\"), |char| Interpolated::Char(char)),
-        map(
-            recognize(tuple((char('#'), none_of("$@{}")))),
-            |s: Input| Interpolated::String((*s).to_owned()),
-        ),
+        map(none_of("\"#\\"), |c| Interpolated::Char(c)),
         map(double_escape_sequence, |s| Interpolated::String(s)),
         map(interpolated_character_sequence, |e| {
             Interpolated::Expression(e)
         }),
+        map(char('#'), |c| Interpolated::Char(c)),
     ))(i)
 }
 
@@ -236,14 +232,69 @@ mod tests {
     fn test_double_quoted_string_characer() {
         use_parser!(double_quoted_string_character, Input, Interpolated);
         // Parse errors
+        assert_err!("\\");
+        assert_err!("\"");
+        assert_err!("#{");
+        assert_err!("#{\"foo#{2}bar\"");
         // Success cases
+        assert_ok!("😀", Interpolated::Char('😀'));
+        assert_ok!("A", Interpolated::Char('A'));
+        assert_ok!("#", Interpolated::Char('#'));
+        assert_ok!("\\\"", Interpolated::String("\"".to_owned()));
+        assert_ok!("\\u0000", Interpolated::String("\0".to_owned()));
+        assert_ok!("#{}", Interpolated::Expression(Token::Block(vec![])));
+        assert_ok!(
+            "#@@foo",
+            Interpolated::Expression(Token::ClassVariableIdentifier("@@foo".to_owned()))
+        );
+        assert_ok!(
+            "#@inst",
+            Interpolated::Expression(Token::InstanceVariableIdentifier("@inst".to_owned()))
+        );
+        assert_ok!(
+            "#$glob",
+            Interpolated::Expression(Token::GlobalVariableIdentifier("$glob".to_owned()))
+        );
+        assert_ok!(
+            "#{foobar}",
+            Interpolated::Expression(Token::Block(vec![Token::LocalVariableIdentifier(
+                "foobar".to_owned()
+            )]))
+        );
+        assert_ok!(
+            "#{\"foo#{2bar\"}",
+            Interpolated::Expression(Token::Block(vec![Token::DoubleQuotedString(
+                "foo#{2bar".to_owned()
+            )]))
+        );
+        assert_ok!(
+            "#{\"foo#{2}bar\"}",
+            Interpolated::Expression(Token::Block(vec![Token::InterpolatedString(vec![
+                Token::DoubleQuotedString("foo".to_owned()),
+                Token::Block(vec![Token::Integer(2)]),
+                Token::DoubleQuotedString("bar".to_owned())
+            ])]))
+        );
     }
 
     #[test]
     fn test_double_escape_sequence() {
         use_parser!(double_escape_sequence, Input, String);
         // Parse errors
+        assert_err!("v");
+        assert_err!("\\");
+        assert_err!("\r");
         // Success cases
+        assert_ok!("\\ ", " ".to_owned());
+        assert_ok!("\\\\", "\\".to_owned());
+        assert_ok!("\\\n", "".to_owned());
+        assert_ok!("\\000", "\0".to_owned());
+        assert_ok!("\\x7", "\u{07}".to_owned());
+        assert_ok!("\\r", "\r".to_owned());
+        assert_ok!("\\z", "z".to_owned());
+        assert_ok!("\\M-B", "\u{C2}".to_owned());
+        assert_ok!("\\uaBcD", "\u{ABCD}".to_owned());
+        assert_ok!("\\u{1234 aBCD}", "\u{1234}\u{ABCD}".to_owned());
     }
 
     #[test]
