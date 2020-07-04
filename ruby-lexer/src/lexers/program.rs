@@ -1,10 +1,10 @@
 //! Provides parsers for program text
-use crate::lexers::comment::comment;
+//use crate::lexers::comment::comment;
 use crate::lexers::statement::statement;
-use crate::lexers::token::token;
+//use crate::lexers::token::token;
 use crate::{CharResult, Input, ParseResult, Token, TokenResult};
 use nom::branch::alt;
-use nom::bytes::complete::tag;
+//use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, line_ending, one_of};
 use nom::combinator::{map, opt, recognize};
 use nom::multi::{many0, many1, separated_list0};
@@ -47,15 +47,15 @@ pub(crate) fn separator(i: Input) -> ParseResult {
 }
 
 /// *line_terminator* | *whitespace* | *comment* | *end_of_program_marker* | *token*
-pub(crate) fn input_element(i: Input) -> TokenResult {
-    alt((
-        map(line_terminator, |_| Token::LineTerminator),
-        map(whitespace, |_| Token::Whitespace),
-        token,
-        comment,
-        end_of_program_marker,
-    ))(i)
-}
+// pub(crate) fn input_element(i: Input) -> TokenResult {
+//     alt((
+//         map(line_terminator, |_| Token::LineTerminator),
+//         map(whitespace, |_| Token::Whitespace),
+//         token,
+//         comment,
+//         end_of_program_marker,
+//     ))(i)
+// }
 
 /// Any UTF-8 scalar value (a Rust `char`)
 pub(crate) fn source_character(i: Input) -> CharResult {
@@ -81,14 +81,14 @@ pub(crate) fn line_terminator_escape_sequence(i: Input) -> ParseResult {
 }
 
 /// [ beginning of a line ] `__END__` ( *line_terminator* | [ end of a program ] )
-pub(crate) fn end_of_program_marker(i: Input) -> TokenResult {
-    if !i.beginning_of_line() {
-        return Err(nom::Err::Error((i, nom::error::ErrorKind::Space)));
-    }
-    let (i, _) = tag("__END__")(i)?;
-    let (i, _) = opt(line_terminator)(i)?;
-    Ok((i, Token::EndOfProgram))
-}
+// pub(crate) fn end_of_program_marker(i: Input) -> TokenResult {
+//     if !i.beginning_of_line() {
+//         return Err(nom::Err::Error((i, nom::error::ErrorKind::Space)));
+//     }
+//     let (i, _) = tag("__END__")(i)?;
+//     let (i, _) = opt(line_terminator)(i)?;
+//     Ok((i, Token::EndOfProgram))
+// }
 
 #[cfg(test)]
 mod tests {
@@ -164,15 +164,15 @@ mod tests {
         assert_err!("\r\n");
     }
 
-    #[test]
-    fn test_end_of_program_marker() {
-        use_parser!(end_of_program_marker, Input, Token);
-        // Success cases
-        assert_ok!("__END__");
-        assert_ok!("__END__\n");
-        assert_ok!("__END__\r\n");
-        // Failure cases
-        assert_err!("__end__");
-        assert_err!("__END__ing");
-    }
+    // #[test]
+    // fn test_end_of_program_marker() {
+    //     use_parser!(end_of_program_marker, Input, Token);
+    //     // Success cases
+    //     assert_ok!("__END__");
+    //     assert_ok!("__END__\n");
+    //     assert_ok!("__END__\r\n");
+    //     // Failure cases
+    //     assert_err!("__end__");
+    //     assert_err!("__END__ing");
+    // }
 }
