@@ -57,5 +57,15 @@ pub enum Token {
     False,
     Self_,
     Expression(Expression),
-    Block(StatementList)
+    Block(StatementList),
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_token_size() {
+        assert_eq!(32, std::mem::size_of::<Token>());
+    }
 }
