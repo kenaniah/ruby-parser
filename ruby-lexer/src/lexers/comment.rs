@@ -49,7 +49,7 @@ pub(crate) fn multi_line_comment(i: Input) -> ParseResult {
 /// [ beginning of a line ] `=begin` *rest_of_begin_end_line*? *line_terminator*
 pub(crate) fn multi_line_comment_begin_line(i: Input) -> ParseResult {
     if !i.beginning_of_line() {
-        return Err(nom::Err::Error((i, nom::error::ErrorKind::Space)));
+        return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
     }
     let (i, _) = tag("=begin")(i)?;
     recognize(tuple((opt(rest_of_begin_end_line), line_terminator)))(i)
@@ -58,7 +58,7 @@ pub(crate) fn multi_line_comment_begin_line(i: Input) -> ParseResult {
 /// [ beginning of a line ] `=end` *rest_of_begin_end_line*? ( *line_terminator* | [ end of a program ] )
 pub(crate) fn multi_line_comment_end_line(i: Input) -> ParseResult {
     if !i.beginning_of_line() {
-        return Err(nom::Err::Error((i, nom::error::ErrorKind::Space)));
+        return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
     }
     let (i, _) = tag("=end")(i)?;
     recognize(tuple((opt(rest_of_begin_end_line), opt(line_terminator))))(i)
@@ -83,11 +83,10 @@ pub(crate) fn comment_line(i: Input) -> ParseResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nom::error::ErrorKind;
 
     #[test]
     fn test_single_line_comment() {
-        use_parser!(single_line_comment, Input, Input => &str, ErrorKind);
+        use_parser!(single_line_comment, Input, Input => &str);
         // Parse errors
         assert_err!("");
         assert_err!("foobar");
@@ -103,7 +102,7 @@ mod tests {
 
     #[test]
     fn test_multi_line_comment() {
-        use_parser!(multi_line_comment, Input, Input, ErrorKind);
+        use_parser!(multi_line_comment, Input, Input);
         // Parse errors
         assert_err!("  =begin\n=end");
         assert_err!("=begin\n  =end");

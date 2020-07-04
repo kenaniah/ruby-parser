@@ -25,6 +25,9 @@ mod types;
 
 pub(crate) use enums::numeric::Numeric;
 pub use enums::token::Token;
+pub use nom::error::ErrorKind;
 pub use structs::tracked_location::TrackedLocation;
-pub(crate) use types::{CharResult, NumericResult, ParseResult, StatementResult, ExpressionResult, StringResult};
-pub use types::{Input, TokenResult, CompoundStatementResult};
+pub(crate) use types::{
+    CharResult, ExpressionResult, NumericResult, ParseResult, StatementResult, StringResult,
+};
+pub use types::{CompoundStatementResult, Input, TokenResult};

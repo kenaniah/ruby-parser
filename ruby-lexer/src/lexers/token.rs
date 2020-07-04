@@ -116,11 +116,10 @@ pub(crate) fn assignment_operator_name(i: Input) -> ParseResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nom::error::ErrorKind;
 
     #[test]
     fn test_token() {
-        use_parser!(token, Input, Token, ErrorKind);
+        use_parser!(token, Input, Token);
         // Identifiers
         assert_ok!("東", Token::LocalVariableIdentifier("東".to_owned()));
         assert_ok!("@_", Token::InstanceVariableIdentifier("@_".to_owned()));

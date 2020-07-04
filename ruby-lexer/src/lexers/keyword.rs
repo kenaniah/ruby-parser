@@ -6,5 +6,5 @@ pub fn keyword(i: Input) -> TokenResult {
 }
 
 fn stub_token(i: Input) -> TokenResult {
-    Err(nom::Err::Error((i, nom::error::ErrorKind::Complete)))
+    Err(nom::Err::Error((i, crate::ErrorKind::Complete)))
 }

@@ -54,5 +54,5 @@ pub(crate) fn assignment_statement(i: Input) -> StatementResult {
 }
 
 fn stub(i: Input) -> StatementResult {
-    Err(nom::Err::Error((i, nom::error::ErrorKind::Char)))
+    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }

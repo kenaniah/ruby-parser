@@ -11,5 +11,5 @@ pub fn expression(i: Input) -> ExpressionResult {
 }
 
 fn stub(i: Input) -> ExpressionResult {
-    Err(nom::Err::Error((i, nom::error::ErrorKind::Char)))
+    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }

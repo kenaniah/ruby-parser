@@ -232,11 +232,10 @@ fn concat(chr: char, rest: Vec<char>) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nom::error::ErrorKind;
 
     #[test]
     fn test_binary_integer_literal() {
-        use_parser!(binary_integer_literal, Input, Numeric, ErrorKind);
+        use_parser!(binary_integer_literal, Input, Numeric);
         // Parse errors
         assert_err!("0");
         assert_err!("0b");
@@ -254,7 +253,7 @@ mod tests {
 
     #[test]
     fn test_octal_integer_literal() {
-        use_parser!(octal_integer_literal, Input, Numeric, ErrorKind);
+        use_parser!(octal_integer_literal, Input, Numeric);
         // Parser errors
         assert_err!("0");
         assert_err!("0_");
@@ -272,18 +271,18 @@ mod tests {
         assert_err!(
             "0_1__0",
             Input::new_with_pos("__0", 3, 1, 4),
-            ErrorKind::Eof
+            crate::ErrorKind::Eof
         );
         assert_err!(
             "0755 foobar",
             Input::new_with_pos(" foobar", 4, 1, 5),
-            ErrorKind::Eof
+            crate::ErrorKind::Eof
         );
     }
 
     #[test]
     fn test_hexadecimal_integer_literal() {
-        use_parser!(hexadecimal_integer_literal, Input, Numeric, ErrorKind);
+        use_parser!(hexadecimal_integer_literal, Input, Numeric);
         // Parser errors
         assert_err!("0");
         assert_err!("0_");
@@ -302,7 +301,7 @@ mod tests {
 
     #[test]
     fn test_decimal_integer_literal() {
-        use_parser!(decimal_integer_literal, Input, Numeric, ErrorKind);
+        use_parser!(decimal_integer_literal, Input, Numeric);
         // Parser errors
         assert_err!("foo");
         assert_err!("d20");
@@ -324,7 +323,7 @@ mod tests {
 
     #[test]
     fn test_signed_number() {
-        use_parser!(signed_number, Input, Numeric, ErrorKind);
+        use_parser!(signed_number, Input, Numeric);
         // Parser errors
         assert_err!("foo");
         assert_err!("d20");
@@ -364,7 +363,7 @@ mod tests {
 
     #[test]
     fn test_exponent_part() {
-        use_parser!(exponent_part, Input, String, ErrorKind);
+        use_parser!(exponent_part, Input, String);
         // Parser errors
         assert_err!("12e5");
         assert_err!("f+5");
@@ -384,7 +383,7 @@ mod tests {
 
     #[test]
     fn test_float_literal() {
-        use_parser!(float_literal, Input, Numeric, ErrorKind);
+        use_parser!(float_literal, Input, Numeric);
         // Parser errors
         assert_err!("0");
         assert_err!("0.");

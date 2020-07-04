@@ -126,11 +126,10 @@ pub(crate) fn identifier_start_character(i: Input) -> CharResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nom::error::ErrorKind;
 
     #[test]
     fn test_identifier_character() {
-        use_parser!(identifier_character, Input, char, ErrorKind);
+        use_parser!(identifier_character, Input, char);
         // Parse errors
         assert_err!("");
         assert_err!(" ");
@@ -153,7 +152,7 @@ mod tests {
 
     #[test]
     fn test_identifier_start_character() {
-        use_parser!(identifier_start_character, Input, char, ErrorKind);
+        use_parser!(identifier_start_character, Input, char);
         // Parse errors
         assert_err!("");
         assert_err!(" ");
@@ -176,7 +175,7 @@ mod tests {
 
     #[test]
     fn test_identifier() {
-        use_parser!(identifier, Input, Token, ErrorKind);
+        use_parser!(identifier, Input, Token);
         // Parse errors
         assert_err!("=");
         assert_err!("@");
@@ -197,7 +196,7 @@ mod tests {
 
     #[test]
     fn test_local_variable_identifier() {
-        use_parser!(local_variable_identifier, Input, Token, ErrorKind);
+        use_parser!(local_variable_identifier, Input, Token);
         // Parse errors
         assert_err!("A");
         assert_err!("02var");
@@ -218,7 +217,7 @@ mod tests {
 
     #[test]
     fn test_global_variable_identifier() {
-        use_parser!(global_variable_identifier, Input, Token, ErrorKind);
+        use_parser!(global_variable_identifier, Input, Token);
         // Parse errors
         assert_err!("var");
         assert_err!("$$var");
@@ -234,7 +233,7 @@ mod tests {
 
     #[test]
     fn test_class_variable_identifier() {
-        use_parser!(class_variable_identifier, Input, Token, ErrorKind);
+        use_parser!(class_variable_identifier, Input, Token);
         // Parse errors
         assert_err!("var");
         assert_err!("@@");
@@ -250,7 +249,7 @@ mod tests {
 
     #[test]
     fn test_instance_variable_identifier() {
-        use_parser!(instance_variable_identifier, Input, Token, ErrorKind);
+        use_parser!(instance_variable_identifier, Input, Token);
         // Parse errors
         assert_err!("var");
         assert_err!("@");
@@ -266,7 +265,7 @@ mod tests {
 
     #[test]
     fn test_constant_identifier() {
-        use_parser!(constant_identifier, Input, Token, ErrorKind);
+        use_parser!(constant_identifier, Input, Token);
         // Parse errors
         assert_err!("_PREFIXED");
         assert_err!("lowercase");
@@ -282,7 +281,7 @@ mod tests {
 
     #[test]
     fn test_method_only_identifier() {
-        use_parser!(method_only_identifier, Input, Token, ErrorKind);
+        use_parser!(method_only_identifier, Input, Token);
         // Parse errors
         assert_err!("var");
         assert_err!("var!?");
@@ -296,7 +295,7 @@ mod tests {
 
     #[test]
     fn test_assignment_like_method_identifier() {
-        use_parser!(assignment_like_method_identifier, Input, Token, ErrorKind);
+        use_parser!(assignment_like_method_identifier, Input, Token);
         // Parse errors
         assert_err!("=");
         assert_err!("var");

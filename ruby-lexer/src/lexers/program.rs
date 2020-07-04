@@ -86,11 +86,10 @@ pub(crate) fn end_of_program_marker(i: Input) -> TokenResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nom::error::ErrorKind;
 
     #[test]
     fn test_source_character() {
-        use_parser!(source_character, Input, char, ErrorKind);
+        use_parser!(source_character, Input, char);
         // Success cases
         assert_ok!("1", '1');
         assert_ok!("é", 'é'); // U+00e9: 'latin small letter e with acute'
@@ -111,7 +110,7 @@ mod tests {
 
     #[test]
     fn test_line_terminator() {
-        use_parser!(line_terminator, Input, Input, ErrorKind);
+        use_parser!(line_terminator, Input, Input);
         // Success cases
         assert_ok!("\n");
         assert_ok!("\r\n");
@@ -123,7 +122,7 @@ mod tests {
 
     #[test]
     fn test_line_terminator_escape_sequence() {
-        use_parser!(line_terminator_escape_sequence, Input, Input, ErrorKind);
+        use_parser!(line_terminator_escape_sequence, Input, Input);
         // Success cases
         assert_ok!("\\\n");
         assert_ok!("\\\r\n");
@@ -135,7 +134,7 @@ mod tests {
 
     #[test]
     fn test_whitespace() {
-        use_parser!(whitespace, Input, Input, ErrorKind);
+        use_parser!(whitespace, Input, Input);
         // Success cases
         assert_ok!(" ");
         assert_ok!("\t");
@@ -151,7 +150,7 @@ mod tests {
 
     #[test]
     fn test_end_of_program_marker() {
-        use_parser!(end_of_program_marker, Input, Token, ErrorKind);
+        use_parser!(end_of_program_marker, Input, Token);
         // Success cases
         assert_ok!("__END__");
         assert_ok!("__END__\n");

@@ -1,6 +1,9 @@
 /// Defines the functions used by the `assert_ok!`, `assert_partial!`, and `assert_err!` macros
 #[macro_export]
 macro_rules! use_parser {
+    ($func:ident, $input_type:ty, $ok_type:ty => $deref_type:ty) => {
+        use_parser!($func, $input_type, $ok_type => $deref_type, crate::ErrorKind);
+    };
     ($func:ident, $input_type:ty, $ok_type:ty => $deref_type:ty, $err_type:ty) => {
         #[allow(dead_code)]
         fn parser(i: $input_type) -> nom::IResult<$input_type, $deref_type, ($input_type, $err_type)> {
@@ -12,6 +15,9 @@ macro_rules! use_parser {
         };
         fn _type_check_ok(_expected: $deref_type) {}
         fn _type_check_err(_expected: $err_type) {}
+    };
+    ($func:ident, $input_type:ty, $ok_type:ty) => {
+        use_parser!($func, $input_type, $ok_type, crate::ErrorKind);
     };
     ($func:ident, $input_type:ty, $ok_type:ty, $err_type:ty) => {
         #[allow(dead_code)]
