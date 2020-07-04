@@ -19,7 +19,7 @@ using parser combinators.
  * `Token::Expression` contains a list of tokens that make up an individual statement
  * Block and expression tokens may be nested via the use of parenthesis:
    ```ruby
-   (2 + (puts "hi"; 4 - 8)) * 5
+   (2 + (puts "hi"; 4 - 8;;)) * 5
    #hi
    #=> -10
    ```
