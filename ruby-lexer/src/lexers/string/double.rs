@@ -1,6 +1,10 @@
+use crate::lexers::identifier::*;
 use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
-use crate::lexers::program::{line_terminator, line_terminator_escape_sequence};
-use crate::{CharResult, Input, ParseResult, StringResult};
+use crate::lexers::program::*;
+use crate::{
+    CharResult, Input, Interpolated, InterpolatedResult, ParseResult, StringResult, Token,
+    TokenResult,
+};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
@@ -11,27 +15,52 @@ use nom::sequence::tuple;
 use std::convert::TryFrom;
 
 /// `"` *double_quoted_string_character** `"`
-pub(crate) fn double_quoted_string(i: Input) -> StringResult {
+pub(crate) fn double_quoted_string(i: Input) -> TokenResult {
     let (i, _) = char('"')(i)?;
     let (i, contents) = many0(double_quoted_string_character)(i)?;
     let (i, _) = char('"')(i)?;
+
+    // Compile a string token based on what was parsed
+    let mut tokens: Vec<Token> = vec![];
     let mut string = String::new();
-    for s in contents {
-        string.push_str(&s);
+    let mut interpolated = false;
+    for part in contents {
+        match part {
+            Interpolated::Char(c) => string.push(c),
+            Interpolated::String(s) => string.push_str(&s),
+            Interpolated::Expression(t) => {
+                if !string.is_empty() {
+                    tokens.push(Token::DoubleQuotedString(string.clone()));
+                    string.clear();
+                }
+                tokens.push(t);
+                interpolated = true;
+            }
+        }
     }
-    Ok((i, string))
+
+    if interpolated {
+        if !string.is_empty() {
+            tokens.push(Token::DoubleQuotedString(string.clone()));
+        }
+        Ok((i, Token::InterpolatedString(tokens)))
+    } else {
+        Ok((i, Token::DoubleQuotedString(string)))
+    }
 }
 
 /// *source_character* **but not** ( `"` | `#` | `\` ) | `#` **not** ( `$` | `@` | `{` ) | *double_escape_sequence* | *interpolated_character_sequence*
-pub(crate) fn double_quoted_string_character(i: Input) -> StringResult {
+pub(crate) fn double_quoted_string_character(i: Input) -> InterpolatedResult {
     alt((
-        map(none_of("\"#\\"), |char| char.to_string()),
+        map(none_of("\"#\\"), |char| Interpolated::Char(char)),
         map(
             recognize(tuple((char('#'), none_of("$@{}")))),
-            |s: Input| (*s).to_owned(),
+            |s: Input| Interpolated::String((*s).to_owned()),
         ),
-        double_escape_sequence,
-        interpolated_character_sequence,
+        map(double_escape_sequence, |s| Interpolated::String(s)),
+        map(interpolated_character_sequence, |e| {
+            Interpolated::Expression(e)
+        }),
     ))(i)
 }
 
@@ -178,18 +207,18 @@ pub(crate) fn control_escaped_character(i: Input) -> StringResult {
 }
 
 /// `#` *global_variable_identifier* | `#` *class_variable_identifier* | `#` *instance_variable_identifier* | `#` `{` *compound_statement* `}`
-pub(crate) fn interpolated_character_sequence(i: Input) -> StringResult {
-    // Should be evaluated
-    stub_string(i)
+pub(crate) fn interpolated_character_sequence(i: Input) -> TokenResult {
+    alt((
+        preceded(char('#'), global_variable_identifier),
+        preceded(char('#'), class_variable_identifier),
+        preceded(char('#'), instance_variable_identifier),
+        map(tuple((tag("#{"), compound_statement, char('}'))), |t| t.1),
+    ))(i)
 }
 
 // Converts the value of an escape sequence into a character
 fn char_from_radix(i: &str, radix: u32) -> char {
     char::try_from(u32::from_str_radix(i, radix).unwrap()).unwrap()
-}
-
-fn stub_string(i: Input) -> StringResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
 
 #[cfg(test)]
@@ -198,14 +227,14 @@ mod tests {
 
     #[test]
     fn test_double_quoted_string() {
-        use_parser!(double_quoted_string, Input, String);
+        use_parser!(double_quoted_string, Input, Token);
         // Parse errors
         // Success cases
     }
 
     #[test]
     fn test_double_quoted_string_characer() {
-        use_parser!(double_quoted_string_character, Input, String);
+        use_parser!(double_quoted_string_character, Input, Interpolated);
         // Parse errors
         // Success cases
     }

@@ -17,6 +17,7 @@ pub enum Token {
     // String literals
     SingleQuotedString(String),
     DoubleQuotedString(String),
+    InterpolatedString(Vec<Token>),
     // Punctuation
     /// [
     LeftBracket,

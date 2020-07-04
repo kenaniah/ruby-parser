@@ -2,9 +2,8 @@
 Provides support for lexing Ruby's string literal formats.
 !*/
 
-use crate::{Input, Token, TokenResult};
+use crate::{Input, TokenResult};
 use nom::branch::alt;
-use nom::combinator::map;
 
 mod double;
 mod single;
@@ -13,9 +12,7 @@ mod single;
 pub fn string_literal(i: Input) -> TokenResult {
     alt((
         single::single_quoted_string,
-        map(double::double_quoted_string, |s| {
-            Token::DoubleQuotedString(s)
-        }),
+        double::double_quoted_string,
         // quoted_non_expanded_literal_string,
         // quoted_expanded_literal_string,
         // here_document,
