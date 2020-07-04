@@ -10,9 +10,6 @@ type VecResult<'a, T> = Parsed<'a, Vec<T>>;
 /// Describes the lexer's input type
 pub type Input<'a> = TrackedLocation<&'a str>;
 
-/// Describes a single parsed token
-pub type TokenResult<'a> = Parsed<'a, Token>;
-
 /// Describes a list of parsed tokens
 pub type CompoundStatementResult<'a> = VecResult<'a, Token>;
 
@@ -33,3 +30,6 @@ pub(crate) type StatementResult<'a> = Parsed<'a, Vec<Token>>;
 
 /// Describes a parsed string
 pub(crate) type StringResult<'a> = Parsed<'a, String>;
+
+/// Describes a single parsed token
+pub(crate) type TokenResult<'a> = Parsed<'a, Token>;

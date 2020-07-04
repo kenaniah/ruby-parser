@@ -29,5 +29,6 @@ pub use nom::error::ErrorKind;
 pub use structs::tracked_location::TrackedLocation;
 pub(crate) use types::{
     CharResult, ExpressionResult, NumericResult, ParseResult, StatementResult, StringResult,
+    TokenResult,
 };
-pub use types::{CompoundStatementResult, Input, TokenResult};
+pub use types::{CompoundStatementResult, Input};
