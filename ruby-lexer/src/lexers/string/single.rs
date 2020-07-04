@@ -1,11 +1,11 @@
-use crate::{CharResult, Input, StringResult};
+use crate::{CharResult, Input, StringResult, Token, TokenResult};
 use nom::branch::alt;
 use nom::character::complete::{char, none_of, one_of};
 use nom::combinator::map;
 use nom::multi::many0;
 
 /// `'` *single_quoted_string_character** `'`
-pub(crate) fn single_quoted_string(i: Input) -> StringResult {
+pub(crate) fn single_quoted_string(i: Input) -> TokenResult {
     let (i, _) = char('\'')(i)?;
     let (i, contents) = many0(single_quoted_string_character)(i)?;
     let (i, _) = char('\'')(i)?;
@@ -13,7 +13,7 @@ pub(crate) fn single_quoted_string(i: Input) -> StringResult {
     for s in contents {
         string.push_str(&s);
     }
-    Ok((i, string))
+    Ok((i, Token::SingleQuotedString(string)))
 }
 
 /// *single_quoted_string_non_escaped_character* | *single_quoted_escape_sequence*
@@ -69,15 +69,13 @@ fn string_from_2_chars(c1: char, c2: char) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nom::error::ErrorKind;
 
     #[test]
     fn test_single_quoted_string_non_escaped_character_sequence() {
         use_parser!(
             single_quoted_string_non_escaped_character_sequence,
             Input,
-            String,
-            ErrorKind
+            String
         );
         // Parse errors
         assert_err!("");
@@ -93,7 +91,7 @@ mod tests {
 
     #[test]
     fn test_single_escape_character_sequence() {
-        use_parser!(single_escape_character_sequence, Input, String, ErrorKind);
+        use_parser!(single_escape_character_sequence, Input, String);
         // Parse errors
         assert_err!("");
         assert_err!("\\");
@@ -107,7 +105,10 @@ mod tests {
 
     #[test]
     fn test_single_quoted_string() {
-        use_parser!(single_quoted_string, Input, String, ErrorKind);
+        use_parser!(single_quoted_string, Input, Token);
+        fn t(i: &str) -> Token {
+            Token::SingleQuotedString(i.to_owned())
+        }
         // Parse errors
         assert_err!("");
         assert_err!("\\''");
@@ -119,31 +120,25 @@ mod tests {
         // Success cases
         assert_ok!("''");
         assert_ok!("'\\''");
-        assert_ok!(
-            "'This is a normal string.'",
-            "This is a normal string.".to_owned()
-        );
+        assert_ok!("'This is a normal string.'", t("This is a normal string."));
         assert_ok!(
             "'Here\\'s \\a \"handful\" of chars: \\\\ \n \0 東 é é.'",
-            "Here's \\a \"handful\" of chars: \\ \n \0 東 é é.".to_owned()
+            t("Here's \\a \"handful\" of chars: \\ \n \0 東 é é.")
         );
         // Semantics
-        assert_ok!("'\\a\\'\\\\'", "\\a'\\".to_owned());
+        assert_ok!("'\\a\\'\\\\'", t("\\a'\\"));
         // Positioning
         assert_eq!(
             single_quoted_string("'One\nTwo\nThree'".into()),
-            Ok((
-                Input::new_with_pos("", 15, 3, 7),
-                "One\nTwo\nThree".to_owned()
-            ))
+            Ok((Input::new_with_pos("", 15, 3, 7), t("One\nTwo\nThree")))
         );
         assert_eq!(
             single_quoted_string("''".into()),
-            Ok((Input::new_with_pos("", 2, 1, 3), "".to_owned()))
+            Ok((Input::new_with_pos("", 2, 1, 3), t("")))
         );
         assert_eq!(
             single_quoted_string("'\n'".into()),
-            Ok((Input::new_with_pos("", 3, 2, 2), "\n".to_owned()))
+            Ok((Input::new_with_pos("", 3, 2, 2), t("\n")))
         );
     }
 }
