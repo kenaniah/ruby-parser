@@ -1,7 +1,10 @@
+use crate::lexers::program::compound_statement;
 use crate::lexers::token::literal;
-use crate::{ExpressionResult, Input};
+use crate::{ExpressionResult, Input, Token};
 use nom::branch::alt;
+use nom::character::complete::char;
 use nom::combinator::map;
+use nom::sequence::tuple;
 
 mod variable;
 
@@ -27,7 +30,7 @@ pub fn expression(i: Input) -> ExpressionResult {
         //redo_expression,
         //retry_expression,
         //begin_expression,
-        //grouping_expression,
+        grouping_expression,
         map(variable::variable_reference, |t| vec![t]),
         //scoped_constant_reference,
         //array_constructor,
@@ -39,6 +42,13 @@ pub fn expression(i: Input) -> ExpressionResult {
     ))(i)
 }
 
+pub(crate) fn grouping_expression(i: Input) -> ExpressionResult {
+    map(
+        tuple((char('('), alt((expression, compound_statement)), char(')'))),
+        |t| vec![Token::Grouped(t.1)],
+    )(i)
+}
+
 fn stub(i: Input) -> ExpressionResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
@@ -46,7 +56,6 @@ fn stub(i: Input) -> ExpressionResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Token;
 
     #[test]
     fn test_expression() {
@@ -55,12 +64,25 @@ mod tests {
         assert_err!("");
         assert_err!("nil ");
         assert_err!("bar\n");
+        assert_err!("('");
+        assert_err!("((foo)");
         // Success cases
         assert_ok!("nil", vec![Token::Nil]);
         assert_ok!("42", vec![Token::Integer(42)]);
         assert_ok!("24.2", vec![Token::Float(24.2)]);
-        assert_ok!("meh", vec![Token::LocalVariableIdentifier("meh".to_owned())]);
+        assert_ok!(
+            "meh",
+            vec![Token::LocalVariableIdentifier("meh".to_owned())]
+        );
         assert_ok!("-23e4", vec![Token::Float(-230000.0)]);
-        assert_ok!("'hello world'", vec![Token::SingleQuotedString("hello world".to_owned())]);
+        assert_ok!(
+            "'hello world'",
+            vec![Token::SingleQuotedString("hello world".to_owned())]
+        );
+        assert_ok!("()", vec![Token::Grouped(vec![])]);
+        assert_ok!(
+            "((false))",
+            vec![Token::Grouped(vec![Token::Grouped(vec![Token::False])])]
+        );
     }
 }

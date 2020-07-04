@@ -12,6 +12,13 @@ using parser combinators.
 
 ## Implementation Notes
 
+#### Expressions / Statements / Groups
+
+ * Expressions should be `Vec<Token>`.
+ * Should parenthetical groups just be a nested expression?
+ * Should statements be any different than expressions?
+ * Should a program just be a list of statements?
+
 #### Lexing partial inputs
 
 The `Input` type can be extended to track a boolean field that denotes whether

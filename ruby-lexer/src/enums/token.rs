@@ -53,5 +53,6 @@ pub enum Token {
     Nil,
     True,
     False,
-    Self_
+    Self_,
+    Grouped(Vec<Self>)
 }
