@@ -4,26 +4,17 @@ use nom::IResult;
 /// Intermediate type used to build the result types for lexing combinators
 type Parsed<'a, T> = IResult<Input<'a>, T>;
 
-/// Describes a generic result type on which others could be built
-type VecResult<'a, T> = Parsed<'a, Vec<T>>;
-
 /// Describes a list of tokens that make up an expression
 pub type Expression = Vec<Token>;
 
 /// Describes the lexer's input type
 pub type Input<'a> = TrackedLocation<&'a str>;
 
-/// Describes a list of parsed tokens
-pub type CompoundStatementResult<'a> = VecResult<'a, Token>;
-
 /// Describes a list of statements
-pub type StatementList = Vec<Expression>;
+pub type StatementList = Vec<Token>;
 
 /// Describes a parsed character
 pub(crate) type CharResult<'a> = Parsed<'a, char>;
-
-/// Describes a parsed expression
-pub(crate) type ExpressionResult<'a> = Parsed<'a, Expression>;
 
 /// Describes a parsed numeric literal
 pub(crate) type NumericResult<'a> = Parsed<'a, Numeric>;

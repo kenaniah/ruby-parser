@@ -2,7 +2,7 @@
 use crate::lexers::comment::comment;
 use crate::lexers::statement::statement;
 use crate::lexers::token::token;
-use crate::{CharResult, CompoundStatementResult, Input, ParseResult, Token, TokenResult};
+use crate::{CharResult, Input, ParseResult, Token, TokenResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, line_ending, one_of};
@@ -18,14 +18,14 @@ pub fn program(i: Input) -> TokenResult {
 /// *statement_list*? *separator_list*?
 pub(crate) fn compound_statement(i: Input) -> TokenResult {
     map(terminated(opt(statement_list), opt(separator_list)), |cs| {
-        cs.unwrap_or(Token::Expression(vec![]))
+        cs.unwrap_or(Token::Block(vec![]))
     })(i)
 }
 
 /// *statement* ( *separator_list* *statement* )*
 pub(crate) fn statement_list(i: Input) -> TokenResult {
     map(separated_list0(separator_list, statement), |statements| {
-        Token::Expression(statements)
+        Token::Block(statements)
     })(i)
 }
 
@@ -99,7 +99,7 @@ mod tests {
         use_parser!(compound_statement, Input, Token);
         assert_ok!(
             "2; 5",
-            Token::Expression(vec![Token::Integer(2), Token::Integer(5)])
+            Token::Block(vec![Token::Integer(2), Token::Integer(5)])
         );
     }
 

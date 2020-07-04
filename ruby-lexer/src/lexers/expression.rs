@@ -1,6 +1,6 @@
 use crate::lexers::program::compound_statement;
 use crate::lexers::token::literal;
-use crate::{Input, Token, TokenResult};
+use crate::{Input, TokenResult};
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::map;
@@ -51,6 +51,7 @@ pub(crate) fn grouping_expression(i: Input) -> TokenResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Token;
 
     #[test]
     fn test_expression() {
@@ -71,14 +72,14 @@ mod tests {
             "'hello world'",
             Token::SingleQuotedString("hello world".to_owned())
         );
-        assert_ok!("()", Token::Expression(vec![]));
+        assert_ok!("()", Token::Block(vec![]));
         assert_ok!(
             "((false))",
-            Token::Expression(vec![Token::Expression(vec![Token::False])])
+            Token::Block(vec![Token::Block(vec![Token::False])])
         );
         assert_ok!(
             "(2;; 5;)",
-            Token::Expression(vec![Token::Integer(2), Token::Integer(5)])
+            Token::Block(vec![Token::Integer(2), Token::Integer(5)])
         );
     }
 }
