@@ -50,4 +50,8 @@ pub enum Token {
     Operator(String),
     Comment(String),
     EndOfProgram,
+    Nil,
+    True,
+    False,
+    Self_
 }

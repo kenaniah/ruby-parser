@@ -17,7 +17,7 @@ pub fn program(i: Input) -> CompoundStatementResult {
 
 /// *statement_list*? *separator_list*?
 pub(crate) fn compound_statement(i: Input) -> CompoundStatementResult {
-    map(terminated(opt(statement_list), separator_list), |cs| {
+    map(terminated(opt(statement_list), opt(separator_list)), |cs| {
         cs.unwrap_or(vec![])
     })(i)
 }
