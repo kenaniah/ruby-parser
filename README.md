@@ -18,9 +18,9 @@ using parser combinators.
  * `Token::Block` contains a list of statements (each item is considered a statement)
  * `Token::Expression` contains a list of tokens that make up an individual statement
  * These tokens may be nested via parenthesis:
- ```ruby
- (2 + (4 - 8)) * 5
- ```
+   ```ruby
+   (2 + (4 - 8)) * 5
+   ```
 
 #### Lexing partial inputs
 
