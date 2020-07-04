@@ -7,25 +7,25 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, line_ending, one_of};
 use nom::combinator::{map, opt, recognize};
-use nom::multi::{many1, separated_list0};
+use nom::multi::{many0, many1, separated_list0};
 use nom::sequence::{terminated, tuple};
 
 // /// *compound_statement*
-pub fn program(i: Input) -> CompoundStatementResult {
+pub fn program(i: Input) -> TokenResult {
     compound_statement(i)
 }
 
 /// *statement_list*? *separator_list*?
-pub(crate) fn compound_statement(i: Input) -> CompoundStatementResult {
+pub(crate) fn compound_statement(i: Input) -> TokenResult {
     map(terminated(opt(statement_list), opt(separator_list)), |cs| {
-        cs.unwrap_or(vec![])
+        cs.unwrap_or(Token::Expression(vec![]))
     })(i)
 }
 
 /// *statement* ( *separator_list* *statement* )*
-pub(crate) fn statement_list(i: Input) -> CompoundStatementResult {
+pub(crate) fn statement_list(i: Input) -> TokenResult {
     map(separated_list0(separator_list, statement), |statements| {
-        statements.into_iter().flatten().collect()
+        Token::Expression(statements)
     })(i)
 }
 
@@ -36,7 +36,14 @@ pub(crate) fn separator_list(i: Input) -> ParseResult {
 
 /// `;` | *line_terminator*
 pub(crate) fn separator(i: Input) -> ParseResult {
-    alt((line_terminator, recognize(char(';'))))(i)
+    map(
+        tuple((
+            many0(whitespace),
+            alt((line_terminator, recognize(char(';')))),
+            many0(whitespace),
+        )),
+        |t| t.1,
+    )(i)
 }
 
 /// *line_terminator* | *whitespace* | *comment* | *end_of_program_marker* | *token*
@@ -86,6 +93,15 @@ pub(crate) fn end_of_program_marker(i: Input) -> TokenResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_compound_statement() {
+        use_parser!(compound_statement, Input, Token);
+        assert_ok!(
+            "2; 5",
+            Token::Expression(vec![Token::Integer(2), Token::Integer(5)])
+        );
+    }
 
     #[test]
     fn test_source_character() {

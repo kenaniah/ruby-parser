@@ -1,4 +1,4 @@
-use crate::Expression;
+use crate::{Expression, StatementList};
 
 /// Defines the tokens that are returned as a result of lexing
 #[derive(Debug, PartialEq)]
@@ -57,4 +57,5 @@ pub enum Token {
     False,
     Self_,
     Expression(Expression),
+    Block(StatementList)
 }

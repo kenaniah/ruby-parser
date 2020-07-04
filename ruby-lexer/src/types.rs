@@ -16,6 +16,9 @@ pub type Input<'a> = TrackedLocation<&'a str>;
 /// Describes a list of parsed tokens
 pub type CompoundStatementResult<'a> = VecResult<'a, Token>;
 
+/// Describes a list of statements
+pub type StatementList = Vec<Expression>;
+
 /// Describes a parsed character
 pub(crate) type CharResult<'a> = Parsed<'a, char>;
 
@@ -33,5 +36,3 @@ pub(crate) type StringResult<'a> = Parsed<'a, String>;
 
 /// Describes a single parsed token
 pub(crate) type TokenResult<'a> = Parsed<'a, Token>;
-
-//type StatementList = Vec<Expression>;

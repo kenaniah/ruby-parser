@@ -30,4 +30,4 @@ pub use structs::tracked_location::TrackedLocation;
 pub(crate) use types::{
     CharResult, ExpressionResult, NumericResult, ParseResult, StringResult, TokenResult,
 };
-pub use types::{CompoundStatementResult, Expression, Input};
+pub use types::{CompoundStatementResult, Expression, Input, StatementList};

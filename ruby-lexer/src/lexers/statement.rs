@@ -1,9 +1,9 @@
-use crate::{Input, ExpressionResult};
+use crate::{Input, TokenResult};
 use crate::lexers::expression;
 use nom::branch::alt;
 
 /// *expression_statement* | *alias_statement* | *undef_statement* | *if_modifier_statement* | *unless_modifier_statement* | *while_modifier_statement* | *until_modifier_statement* | *rescue_modifier_statement* | *assignment_statement*
-pub fn statement(i: Input) -> ExpressionResult {
+pub fn statement(i: Input) -> TokenResult {
     alt((
         expression_statement,
         alias_statement,
@@ -17,42 +17,42 @@ pub fn statement(i: Input) -> ExpressionResult {
     ))(i)
 }
 
-pub(crate) fn expression_statement(i: Input) -> ExpressionResult {
+pub(crate) fn expression_statement(i: Input) -> TokenResult {
     expression(i)
 }
 
-pub(crate) fn alias_statement(i: Input) -> ExpressionResult {
+pub(crate) fn alias_statement(i: Input) -> TokenResult {
     stub(i)
 }
 
-pub(crate) fn undef_statement(i: Input) -> ExpressionResult {
+pub(crate) fn undef_statement(i: Input) -> TokenResult {
     stub(i)
 }
 
-pub(crate) fn if_modifier_statement(i: Input) -> ExpressionResult {
+pub(crate) fn if_modifier_statement(i: Input) -> TokenResult {
     stub(i)
 }
 
-pub(crate) fn unless_modifier_statement(i: Input) -> ExpressionResult {
+pub(crate) fn unless_modifier_statement(i: Input) -> TokenResult {
     stub(i)
 }
 
-pub(crate) fn while_modifier_statement(i: Input) -> ExpressionResult {
+pub(crate) fn while_modifier_statement(i: Input) -> TokenResult {
     stub(i)
 }
 
-pub(crate) fn until_modifier_statement(i: Input) -> ExpressionResult {
+pub(crate) fn until_modifier_statement(i: Input) -> TokenResult {
     stub(i)
 }
 
-pub(crate) fn rescue_modifier_statement(i: Input) -> ExpressionResult {
+pub(crate) fn rescue_modifier_statement(i: Input) -> TokenResult {
     stub(i)
 }
 
-pub(crate) fn assignment_statement(i: Input) -> ExpressionResult {
+pub(crate) fn assignment_statement(i: Input) -> TokenResult {
     stub(i)
 }
 
-fn stub(i: Input) -> ExpressionResult {
+fn stub(i: Input) -> TokenResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
