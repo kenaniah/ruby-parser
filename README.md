@@ -14,8 +14,8 @@ using parser combinators.
 
 #### Expressions / Statements / Groups
 
- * There is no semantic difference between an expression and a statement in this lib
- * `Token::Block` contains a list of statements (each item is considered a statement)
+ * There is no semantic difference between an expression and a statement in this implementation
+ * `Token::Block` contains a list of statements (each item is considered to be a statement)
  * `Token::Expression` contains a list of tokens that make up an individual statement
  * Block and expression tokens may be nested via the use of parenthesis:
    ```ruby
