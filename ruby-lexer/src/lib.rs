@@ -31,4 +31,4 @@ pub(crate) use types::{
     CharResult, ExpressionResult, NumericResult, ParseResult, StatementResult, StringResult,
     TokenResult,
 };
-pub use types::{CompoundStatementResult, Input};
+pub use types::{CompoundStatementResult, Input, Expression};

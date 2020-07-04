@@ -1,3 +1,5 @@
+use crate::Expression;
+
 /// Defines the tokens that are returned as a result of lexing
 #[derive(Debug, PartialEq)]
 pub enum Token {
@@ -54,5 +56,5 @@ pub enum Token {
     True,
     False,
     Self_,
-    Grouped(Vec<Self>)
+    Expression(Expression),
 }

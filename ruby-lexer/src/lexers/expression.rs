@@ -45,7 +45,7 @@ pub fn expression(i: Input) -> ExpressionResult {
 pub(crate) fn grouping_expression(i: Input) -> ExpressionResult {
     map(
         tuple((char('('), alt((expression, compound_statement)), char(')'))),
-        |t| vec![Token::Grouped(t.1)],
+        |t| vec![Token::Expression(t.1)],
     )(i)
 }
 
@@ -56,10 +56,11 @@ fn stub(i: Input) -> ExpressionResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Expression;
 
     #[test]
     fn test_expression() {
-        use_parser!(expression, Input, Vec<Token>);
+        use_parser!(expression, Input, Expression);
         // Parse errors
         assert_err!("");
         assert_err!("nil ");
@@ -79,10 +80,10 @@ mod tests {
             "'hello world'",
             vec![Token::SingleQuotedString("hello world".to_owned())]
         );
-        assert_ok!("()", vec![Token::Grouped(vec![])]);
+        assert_ok!("()", vec![Token::Expression(vec![])]);
         assert_ok!(
             "((false))",
-            vec![Token::Grouped(vec![Token::Grouped(vec![Token::False])])]
+            vec![Token::Expression(vec![Token::Expression(vec![Token::False])])]
         );
     }
 }
