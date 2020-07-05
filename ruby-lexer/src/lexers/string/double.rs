@@ -233,6 +233,7 @@ mod tests {
         // Parse errors
         assert_err!("''");
         assert_err!("\"");
+        assert_err!("#{foo#bar}");
         // Success cases
         assert_ok!("\"\"", ds(""));
         assert_ok!("\"foo\\\nbar\"", ds("foobar"));
