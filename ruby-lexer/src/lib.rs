@@ -23,12 +23,12 @@ pub mod lexers;
 mod structs;
 mod types;
 
-pub(crate) use enums::Interpolated;
+pub(crate) use enums::Segment;
 pub(crate) use enums::Numeric;
 pub use enums::Token;
 pub use nom::error::ErrorKind;
 pub use structs::tracked_location::TrackedLocation;
 pub(crate) use types::{
-    CharResult, InterpolatedResult, NumericResult, ParseResult, StringResult, TokenResult,
+    CharResult, SegmentResult, NumericResult, ParseResult, StringResult, TokenResult,
 };
 pub use types::{Expression, Input, StatementList};

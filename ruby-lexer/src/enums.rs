@@ -1,10 +1,10 @@
 use crate::{Expression, StatementList};
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum Interpolated {
+pub(crate) enum Segment {
     Char(char),
     String(String),
-    Expression(Token),
+    Expr(Token),
 }
 
 /// Internal enum used by the numeric_literal parser

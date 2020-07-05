@@ -2,8 +2,7 @@ use crate::lexers::identifier::*;
 use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
 use crate::lexers::program::*;
 use crate::{
-    CharResult, Input, Interpolated, InterpolatedResult, ParseResult, StringResult, Token,
-    TokenResult,
+    CharResult, Input, SegmentResult, ParseResult, Segment, StringResult, Token, TokenResult,
 };
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -25,9 +24,9 @@ pub(crate) fn double_quoted_string(i: Input) -> TokenResult {
     let mut interpolated = false;
     for part in contents {
         match part {
-            Interpolated::Char(c) => string.push(c),
-            Interpolated::String(s) => string.push_str(&s),
-            Interpolated::Expression(t) => {
+            Segment::Char(c) => string.push(c),
+            Segment::String(s) => string.push_str(&s),
+            Segment::Expr(t) => {
                 if !string.is_empty() {
                     tokens.push(Token::DoubleQuotedString(string.clone()));
                     string.clear();
@@ -49,14 +48,12 @@ pub(crate) fn double_quoted_string(i: Input) -> TokenResult {
 }
 
 /// *source_character* **but not** ( `"` | `#` | `\` ) | `#` **not** ( `$` | `@` | `{` ) | *double_escape_sequence* | *interpolated_character_sequence*
-pub(crate) fn double_quoted_string_character(i: Input) -> InterpolatedResult {
+pub(crate) fn double_quoted_string_character(i: Input) -> SegmentResult {
     alt((
-        map(none_of("\"#\\"), |c| Interpolated::Char(c)),
-        map(double_escape_sequence, |s| Interpolated::String(s)),
-        map(interpolated_character_sequence, |e| {
-            Interpolated::Expression(e)
-        }),
-        map(char('#'), |c| Interpolated::Char(c)),
+        map(none_of("\"#\\"), |c| Segment::Char(c)),
+        map(double_escape_sequence, |s| Segment::String(s)),
+        map(interpolated_character_sequence, |e| Segment::Expr(e)),
+        map(char('#'), |c| Segment::Char(c)),
     ))(i)
 }
 
@@ -256,46 +253,46 @@ mod tests {
 
     #[test]
     fn test_double_quoted_string_characer() {
-        use_parser!(double_quoted_string_character, Input, Interpolated);
+        use_parser!(double_quoted_string_character, Input, Segment);
         // Parse errors
         assert_err!("\\");
         assert_err!("\"");
         assert_err!("#{");
         assert_err!("#{\"foo#{2}bar\"");
         // Success cases
-        assert_ok!("😀", Interpolated::Char('😀'));
-        assert_ok!("A", Interpolated::Char('A'));
-        assert_ok!("#", Interpolated::Char('#'));
-        assert_ok!("\\\"", Interpolated::String("\"".to_owned()));
-        assert_ok!("\\u0000", Interpolated::String("\0".to_owned()));
-        assert_ok!("#{}", Interpolated::Expression(Token::Block(vec![])));
+        assert_ok!("😀", Segment::Char('😀'));
+        assert_ok!("A", Segment::Char('A'));
+        assert_ok!("#", Segment::Char('#'));
+        assert_ok!("\\\"", Segment::String("\"".to_owned()));
+        assert_ok!("\\u0000", Segment::String("\0".to_owned()));
+        assert_ok!("#{}", Segment::Expr(Token::Block(vec![])));
         assert_ok!(
             "#@@foo",
-            Interpolated::Expression(Token::ClassVariableIdentifier("@@foo".to_owned()))
+            Segment::Expr(Token::ClassVariableIdentifier("@@foo".to_owned()))
         );
         assert_ok!(
             "#@inst",
-            Interpolated::Expression(Token::InstanceVariableIdentifier("@inst".to_owned()))
+            Segment::Expr(Token::InstanceVariableIdentifier("@inst".to_owned()))
         );
         assert_ok!(
             "#$glob",
-            Interpolated::Expression(Token::GlobalVariableIdentifier("$glob".to_owned()))
+            Segment::Expr(Token::GlobalVariableIdentifier("$glob".to_owned()))
         );
         assert_ok!(
             "#{foobar}",
-            Interpolated::Expression(Token::Block(vec![Token::LocalVariableIdentifier(
+            Segment::Expr(Token::Block(vec![Token::LocalVariableIdentifier(
                 "foobar".to_owned()
             )]))
         );
         assert_ok!(
             "#{\"foo#{2bar\"}",
-            Interpolated::Expression(Token::Block(vec![Token::DoubleQuotedString(
+            Segment::Expr(Token::Block(vec![Token::DoubleQuotedString(
                 "foo#{2bar".to_owned()
             )]))
         );
         assert_ok!(
             "#{\"foo#{2}bar\"}",
-            Interpolated::Expression(Token::Block(vec![Token::InterpolatedString(vec![
+            Segment::Expr(Token::Block(vec![Token::InterpolatedString(vec![
                 Token::DoubleQuotedString("foo".to_owned()),
                 Token::Block(vec![Token::Integer(2)]),
                 Token::DoubleQuotedString("bar".to_owned())

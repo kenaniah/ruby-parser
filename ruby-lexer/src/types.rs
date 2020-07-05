@@ -1,4 +1,4 @@
-use crate::{Interpolated, Numeric, Token, TrackedLocation};
+use crate::{Segment, Numeric, Token, TrackedLocation};
 use nom::IResult;
 
 /// Intermediate type used to build the result types for lexing combinators
@@ -17,7 +17,7 @@ pub type StatementList = Vec<Token>;
 pub(crate) type CharResult<'a> = Parsed<'a, char>;
 
 /// Describes a potentially interpolated character
-pub(crate) type InterpolatedResult<'a> = Parsed<'a, Interpolated>;
+pub(crate) type SegmentResult<'a> = Parsed<'a, Segment>;
 
 /// Describes a parsed numeric literal
 pub(crate) type NumericResult<'a> = Parsed<'a, Numeric>;
