@@ -194,6 +194,12 @@ mod tests {
     use super::*;
     use crate::Token;
 
+    macro_rules! assert_result {
+        ($a:expr, $b:expr) => {
+            assert_ok!($a, $b.to_owned())
+        };
+    }
+
     #[test]
     fn test_double_quoted_string() {
         use_parser!(double_quoted_string);
@@ -287,16 +293,16 @@ mod tests {
         assert_err!("\\");
         assert_err!("\r");
         // Success cases
-        assert_ok!("\\ ", " ".to_owned());
-        assert_ok!("\\\\", "\\".to_owned());
-        assert_ok!("\\\n", "".to_owned());
-        assert_ok!("\\000", "\0".to_owned());
-        assert_ok!("\\x7", "\u{07}".to_owned());
-        assert_ok!("\\r", "\r".to_owned());
-        assert_ok!("\\z", "z".to_owned());
-        assert_ok!("\\M-B", "\u{C2}".to_owned());
-        assert_ok!("\\uaBcD", "\u{ABCD}".to_owned());
-        assert_ok!("\\u{1234 aBCD}", "\u{1234}\u{ABCD}".to_owned());
+        assert_result!("\\ ", " ");
+        assert_result!("\\\\", "\\");
+        assert_result!("\\\n", "");
+        assert_result!("\\000", "\0");
+        assert_result!("\\x7", "\u{07}");
+        assert_result!("\\r", "\r");
+        assert_result!("\\z", "z");
+        assert_result!("\\M-B", "\u{C2}");
+        assert_result!("\\uaBcD", "\u{ABCD}");
+        assert_result!("\\u{1234 aBCD}", "\u{1234}\u{ABCD}");
     }
 
     #[test]
@@ -414,11 +420,11 @@ mod tests {
         assert_err!("\\u{1234 12}");
         assert_err!("\\u{FFFG}");
         // Success cases
-        assert_ok!("\\u{0000}", "\0".to_owned());
-        assert_ok!("\\u{0020}", " ".to_owned());
-        assert_ok!("\\u{1234 aBCD}", "\u{1234}\u{ABCD}".to_owned());
-        assert_ok!("\\u{  aBcD }", "\u{ABCD}".to_owned());
-        assert_ok!("\\u{7FFF   ffff   000A }", "\u{7FFF}\u{FFFF}\n".to_owned());
+        assert_result!("\\u{0000}", "\0");
+        assert_result!("\\u{0020}", " ");
+        assert_result!("\\u{1234 aBCD}", "\u{1234}\u{ABCD}");
+        assert_result!("\\u{  aBcD }", "\u{ABCD}");
+        assert_result!("\\u{7FFF   ffff   000A }", "\u{7FFF}\u{FFFF}\n");
     }
 
     #[test]
@@ -432,32 +438,32 @@ mod tests {
         assert_err!("\\c-a");
         assert_err!("a");
         // Success cases
-        assert_ok!("\\C- ", "\0".to_owned());
-        assert_ok!("\\C-5", "\u{15}".to_owned());
-        assert_ok!("\\cA", "\u{01}".to_owned());
-        assert_ok!("\\C-A", "\u{01}".to_owned());
-        assert_ok!("\\M- ", "\u{A0}".to_owned());
-        assert_ok!("\\M-b", "\u{E2}".to_owned());
-        assert_ok!("\\M-B", "\u{C2}".to_owned());
-        assert_ok!("\\M-\\C-c", "\u{83}".to_owned());
-        assert_ok!("\\M-\\C-C", "\u{83}".to_owned());
-        assert_ok!("\\c\\M-D", "\u{84}".to_owned());
-        assert_ok!("\\M-?", "\u{BF}".to_owned());
-        assert_ok!("\\M-\\C- ", "\u{80}".to_owned());
-        assert_ok!("\\M-\\C-?", "\u{9F}".to_owned());
-        assert_ok!("\\c?", "\u{7F}".to_owned());
-        assert_ok!("\\C-?", "\u{7F}".to_owned());
+        assert_result!("\\C- ", "\0");
+        assert_result!("\\C-5", "\u{15}");
+        assert_result!("\\cA", "\u{01}");
+        assert_result!("\\C-A", "\u{01}");
+        assert_result!("\\M- ", "\u{A0}");
+        assert_result!("\\M-b", "\u{E2}");
+        assert_result!("\\M-B", "\u{C2}");
+        assert_result!("\\M-\\C-c", "\u{83}");
+        assert_result!("\\M-\\C-C", "\u{83}");
+        assert_result!("\\c\\M-D", "\u{84}");
+        assert_result!("\\M-?", "\u{BF}");
+        assert_result!("\\M-\\C- ", "\u{80}");
+        assert_result!("\\M-\\C-?", "\u{9F}");
+        assert_result!("\\c?", "\u{7F}");
+        assert_result!("\\C-?", "\u{7F}");
         // Multibytes should only look at the first byte
-        assert_ok!("\\M-\\C-東", "\u{91}".to_owned());
-        assert_ok!("\\M-😅", "\u{85}".to_owned());
+        assert_result!("\\M-\\C-東", "\u{91}");
+        assert_result!("\\M-😅", "\u{85}");
         // Escape sequences
-        assert_ok!("\\C-\\\\", "\u{1C}".to_owned());
-        assert_ok!("\\C-\\M-\\\\", "\u{9C}".to_owned());
-        assert_ok!("\\C-\n", "\u{0A}".to_owned());
-        assert_ok!("\\C-\\n", "\u{0A}".to_owned());
-        assert_ok!("\\M-\\C-\\n", "\u{8A}".to_owned());
-        assert_ok!("\\C-\\t", "\t".to_owned());
-        assert_ok!("\\C-\\z", "\u{1A}".to_owned());
-        assert_ok!("\\C-\\C-\\n", "\u{0A}".to_owned());
+        assert_result!("\\C-\\\\", "\u{1C}");
+        assert_result!("\\C-\\M-\\\\", "\u{9C}");
+        assert_result!("\\C-\n", "\u{0A}");
+        assert_result!("\\C-\\n", "\u{0A}");
+        assert_result!("\\M-\\C-\\n", "\u{8A}");
+        assert_result!("\\C-\\t", "\t");
+        assert_result!("\\C-\\z", "\u{1A}");
+        assert_result!("\\C-\\C-\\n", "\u{0A}");
     }
 }
