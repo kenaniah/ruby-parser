@@ -1,10 +1,18 @@
 use crate::{Expression, StatementList};
 
+/// Defines a segment of something that may be interpolated
 #[derive(Debug, PartialEq)]
 pub(crate) enum Segment {
     Char(char),
     String(String),
     Expr(Token),
+}
+
+/// Defines something that may be interpolated
+#[derive(Debug, PartialEq)]
+pub enum Interpolatable {
+    String(String),
+    Expr(Vec<Token>)
 }
 
 /// Internal enum used by the numeric_literal parser
