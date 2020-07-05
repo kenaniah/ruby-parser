@@ -59,6 +59,8 @@ pub enum Token {
     Self_,
     Expression(Expression),
     Block(StatementList),
+    Symbol(String),
+    InterpolatedSymbol(Vec<Token>)
 }
 
 #[cfg(test)]

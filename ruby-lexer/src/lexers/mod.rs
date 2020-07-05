@@ -8,6 +8,7 @@ mod numeric;
 mod program;
 mod statement;
 mod string;
+mod symbol;
 mod token;
 
 pub use crate::structs::tracked_location::position;
@@ -19,4 +20,5 @@ pub use numeric::numeric_literal;
 pub use program::program;
 pub use statement::statement;
 pub use string::string_literal;
+pub use symbol::symbol;
 pub use token::token;
