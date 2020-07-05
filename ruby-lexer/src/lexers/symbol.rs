@@ -1,6 +1,6 @@
 use crate::lexers::string::double::double_quoted_string;
 use crate::lexers::string::single::single_quoted_string;
-use crate::{CharResult, Input, Token, TokenResult};
+use crate::{Input, Interpolatable, Token, TokenResult};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, one_of};
@@ -26,12 +26,16 @@ pub(crate) fn dynamic_symbol(i: Input) -> TokenResult {
         map(recognize(tuple((char(':'), single_quoted_string))), |s| {
             Token::Symbol((*s).to_owned())
         }),
-        stub_token
-        // map(tuple((char(':'), double_quoted_string)), |t| {
-        //     let mut vec:  = t.1;
-        //     vec.
-        //     Token::InterpolatedSymbol(vec)
-        // }),
+        map(tuple((char(':'), double_quoted_string)), |t| match t.1 {
+            Interpolatable::String(mut s) => {
+                s.insert(0, ':');
+                Token::Symbol(s)
+            }
+            Interpolatable::Interpolated(mut vec) => {
+                vec.insert(0, Token::Segment(":".to_owned()));
+                Token::InterpolatedSymbol(vec)
+            }
+        }),
     ))(i)
 }
 

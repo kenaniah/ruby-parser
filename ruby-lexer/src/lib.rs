@@ -28,6 +28,7 @@ pub(crate) use enums::{Numeric, Segment};
 pub use nom::error::ErrorKind;
 pub use structs::tracked_location::TrackedLocation;
 pub(crate) use types::{
-    CharResult, NumericResult, ParseResult, SegmentResult, StringResult, TokenResult, InterpolatableResult
+    CharResult, InterpolatableResult, NumericResult, ParseResult, SegmentResult, StringResult,
+    TokenResult,
 };
 pub use types::{Expression, Input, StatementList};

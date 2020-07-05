@@ -3,7 +3,7 @@ use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
 use crate::lexers::program::*;
 use crate::{
     CharResult, Input, Interpolatable, InterpolatableResult, ParseResult, Segment, SegmentResult,
-    StringResult, Token, TokenResult,
+    StringResult, TokenResult,
 };
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -192,6 +192,7 @@ fn char_from_radix(i: &str, radix: u32) -> char {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Token;
 
     #[test]
     fn test_double_quoted_string() {
