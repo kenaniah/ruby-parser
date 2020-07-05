@@ -224,8 +224,33 @@ mod tests {
     #[test]
     fn test_double_quoted_string() {
         use_parser!(double_quoted_string, Input, Token);
+        fn ds(i: &str) -> Token {
+            Token::DoubleQuotedString(i.to_owned())
+        }
+        fn is(i: Vec<Token>) -> Token {
+            Token::InterpolatedString(i)
+        }
         // Parse errors
+        assert_err!("''");
+        assert_err!("\"");
         // Success cases
+        assert_ok!("\"\"", ds(""));
+        assert_ok!("\"foo\\\nbar\"", ds("foobar"));
+        assert_ok!(
+            "\"some #thing\\n#$hi\"",
+            is(vec![
+                ds("some #thing\n"),
+                Token::GlobalVariableIdentifier("$hi".to_owned())
+            ])
+        );
+        assert_ok!(
+            "\"#@@VAR#{2; 3.5} \"",
+            is(vec![
+                Token::ClassVariableIdentifier("@@VAR".to_owned()),
+                Token::Block(vec![Token::Integer(2), Token::Float(3.5)]),
+                ds(" ")
+            ])
+        );
     }
 
     #[test]
