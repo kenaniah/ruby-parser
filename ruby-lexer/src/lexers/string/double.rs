@@ -202,6 +202,9 @@ mod tests {
         fn ds(i: &str) -> Token {
             Token::DoubleQuotedString(i.to_owned())
         }
+        fn seg(i: &str) -> Token {
+            Token::Segment(i.to_owned())
+        }
         fn is(i: Vec<Token>) -> Token {
             Token::InterpolatedString(i)
         }
@@ -215,7 +218,7 @@ mod tests {
         assert_ok!(
             "\"some #thing\\n#$hi\"",
             is(vec![
-                ds("some #thing\n"),
+                seg("some #thing\n"),
                 Token::GlobalVariableIdentifier("$hi".to_owned())
             ])
         );
@@ -224,7 +227,7 @@ mod tests {
             is(vec![
                 Token::ClassVariableIdentifier("@@VAR".to_owned()),
                 Token::Block(vec![Token::Integer(2), Token::Float(3.5)]),
-                ds(" ")
+                seg(" ")
             ])
         );
     }
@@ -271,9 +274,9 @@ mod tests {
         assert_ok!(
             "#{\"foo#{2}bar\"}",
             Segment::Expr(Token::Block(vec![Token::InterpolatedString(vec![
-                Token::DoubleQuotedString("foo".to_owned()),
+                Token::Segment("foo".to_owned()),
                 Token::Block(vec![Token::Integer(2)]),
-                Token::DoubleQuotedString("bar".to_owned())
+                Token::Segment("bar".to_owned())
             ])]))
         );
     }

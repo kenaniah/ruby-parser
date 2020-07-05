@@ -26,7 +26,7 @@ impl From<Vec<Segment>> for Interpolatable {
                 Segment::String(s) => string.push_str(&s),
                 Segment::Expr(t) => {
                     if !string.is_empty() {
-                        tokens.push(Token::DoubleQuotedString(string.clone()));
+                        tokens.push(Token::Segment(string.clone()));
                         string.clear();
                     }
                     tokens.push(t);
@@ -36,7 +36,7 @@ impl From<Vec<Segment>> for Interpolatable {
         }
         if interpolated {
             if !string.is_empty() {
-                tokens.push(Token::DoubleQuotedString(string.clone()));
+                tokens.push(Token::Segment(string.clone()));
             }
             Self::Interpolated(tokens)
         } else {
@@ -113,6 +113,7 @@ pub enum Token {
     Block(StatementList),
     Symbol(String),
     InterpolatedSymbol(Vec<Token>),
+    Segment(String),
 }
 
 #[cfg(test)]
