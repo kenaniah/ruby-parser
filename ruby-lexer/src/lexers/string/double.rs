@@ -2,7 +2,8 @@ use crate::lexers::identifier::*;
 use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
 use crate::lexers::program::*;
 use crate::{
-    CharResult, Input, SegmentResult, ParseResult, Segment, StringResult, Token, TokenResult,
+    CharResult, Input, Interpolatable, ParseResult, Segment, SegmentResult, StringResult, Token,
+    TokenResult,
 };
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -18,32 +19,9 @@ pub(crate) fn double_quoted_string(i: Input) -> TokenResult {
     let (i, contents) = many0(double_quoted_string_character)(i)?;
     let (i, _) = char('"')(i)?;
 
-    // Compile a string token based on what was parsed
-    let mut tokens: Vec<Token> = vec![];
-    let mut string = String::new();
-    let mut interpolated = false;
-    for part in contents {
-        match part {
-            Segment::Char(c) => string.push(c),
-            Segment::String(s) => string.push_str(&s),
-            Segment::Expr(t) => {
-                if !string.is_empty() {
-                    tokens.push(Token::DoubleQuotedString(string.clone()));
-                    string.clear();
-                }
-                tokens.push(t);
-                interpolated = true;
-            }
-        }
-    }
-
-    if interpolated {
-        if !string.is_empty() {
-            tokens.push(Token::DoubleQuotedString(string.clone()));
-        }
-        Ok((i, Token::InterpolatedString(tokens)))
-    } else {
-        Ok((i, Token::DoubleQuotedString(string)))
+    match Interpolatable::from(contents) {
+        Interpolatable::String(s) => Ok((i, Token::DoubleQuotedString(s))),
+        Interpolatable::Interpolated(e) => Ok((i, Token::InterpolatedString(e))),
     }
 }
 
