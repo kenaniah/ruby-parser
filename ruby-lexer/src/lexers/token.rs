@@ -119,7 +119,7 @@ mod tests {
 
     #[test]
     fn test_token() {
-        use_parser!(token, Input, Token);
+        use_parser!(token);
         // Identifiers
         assert_ok!("東", Token::LocalVariableIdentifier("東".to_owned()));
         assert_ok!("@_", Token::InstanceVariableIdentifier("@_".to_owned()));

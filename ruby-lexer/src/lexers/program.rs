@@ -97,7 +97,7 @@ mod tests {
 
     #[test]
     fn test_compound_statement() {
-        use_parser!(compound_statement, Input, Token);
+        use_parser!(compound_statement);
         assert_ok!(
             "2; 5",
             Token::Block(vec![Token::Integer(2), Token::Integer(5)])
@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn test_source_character() {
-        use_parser!(source_character, Input, char);
+        use_parser!(source_character);
         // Success cases
         assert_ok!("1", '1');
         assert_ok!("é", 'é'); // U+00e9: 'latin small letter e with acute'
@@ -127,7 +127,7 @@ mod tests {
 
     #[test]
     fn test_line_terminator() {
-        use_parser!(line_terminator, Input, Input);
+        use_parser!(line_terminator);
         // Success cases
         assert_ok!("\n");
         assert_ok!("\r\n");
@@ -139,7 +139,7 @@ mod tests {
 
     #[test]
     fn test_line_terminator_escape_sequence() {
-        use_parser!(line_terminator_escape_sequence, Input, Input);
+        use_parser!(line_terminator_escape_sequence);
         // Success cases
         assert_ok!("\\\n");
         assert_ok!("\\\r\n");
@@ -151,7 +151,7 @@ mod tests {
 
     #[test]
     fn test_whitespace() {
-        use_parser!(whitespace, Input, Input);
+        use_parser!(whitespace);
         // Success cases
         assert_ok!(" ");
         assert_ok!("\t");

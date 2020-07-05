@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn test_variable_reference() {
-        use_parser!(variable_reference, Input, Token);
+        use_parser!(variable_reference);
         // Parse errors
         assert_err!("");
         assert_err!("nil ");

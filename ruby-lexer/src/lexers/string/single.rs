@@ -73,9 +73,7 @@ mod tests {
     #[test]
     fn test_single_quoted_string_non_escaped_character_sequence() {
         use_parser!(
-            single_quoted_string_non_escaped_character_sequence,
-            Input,
-            String
+            single_quoted_string_non_escaped_character_sequence
         );
         // Parse errors
         assert_err!("");
@@ -91,7 +89,7 @@ mod tests {
 
     #[test]
     fn test_single_escape_character_sequence() {
-        use_parser!(single_escape_character_sequence, Input, String);
+        use_parser!(single_escape_character_sequence);
         // Parse errors
         assert_err!("");
         assert_err!("\\");
@@ -105,7 +103,7 @@ mod tests {
 
     #[test]
     fn test_single_quoted_string() {
-        use_parser!(single_quoted_string, Input, String);
+        use_parser!(single_quoted_string);
         fn t(i: &str) -> String {
             i.to_owned()
         }

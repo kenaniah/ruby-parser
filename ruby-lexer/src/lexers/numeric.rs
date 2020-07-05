@@ -235,7 +235,7 @@ mod tests {
 
     #[test]
     fn test_binary_integer_literal() {
-        use_parser!(binary_integer_literal, Input, Numeric);
+        use_parser!(binary_integer_literal);
         // Parse errors
         assert_err!("0");
         assert_err!("0b");
@@ -253,7 +253,7 @@ mod tests {
 
     #[test]
     fn test_octal_integer_literal() {
-        use_parser!(octal_integer_literal, Input, Numeric);
+        use_parser!(octal_integer_literal);
         // Parser errors
         assert_err!("0");
         assert_err!("0_");
@@ -282,7 +282,7 @@ mod tests {
 
     #[test]
     fn test_hexadecimal_integer_literal() {
-        use_parser!(hexadecimal_integer_literal, Input, Numeric);
+        use_parser!(hexadecimal_integer_literal);
         // Parser errors
         assert_err!("0");
         assert_err!("0_");
@@ -301,7 +301,7 @@ mod tests {
 
     #[test]
     fn test_decimal_integer_literal() {
-        use_parser!(decimal_integer_literal, Input, Numeric);
+        use_parser!(decimal_integer_literal);
         // Parser errors
         assert_err!("foo");
         assert_err!("d20");
@@ -323,7 +323,7 @@ mod tests {
 
     #[test]
     fn test_signed_number() {
-        use_parser!(signed_number, Input, Numeric);
+        use_parser!(signed_number);
         // Parser errors
         assert_err!("foo");
         assert_err!("d20");
@@ -363,7 +363,7 @@ mod tests {
 
     #[test]
     fn test_exponent_part() {
-        use_parser!(exponent_part, Input, String);
+        use_parser!(exponent_part);
         // Parser errors
         assert_err!("12e5");
         assert_err!("f+5");
@@ -383,7 +383,7 @@ mod tests {
 
     #[test]
     fn test_float_literal() {
-        use_parser!(float_literal, Input, Numeric);
+        use_parser!(float_literal);
         // Parser errors
         assert_err!("0");
         assert_err!("0.");

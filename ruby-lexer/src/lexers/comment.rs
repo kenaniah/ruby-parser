@@ -86,7 +86,10 @@ mod tests {
 
     #[test]
     fn test_single_line_comment() {
-        use_parser!(single_line_comment, Input, Input => &str);
+        fn output(x: Input) -> &str {
+            *x
+        }
+        use_parser!(single_line_comment, output);
         // Parse errors
         assert_err!("");
         assert_err!("foobar");
@@ -102,7 +105,7 @@ mod tests {
 
     #[test]
     fn test_multi_line_comment() {
-        use_parser!(multi_line_comment, Input, Input);
+        use_parser!(multi_line_comment);
         // Parse errors
         assert_err!("  =begin\n=end");
         assert_err!("=begin\n  =end");

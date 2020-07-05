@@ -56,7 +56,7 @@ mod tests {
 
     #[test]
     fn test_expression() {
-        use_parser!(expression, Input, Token);
+        use_parser!(expression);
         // Parse errors
         assert_err!("");
         assert_err!("nil ");

@@ -196,7 +196,7 @@ mod tests {
 
     #[test]
     fn test_double_quoted_string() {
-        use_parser!(double_quoted_string, Input, Interpolatable);
+        use_parser!(double_quoted_string);
         fn ds(i: &str) -> Interpolatable {
             Interpolatable::String(i.to_owned())
         }
@@ -232,7 +232,7 @@ mod tests {
 
     #[test]
     fn test_double_quoted_string_characer() {
-        use_parser!(double_quoted_string_character, Input, Segment);
+        use_parser!(double_quoted_string_character);
         // Parse errors
         assert_err!("\\");
         assert_err!("\"");
@@ -281,7 +281,7 @@ mod tests {
 
     #[test]
     fn test_double_escape_sequence() {
-        use_parser!(double_escape_sequence, Input, String);
+        use_parser!(double_escape_sequence);
         // Parse errors
         assert_err!("v");
         assert_err!("\\");
@@ -301,7 +301,7 @@ mod tests {
 
     #[test]
     fn test_non_escaped_sequence() {
-        use_parser!(non_escaped_sequence, Input, char);
+        use_parser!(non_escaped_sequence);
         // Parse errors
         assert_err!("\\");
         assert_err!("\\\\");
@@ -325,7 +325,7 @@ mod tests {
 
     #[test]
     fn test_simple_escape_sequence() {
-        use_parser!(simple_escape_sequence, Input, char);
+        use_parser!(simple_escape_sequence);
         // Parse errors
         assert_err!("");
         assert_err!("s");
@@ -345,7 +345,7 @@ mod tests {
 
     #[test]
     fn test_octal_escape_sequence() {
-        use_parser!(octal_escape_sequence, Input, char);
+        use_parser!(octal_escape_sequence);
         // Parse errors
         assert_err!("\\");
         assert_err!("\\9");
@@ -367,7 +367,7 @@ mod tests {
 
     #[test]
     fn test_hexadecimal_escape_sequence() {
-        use_parser!(hexadecimal_escape_sequence, Input, char);
+        use_parser!(hexadecimal_escape_sequence);
         // Parse errors
         assert_err!("\\");
         assert_err!("\\x");
@@ -388,7 +388,7 @@ mod tests {
 
     #[test]
     fn test_single_unicode_escape_sequence() {
-        use_parser!(single_unicode_escape_sequence, Input, char);
+        use_parser!(single_unicode_escape_sequence);
         // Parse errors
         assert_err!("\\u");
         assert_err!("\\u123");
@@ -405,7 +405,7 @@ mod tests {
 
     #[test]
     fn test_multiple_unicode_escape_sequence() {
-        use_parser!(multiple_unicode_escape_sequence, Input, String);
+        use_parser!(multiple_unicode_escape_sequence);
         // Parse errors
         assert_err!("\\u");
         assert_err!("\\u1234");
@@ -423,7 +423,7 @@ mod tests {
 
     #[test]
     fn test_control_escape_sequence() {
-        use_parser!(control_escape_sequence, Input, String);
+        use_parser!(control_escape_sequence);
         // Parse errors
         assert_err!("\\c");
         assert_err!("\\C");
