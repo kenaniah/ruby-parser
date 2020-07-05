@@ -2,8 +2,8 @@ use crate::lexers::identifier::*;
 use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
 use crate::lexers::program::*;
 use crate::{
-    CharResult, Input, Interpolatable, ParseResult, Segment, SegmentResult, StringResult, Token,
-    TokenResult,
+    CharResult, Input, Interpolatable, InterpolatableResult, ParseResult, Segment, SegmentResult,
+    StringResult, Token, TokenResult,
 };
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -14,15 +14,12 @@ use nom::sequence::{preceded, tuple};
 use std::convert::TryFrom;
 
 /// `"` *double_quoted_string_character** `"`
-pub(crate) fn double_quoted_string(i: Input) -> TokenResult {
+pub(crate) fn double_quoted_string(i: Input) -> InterpolatableResult {
     let (i, _) = char('"')(i)?;
     let (i, contents) = many0(double_quoted_string_character)(i)?;
     let (i, _) = char('"')(i)?;
 
-    match Interpolatable::from(contents) {
-        Interpolatable::String(s) => Ok((i, Token::DoubleQuotedString(s))),
-        Interpolatable::Interpolated(e) => Ok((i, Token::InterpolatedString(e))),
-    }
+    Ok((i, Interpolatable::from(contents)))
 }
 
 /// *source_character* **but not** ( `"` | `#` | `\` ) | `#` **not** ( `$` | `@` | `{` ) | *double_escape_sequence* | *interpolated_character_sequence*
@@ -198,15 +195,15 @@ mod tests {
 
     #[test]
     fn test_double_quoted_string() {
-        use_parser!(double_quoted_string, Input, Token);
-        fn ds(i: &str) -> Token {
-            Token::DoubleQuotedString(i.to_owned())
+        use_parser!(double_quoted_string, Input, Interpolatable);
+        fn ds(i: &str) -> Interpolatable {
+            Interpolatable::String(i.to_owned())
         }
         fn seg(i: &str) -> Token {
             Token::Segment(i.to_owned())
         }
-        fn is(i: Vec<Token>) -> Token {
-            Token::InterpolatedString(i)
+        fn is(i: Vec<Token>) -> Interpolatable {
+            Interpolatable::Interpolated(i)
         }
         // Parse errors
         assert_err!("''");

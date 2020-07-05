@@ -1,11 +1,11 @@
-use crate::{CharResult, Input, StringResult, Token, TokenResult};
+use crate::{CharResult, Input, StringResult};
 use nom::branch::alt;
 use nom::character::complete::{char, none_of, one_of};
 use nom::combinator::map;
 use nom::multi::many0;
 
 /// `'` *single_quoted_string_character** `'`
-pub(crate) fn single_quoted_string(i: Input) -> TokenResult {
+pub(crate) fn single_quoted_string(i: Input) -> StringResult {
     let (i, _) = char('\'')(i)?;
     let (i, contents) = many0(single_quoted_string_character)(i)?;
     let (i, _) = char('\'')(i)?;
@@ -13,7 +13,7 @@ pub(crate) fn single_quoted_string(i: Input) -> TokenResult {
     for s in contents {
         string.push_str(&s);
     }
-    Ok((i, Token::SingleQuotedString(string)))
+    Ok((i, string))
 }
 
 /// *single_quoted_string_non_escaped_character* | *single_quoted_escape_sequence*
@@ -105,9 +105,9 @@ mod tests {
 
     #[test]
     fn test_single_quoted_string() {
-        use_parser!(single_quoted_string, Input, Token);
-        fn t(i: &str) -> Token {
-            Token::SingleQuotedString(i.to_owned())
+        use_parser!(single_quoted_string, Input, String);
+        fn t(i: &str) -> String {
+            i.to_owned()
         }
         // Parse errors
         assert_err!("");
