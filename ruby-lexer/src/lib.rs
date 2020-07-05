@@ -23,9 +23,9 @@ pub mod lexers;
 mod structs;
 mod types;
 
-pub(crate) use enums::interpolated::Interpolated;
-pub(crate) use enums::numeric::Numeric;
-pub use enums::token::Token;
+pub(crate) use enums::Interpolated;
+pub(crate) use enums::Numeric;
+pub use enums::Token;
 pub use nom::error::ErrorKind;
 pub use structs::tracked_location::TrackedLocation;
 pub(crate) use types::{

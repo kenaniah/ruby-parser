@@ -1,5 +1,19 @@
 use crate::{Expression, StatementList};
 
+#[derive(Debug, PartialEq)]
+pub(crate) enum Interpolated {
+    Char(char),
+    String(String),
+    Expression(Token),
+}
+
+/// Internal enum used by the numeric_literal parser
+#[derive(Debug, PartialEq)]
+pub(crate) enum Numeric {
+    Integer(isize),
+    Float(f64),
+}
+
 /// Defines the tokens that are returned as a result of lexing
 #[derive(Debug, PartialEq)]
 pub enum Token {
