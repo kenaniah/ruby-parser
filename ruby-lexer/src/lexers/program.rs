@@ -81,7 +81,7 @@ pub(crate) fn line_terminator_escape_sequence(i: Input) -> ParseResult {
     recognize(tuple((char('\\'), line_terminator)))(i)
 }
 
-/// [ beginning of a line ] `__END__` ( *line_terminator* | [ end of a program ] )
+// / [ beginning of a line ] `__END__` ( *line_terminator* | [ end of a program ] )
 // pub(crate) fn end_of_program_marker(i: Input) -> TokenResult {
 //     if !i.beginning_of_line() {
 //         return Err(nom::Err::Error((i, nom::error::ErrorKind::Space)));
@@ -167,7 +167,7 @@ mod tests {
 
     // #[test]
     // fn test_end_of_program_marker() {
-    //     use_parser!(end_of_program_marker, Input, Token);
+    //     use_parser!(end_of_program_marker);
     //     // Success cases
     //     assert_ok!("__END__");
     //     assert_ok!("__END__\n");
