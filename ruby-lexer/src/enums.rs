@@ -105,6 +105,7 @@ pub enum Token {
     Operator(String),
     Comment(String),
     EndOfProgram,
+    Keyword(String),
     Nil,
     True,
     False,

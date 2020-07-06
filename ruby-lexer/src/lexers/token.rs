@@ -8,7 +8,13 @@ use nom::sequence::tuple;
 
 /// *keyword* | *identifier* | *punctuator* | *operator* | *literal*
 pub fn token(i: Input) -> TokenResult {
-    alt((keyword, identifier, punctuator, operator, literal))(i)
+    alt((
+        map(keyword, |s| Token::Keyword((*s).to_owned())),
+        identifier,
+        punctuator,
+        operator,
+        literal,
+    ))(i)
 }
 
 /// *numeric_literal* | *string_literal* | *array_literal* | *regular_expression_literal* | *symbol*
