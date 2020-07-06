@@ -2,7 +2,7 @@ use crate::lexers::identifier::identifier;
 use crate::lexers::keyword::keyword;
 use crate::lexers::string::double::double_quoted_string;
 use crate::lexers::string::single::single_quoted_string;
-use crate::lexers::token::operator_method_name;
+use crate::lexers::token::operator;
 use crate::types::ParseResult;
 use crate::{Input, Interpolatable, Token, TokenResult};
 use nom::branch::alt;
@@ -42,23 +42,29 @@ pub(crate) fn dynamic_symbol(i: Input) -> TokenResult {
     ))(i)
 }
 
-/// *identifier* | *operator_method_name* | *keyword*
+/// *identifier* | *operator* | *keyword*
 pub(crate) fn symbol_name(i: Input) -> ParseResult {
-    alt((recognize(identifier), operator_method_name, keyword))(i)
+    alt((recognize(identifier), recognize(operator), keyword))(i)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    macro_rules! assert_symbol {
+        ($a:expr, $b:expr) => {
+            assert_ok!($a, Token::Symbol($b.to_owned()))
+        };
+    }
+    macro_rules! assert_interpolated {
+        ($a:expr, $b:expr) => {
+            assert_ok!($a, Token::InterpolatedSymbol($b))
+        };
+    }
+
     #[test]
     fn test_symbol_literal() {
         use_parser!(symbol_literal);
-        macro_rules! assert_result {
-            ($a:expr, $b:expr) => {
-                assert_ok!($a, Token::Symbol($b.to_owned()))
-            };
-        }
         // Parse errors
         assert_err!(":");
         assert_err!("foo");
@@ -67,29 +73,25 @@ mod tests {
         assert_err!(":@");
         assert_err!(":@@");
         assert_err!(":$");
+        assert_err!(":====");
+        assert_err!(":foo==");
         // Success cases
-        assert_result!(":foo", ":foo");
-        assert_result!(":_", ":_");
-        assert_result!(":if", ":if");
-        assert_result!(":$glob", ":$glob");
-        assert_result!(":@@v", ":@@v");
-        assert_result!(":CONST", ":CONST");
-        assert_result!(":😉😎", ":😉😎");
+        assert_symbol!(":foo", ":foo");
+        assert_symbol!(":_", ":_");
+        assert_symbol!(":===", ":===");
+        assert_symbol!(":!", ":!");
+        assert_symbol!(":foo=", ":foo=");
+        assert_symbol!(":>=", ":>=");
+        assert_symbol!(":if", ":if");
+        assert_symbol!(":$glob", ":$glob");
+        assert_symbol!(":@@v", ":@@v");
+        assert_symbol!(":CONST", ":CONST");
+        assert_symbol!(":😉😎", ":😉😎");
     }
 
     #[test]
     fn test_dynamic_symbol() {
         use_parser!(dynamic_symbol);
-        macro_rules! assert_symbol {
-            ($a:expr, $b:expr) => {
-                assert_ok!($a, Token::Symbol($b.to_owned()))
-            };
-        }
-        macro_rules! assert_interpolated {
-            ($a:expr, $b:expr) => {
-                assert_ok!($a, Token::InterpolatedSymbol($b))
-            };
-        }
         // Parse errors
         assert_err!("''");
         assert_err!(":'");
