@@ -73,6 +73,7 @@ mod tests {
         assert_err!(":@");
         assert_err!(":@@");
         assert_err!(":$");
+        assert_err!(":[");
         assert_err!(":====");
         assert_err!(":foo==");
         // Success cases
@@ -80,6 +81,7 @@ mod tests {
         assert_symbol!(":_", ":_");
         assert_symbol!(":===", ":===");
         assert_symbol!(":!", ":!");
+        assert_symbol!(":[]", ":[]");
         assert_symbol!(":foo=", ":foo=");
         assert_symbol!(":>=", ":>=");
         assert_symbol!(":if", ":if");
