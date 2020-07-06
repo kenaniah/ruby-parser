@@ -46,3 +46,69 @@ pub(crate) fn dynamic_symbol(i: Input) -> TokenResult {
 pub(crate) fn symbol_name(i: Input) -> ParseResult {
     alt((recognize(identifier), operator_method_name, keyword))(i)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_symbol_literal() {
+        use_parser!(symbol_literal);
+        macro_rules! assert_result {
+            ($a:expr, $b:expr) => {
+                assert_ok!($a, Token::Symbol($b.to_owned()))
+            };
+        }
+        // Parse errors
+        assert_err!(":");
+        assert_err!("foo");
+        assert_err!("::");
+        assert_err!(":foo bar");
+        assert_err!(":@");
+        assert_err!(":@@");
+        assert_err!(":$");
+        // Success cases
+        assert_result!(":foo", ":foo");
+        assert_result!(":_", ":_");
+        assert_result!(":if", ":if");
+        assert_result!(":$glob", ":$glob");
+        assert_result!(":@@v", ":@@v");
+        assert_result!(":CONST", ":CONST");
+        assert_result!(":😉😎", ":😉😎");
+    }
+
+    #[test]
+    fn test_dynamic_symbol() {
+        use_parser!(dynamic_symbol);
+        macro_rules! assert_symbol {
+            ($a:expr, $b:expr) => {
+                assert_ok!($a, Token::Symbol($b.to_owned()))
+            };
+        }
+        macro_rules! assert_interpolated {
+            ($a:expr, $b:expr) => {
+                assert_ok!($a, Token::InterpolatedSymbol($b))
+            };
+        }
+        // Parse errors
+        assert_err!("''");
+        assert_err!(":'");
+        assert_err!(":'\"");
+        assert_err!(":'foo bar''");
+        // Success cases
+        assert_symbol!(":''", ":");
+        assert_symbol!(":\"\"", ":");
+        assert_symbol!(":'foo #$bar'", ":foo #$bar");
+        assert_symbol!(":'$123'", ":$123");
+        assert_symbol!(":\"\\x00\"", ":\0");
+        assert_symbol!(":\"foo\\nbar\"", ":foo\nbar");
+        assert_interpolated!(
+            ":\"foo#$bar\"",
+            vec![
+                Token::Segment(":".to_owned()),
+                Token::Segment("foo".to_owned()),
+                Token::GlobalVariableIdentifier("$bar".to_owned())
+            ]
+        );
+    }
+}
