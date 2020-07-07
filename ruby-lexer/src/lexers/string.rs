@@ -7,6 +7,7 @@ use nom::combinator::map;
 
 pub(crate) mod double;
 pub(crate) mod single;
+pub(crate) mod quoted;
 
 /// *single_quoted_string* | *double_quoted_string* | *quoted_non_expanded_literal_string* | *quoted_expanded_literal_string* | *here_document* | *external_command_execution*
 pub fn string_literal(i: Input) -> TokenResult {
