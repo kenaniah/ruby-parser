@@ -24,14 +24,15 @@ pub(crate) fn quoted_non_expanded_literal_string(i: Input) -> StringResult {
 
 /// *literal_beginning_delimiter* *non_expanded_literal_string** *literal_ending_delimiter*
 pub(crate) fn non_expanded_delimited_string(i: Input) -> StringResult {
+    let meta = i.metadata;
     let di: DelimitedInput = DelimitedInput::new_with_pos(*i, i.offset(), i.line(), i.char());
     match _non_expanded_delimited_string(di) {
         Ok((di, str)) => Ok((
-            Input::new_with_pos(*di, di.offset(), di.line(), di.char()),
+            Input::new_with_pos_and_meta(*di, di.offset(), di.line(), di.char(), meta),
             str,
         )),
         Err(_) => Err(nom::Err::Error((
-            Input::new_with_pos(*di, di.offset(), di.line(), di.char()),
+            Input::new_with_pos_and_meta(*di, di.offset(), di.line(), di.char(), meta),
             crate::ErrorKind::Char,
         ))),
     }

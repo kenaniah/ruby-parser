@@ -85,6 +85,18 @@ impl<T: AsBytes, X: Default> TrackedLocation<T, X> {
     }
 }
 
+impl<T: AsBytes, X> TrackedLocation<T, X> {
+    pub fn new_with_pos_and_meta(program: T, offset: usize, line: usize, char: usize, metadata: X) -> Self {
+        Self {
+            offset: offset,
+            line: line,
+            char: char,
+            input: program,
+            metadata: metadata,
+        }
+    }
+}
+
 impl<T: AsBytes, X: Default> From<T> for TrackedLocation<T, X> {
     fn from(program: T) -> Self {
         Self::new_with_metadata(program, X::default())
