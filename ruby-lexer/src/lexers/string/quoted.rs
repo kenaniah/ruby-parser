@@ -174,6 +174,7 @@ mod tests {
         assert_err!("%q{foo");
         assert_err!("%q(foo)bar");
         assert_err!("%q[[abc] [def]");
+        assert_err!("%q[[abc] [def])");
         assert_err!("%q((abc\\))");
         // Success cases
         assert_ok!("%q()", "");
