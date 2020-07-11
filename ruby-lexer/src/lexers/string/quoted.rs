@@ -1,13 +1,13 @@
 use crate::{
-    Input, Interpolatable, InterpolatableResult, ParseResult, Segment, SegmentResult,
-    StringResult, TrackedLocation,
+    Input, Interpolatable, InterpolatableResult, ParseResult, Segment, SegmentResult, StringResult,
+    TrackedLocation,
 };
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char};
 use nom::combinator::verify;
 use nom::combinator::{map, not, peek};
-use nom::multi::{many0};
+use nom::multi::many0;
 use nom::sequence::{preceded, tuple};
 
 type DelimitedInput<'a> = TrackedLocation<&'a str, Option<char>>;
@@ -145,10 +145,9 @@ pub(crate) fn non_escaped_non_expanded_literal_character(
 
 /// *source_character* **but not** *alpha_numeric_character*
 pub(crate) fn literal_beginning_delimiter(i: DelimitedInput) -> DelimitedCharResult {
-    peek(not(verify(anychar, |c: &char| c.is_ascii_alphanumeric())))(i)?;
     let (mut i, c) = match i.start_delimiter() {
         Some(c) => char(c)(i)?,
-        None => anychar(i)?,
+        None => verify(anychar, |c: &char| c.is_ascii_punctuation())(i)?,
     };
     i.metadata = Some(c);
     Ok((i, c))
@@ -156,9 +155,32 @@ pub(crate) fn literal_beginning_delimiter(i: DelimitedInput) -> DelimitedCharRes
 
 /// *source_character* **but not** *alpha_numeric_character*
 pub(crate) fn literal_ending_delimiter(i: DelimitedInput) -> DelimitedCharResult {
-    peek(not(verify(anychar, |c: &char| c.is_ascii_alphanumeric())))(i)?;
     match i.end_delimiter() {
         Some(c) => char(c)(i),
         None => unimplemented!(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_literal_beginning_delimiter() {
+        use_parser!(literal_beginning_delimiter);
+        // Parse errors
+        assert_err!("");
+        assert_err!("a");
+        assert_err!(" ");
+        assert_err!("5");
+        assert_err!("\n");
+        assert_err!("東"); // U+6771: 'CJK Unified Ideograph-6771' "East"
+        // Success cases
+        assert_ok!("<", '<');
+        assert_ok!("(", '(');
+        assert_ok!("}", '}');
+        assert_ok!(":", ':');
+        assert_ok!("_", '_');
+        assert_ok!("\\", '\\');
     }
 }
