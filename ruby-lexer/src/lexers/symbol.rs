@@ -1,11 +1,13 @@
 use crate::lexers::identifier::identifier;
 use crate::lexers::keyword::keyword;
 use crate::lexers::string::double::double_quoted_string;
+use crate::lexers::string::quoted::non_expanded_delimited_string;
 use crate::lexers::string::single::single_quoted_string;
 use crate::lexers::token::operator;
 use crate::types::ParseResult;
 use crate::{Input, Interpolatable, Token, TokenResult};
 use nom::branch::alt;
+use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::{map, recognize};
 use nom::sequence::tuple;
@@ -39,6 +41,13 @@ pub(crate) fn dynamic_symbol(i: Input) -> TokenResult {
                 Token::InterpolatedSymbol(vec)
             }
         }),
+        map(
+            tuple((tag("%s"), non_expanded_delimited_string)),
+            |mut t| {
+                t.1.insert(0, ':');
+                Token::Symbol(t.1)
+            },
+        ),
     ))(i)
 }
 
@@ -106,6 +115,7 @@ mod tests {
         assert_symbol!(":'$123'", ":$123");
         assert_symbol!(":\"\\x00\"", ":\0");
         assert_symbol!(":\"foo\\nbar\"", ":foo\nbar");
+        assert_symbol!("%s(foo #{2 + 4} bar)", ":foo #{2 + 4} bar");
         assert_interpolated!(
             ":\"foo#$bar\"",
             vec![
