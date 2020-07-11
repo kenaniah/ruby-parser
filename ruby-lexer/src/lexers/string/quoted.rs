@@ -1,18 +1,33 @@
 use crate::{
-    CharResult, Input, Interpolatable, InterpolatableResult, ParseResult, Segment, SegmentResult,
-    StringResult, TokenResult, TrackedLocation,
+    Input, Interpolatable, InterpolatableResult, ParseResult, Segment, SegmentResult,
+    StringResult, TrackedLocation,
 };
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{anychar, char, none_of, one_of};
+use nom::character::complete::{anychar, char};
 use nom::combinator::verify;
-use nom::combinator::{map, not, peek, recognize};
-use nom::multi::{many0, many1, many_m_n, separated_list1};
+use nom::combinator::{map, not, peek};
+use nom::multi::{many0};
 use nom::sequence::{preceded, tuple};
 
 type DelimitedInput<'a> = TrackedLocation<&'a str, Option<char>>;
 type DelimitedStringResult<'a> = nom::IResult<DelimitedInput<'a>, String>;
 type DelimitedCharResult<'a> = nom::IResult<DelimitedInput<'a>, char>;
+
+impl DelimitedInput<'_> {
+    fn start_delimiter(&self) -> Option<char> {
+        self.metadata
+    }
+    fn end_delimiter(&self) -> Option<char> {
+        match self.metadata {
+            Some('{') => Some('}'),
+            Some('(') => Some(')'),
+            Some('[') => Some(']'),
+            Some('<') => Some('>'),
+            _ => self.metadata,
+        }
+    }
+}
 
 /// `%q` *non_expanded_delimited_string*
 pub(crate) fn quoted_non_expanded_literal_string(i: Input) -> StringResult {
@@ -35,12 +50,22 @@ pub(crate) fn non_expanded_delimited_string(i: Input) -> StringResult {
     }
 }
 
+/// *literal_beginning_delimiter* *non_expanded_literal_string** *literal_ending_delimiter*
 fn _non_expanded_delimited_string(i: DelimitedInput) -> DelimitedStringResult {
-    let (mut i, delimiter) = literal_beginning_delimiter(i)?;
-    i.set_metadata(Some(delimiter));
-    let (i, contents) = non_expanded_literal_string(i)?;
-    let (i, _) = literal_ending_delimiter(i)?;
-    Ok((i, contents))
+    map(
+        tuple((
+            literal_beginning_delimiter,
+            many0(non_expanded_literal_string),
+            literal_ending_delimiter,
+        )),
+        |t| {
+            let mut s = String::new();
+            for str in t.1 {
+                s.push_str(&str);
+            }
+            s
+        },
+    )(i)
 }
 
 /// *non_expanded_literal_character* | *non_expanded_delimited_string*
@@ -121,11 +146,19 @@ pub(crate) fn non_escaped_non_expanded_literal_character(
 /// *source_character* **but not** *alpha_numeric_character*
 pub(crate) fn literal_beginning_delimiter(i: DelimitedInput) -> DelimitedCharResult {
     peek(not(verify(anychar, |c: &char| c.is_ascii_alphanumeric())))(i)?;
-    anychar(i)
+    let (mut i, c) = match i.start_delimiter() {
+        Some(c) => char(c)(i)?,
+        None => anychar(i)?,
+    };
+    i.metadata = Some(c);
+    Ok((i, c))
 }
 
 /// *source_character* **but not** *alpha_numeric_character*
 pub(crate) fn literal_ending_delimiter(i: DelimitedInput) -> DelimitedCharResult {
     peek(not(verify(anychar, |c: &char| c.is_ascii_alphanumeric())))(i)?;
-    anychar(i)
+    match i.end_delimiter() {
+        Some(c) => char(c)(i),
+        None => unimplemented!(),
+    }
 }

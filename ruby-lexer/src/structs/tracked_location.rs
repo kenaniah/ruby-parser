@@ -68,9 +68,6 @@ impl<T: AsBytes, X> TrackedLocation<T, X> {
     pub fn beginning_of_line(&self) -> bool {
         self.char == 1
     }
-    pub fn set_metadata(&mut self, metadata: X) {
-        self.metadata = metadata;
-    }
 }
 
 impl<T: AsBytes, X: Default> TrackedLocation<T, X> {
