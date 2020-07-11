@@ -5,6 +5,7 @@ use crate::{
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
+use nom::combinator::verify;
 use nom::combinator::{map, not, peek, recognize};
 use nom::multi::{many0, many1, many_m_n, separated_list1};
 use nom::sequence::{preceded, tuple};
@@ -60,7 +61,8 @@ pub(crate) fn non_expanded_literal_character(i: DelimitedInput) -> DelimitedStri
 
 /// *source_character* **but not** *quoted_literal_escape_character*
 pub(crate) fn non_escaped_literal_character(i: DelimitedInput) -> DelimitedStringResult {
-    stub(i)
+    peek(not(quoted_literal_escape_character))(i)?;
+    map(anychar, |c| c.to_string())(i)
 }
 
 /// *non_expanded_literal_escape_character_sequence* | *non_escaped_non_expanded_literal_character_sequence*
@@ -112,23 +114,18 @@ pub(crate) fn non_escaped_non_expanded_literal_character_sequence(
 pub(crate) fn non_escaped_non_expanded_literal_character(
     i: DelimitedInput,
 ) -> DelimitedStringResult {
-    stub(i)
+    peek(not(non_expanded_literal_escaped_character))(i)?;
+    map(anychar, |c| c.to_string())(i)
 }
 
 /// *source_character* **but not** *alpha_numeric_character*
 pub(crate) fn literal_beginning_delimiter(i: DelimitedInput) -> DelimitedCharResult {
-    stub_char(i)
+    peek(not(verify(anychar, |c: &char| c.is_ascii_alphanumeric())))(i)?;
+    anychar(i)
 }
 
 /// *source_character* **but not** *alpha_numeric_character*
 pub(crate) fn literal_ending_delimiter(i: DelimitedInput) -> DelimitedCharResult {
-    stub_char(i)
-}
-
-fn stub(i: DelimitedInput) -> DelimitedStringResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
-}
-
-fn stub_char(i: DelimitedInput) -> DelimitedCharResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
+    peek(not(verify(anychar, |c: &char| c.is_ascii_alphanumeric())))(i)?;
+    anychar(i)
 }
