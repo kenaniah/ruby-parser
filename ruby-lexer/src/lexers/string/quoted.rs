@@ -3,7 +3,7 @@ use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
 use crate::lexers::program::*;
 use crate::{
     CharResult, Input, Interpolatable, InterpolatableResult, ParseResult, Segment, SegmentResult,
-    StringResult, TokenResult,
+    StringResult, TokenResult, TrackedLocation,
 };
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -13,9 +13,9 @@ use nom::multi::{many0, many1, many_m_n, separated_list1};
 use nom::sequence::{preceded, tuple};
 use std::convert::TryFrom;
 
-type DelimitedInput<'a> = (Input<'a>, Option<char>);
-type DelimitedStringResult<'a> = nom::IResult<(Input<'a>, Option<char>), String>;
-type DelimitedCharResult<'a> = nom::IResult<(Input<'a>, Option<char>), char>;
+type DelimitedInput<'a> = TrackedLocation<&'a str, Option<char>>;
+type DelimitedStringResult<'a> = nom::IResult<DelimitedInput<'a>, String>;
+type DelimitedCharResult<'a> = nom::IResult<DelimitedInput<'a>, char>;
 
 /// `%q` *non_expanded_delimited_string*
 pub(crate) fn quoted_non_expanded_literal_string(i: Input) -> StringResult {
@@ -24,15 +24,22 @@ pub(crate) fn quoted_non_expanded_literal_string(i: Input) -> StringResult {
 
 /// *literal_beginning_delimiter* *non_expanded_literal_string** *literal_ending_delimiter*
 pub(crate) fn non_expanded_delimited_string(i: Input) -> StringResult {
-    match _non_expanded_delimited_string((i, None)) {
-        Ok(((i, _), str)) => Ok((i, str)),
-        Err(_) => Err(nom::Err::Error((i, crate::ErrorKind::Char)))
+    let di: DelimitedInput = DelimitedInput::new_with_pos(*i, i.offset(), i.line(), i.char());
+    match _non_expanded_delimited_string(di) {
+        Ok((di, str)) => Ok((
+            Input::new_with_pos(*di, di.offset(), di.line(), di.char()),
+            str,
+        )),
+        Err(_) => Err(nom::Err::Error((
+            Input::new_with_pos(*di, di.offset(), di.line(), di.char()),
+            crate::ErrorKind::Char,
+        ))),
     }
 }
 
 fn _non_expanded_delimited_string(i: DelimitedInput) -> DelimitedStringResult {
     let (mut i, delimiter) = literal_beginning_delimiter(i)?;
-    i.1 = Some(delimiter);
+    i.set_metadata(Some(delimiter));
     let (i, contents) = non_expanded_literal_string(i)?;
     let (i, _) = literal_ending_delimiter(i)?;
     Ok((i, contents))
@@ -41,18 +48,17 @@ fn _non_expanded_delimited_string(i: DelimitedInput) -> DelimitedStringResult {
 /// *non_expanded_literal_character* | *non_expanded_delimited_string*
 pub(crate) fn non_expanded_literal_string(i: DelimitedInput) -> DelimitedStringResult {
     alt((
+        non_expanded_literal_character,
         _non_expanded_delimited_string,
-        _non_expanded_delimited_string
     ))(i)
-    // alt((
-    //     non_expanded_literal_character,
-    //     _non_expanded_delimited_string,
-    // ))(i)
 }
 
 /// *non_escaped_literal_character* | *non_expanded_literal_escape_sequence*
 pub(crate) fn non_expanded_literal_character(i: DelimitedInput) -> DelimitedStringResult {
-    stub(i)
+    alt((
+        non_escaped_literal_character,
+        non_expanded_literal_escape_sequence,
+    ))(i)
 }
 
 /// *source_character* **but not** *quoted_literal_escape_character*
@@ -62,17 +68,29 @@ pub(crate) fn non_escaped_literal_character(i: DelimitedInput) -> DelimitedStrin
 
 /// *non_expanded_literal_escape_character_sequence* | *non_escaped_non_expanded_literal_character_sequence*
 pub(crate) fn non_expanded_literal_escape_sequence(i: DelimitedInput) -> DelimitedStringResult {
-    stub(i)
+    alt((
+        non_expanded_literal_escape_character_sequence,
+        non_escaped_non_expanded_literal_character_sequence,
+    ))(i)
 }
 
 /// `\` *non_expanded_literal_escaped_character*
-pub(crate) fn non_expanded_literal_escape_character_sequence(i: DelimitedInput) -> DelimitedStringResult {
+pub(crate) fn non_expanded_literal_escape_character_sequence(
+    i: DelimitedInput,
+) -> DelimitedStringResult {
     stub(i)
 }
 
 /// *literal_beginning_delimiter* | *literal_ending_delimiter* | `\`
 pub(crate) fn non_expanded_literal_escaped_character(i: DelimitedInput) -> DelimitedStringResult {
-    stub(i)
+    map(
+        alt((
+            literal_beginning_delimiter,
+            literal_ending_delimiter,
+            char('\\'),
+        )),
+        |c| c.to_string(),
+    )(i)
 }
 
 /// *non_expanded_literal_escaped_character*
@@ -81,12 +99,16 @@ pub(crate) fn quoted_literal_escape_character(i: DelimitedInput) -> DelimitedStr
 }
 
 /// `\` *non_escaped_non_expanded_literal_character*
-pub(crate) fn non_escaped_non_expanded_literal_character_sequence(i: DelimitedInput) -> DelimitedStringResult {
+pub(crate) fn non_escaped_non_expanded_literal_character_sequence(
+    i: DelimitedInput,
+) -> DelimitedStringResult {
     stub(i)
 }
 
 /// *source_character* **but not** *non_expanded_literal_escaped_character*
-pub(crate) fn non_escaped_non_expanded_literal_character(i: DelimitedInput) -> DelimitedStringResult {
+pub(crate) fn non_escaped_non_expanded_literal_character(
+    i: DelimitedInput,
+) -> DelimitedStringResult {
     stub(i)
 }
 
