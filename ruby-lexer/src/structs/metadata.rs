@@ -1,6 +1,6 @@
-/// Tracks location information and user-defined metadata for nom's source input.
+/// Tracks lexer-specific metadata
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Metadata<'a> {
-    file: Option<&'a str>,
-    quote_delimiter: Option<char>,
+    pub file: Option<&'a str>,
+    pub quote_delimiter: Option<char>,
 }
