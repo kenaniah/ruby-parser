@@ -198,8 +198,11 @@ mod tests {
         assert_err!("%q{foo");
         assert_err!("%q(foo)bar");
         assert_err!("%q[[abc] [def]");
+        assert_err!("%q((abc\\))");
         // Success cases
         assert_ok!("%q()", "");
+        assert_ok!("%q((abc))", "(abc)");
+        assert_ok!("%q((abc\\)))", "(abc))");
         assert_ok!("%q(foobar)", "foobar");
         assert_ok!("%q<\0>", "\0");
         assert_ok!("%q:foo\nbar:", "foo\nbar");
