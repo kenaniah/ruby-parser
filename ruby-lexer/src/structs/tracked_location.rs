@@ -8,7 +8,7 @@ use nom::{
 
 /// Tracks location information and user-defined metadata for nom's source input.
 #[derive(Debug, Clone, Copy)]
-pub struct TrackedLocation<T, X = ()> {
+pub struct TrackedLocation<T, X> {
     /// The offset represents the current byte position relative to the original input
     offset: usize,
     /// Tracks the current line number (starts at 1)
@@ -25,18 +25,6 @@ impl<T, X> Deref for TrackedLocation<T, X> {
     type Target = T;
     fn deref(&self) -> &Self::Target {
         &self.input
-    }
-}
-
-impl<T: AsBytes> TrackedLocation<T, ()> {
-    pub fn new(program: T) -> Self {
-        Self {
-            offset: 0,
-            line: 1,
-            char: 1,
-            input: program,
-            metadata: (),
-        }
     }
 }
 
@@ -71,6 +59,15 @@ impl<T: AsBytes, X> TrackedLocation<T, X> {
 }
 
 impl<T: AsBytes, X: Default> TrackedLocation<T, X> {
+    pub fn new(program: T) -> Self {
+        Self {
+            offset: 0,
+            line: 1,
+            char: 1,
+            input: program,
+            metadata: X::default(),
+        }
+    }
     pub fn new_with_pos(program: T, offset: usize, line: usize, char: usize) -> Self {
         Self {
             offset: offset,
@@ -83,7 +80,13 @@ impl<T: AsBytes, X: Default> TrackedLocation<T, X> {
 }
 
 impl<T: AsBytes, X> TrackedLocation<T, X> {
-    pub fn new_with_pos_and_meta(program: T, offset: usize, line: usize, char: usize, metadata: X) -> Self {
+    pub fn new_with_pos_and_meta(
+        program: T,
+        offset: usize,
+        line: usize,
+        char: usize,
+        metadata: X,
+    ) -> Self {
         Self {
             offset: offset,
             line: line,
@@ -228,7 +231,7 @@ impl<'a, X> InputIter for TrackedLocation<&'a str, X> {
     }
 }
 
-impl<'a> IntoIterator for TrackedLocation<&'a str> {
+impl<'a, X> IntoIterator for TrackedLocation<&'a str, X> {
     type Item = char;
     type IntoIter = Chars<'a>;
     fn into_iter(self) -> Self::IntoIter {
@@ -236,7 +239,7 @@ impl<'a> IntoIterator for TrackedLocation<&'a str> {
     }
 }
 
-impl<A: Compare<B>, B: Into<TrackedLocation<B>>, X> Compare<B> for TrackedLocation<A, X> {
+impl<A: Compare<B>, B: Into<TrackedLocation<B, X>>, X> Compare<B> for TrackedLocation<A, X> {
     fn compare(&self, other: B) -> CompareResult {
         self.input.compare(other.into().input)
     }

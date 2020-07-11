@@ -1,4 +1,4 @@
-use crate::{Interpolatable, Numeric, Segment, Token, TrackedLocation};
+use crate::{Interpolatable, Metadata, Numeric, Segment, Token, TrackedLocation};
 use nom::IResult;
 
 /// Intermediate type used to build the result types for lexing combinators
@@ -8,7 +8,7 @@ type Parsed<'a, T> = IResult<Input<'a>, T>;
 pub type Expression = Vec<Token>;
 
 /// Describes the lexer's input type
-pub type Input<'a> = TrackedLocation<&'a str>;
+pub type Input<'a> = TrackedLocation<&'a str, Metadata<'a>>;
 
 /// Describes a list of statements
 pub type StatementList = Vec<Token>;

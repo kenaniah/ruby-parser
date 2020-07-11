@@ -27,6 +27,7 @@ pub use enums::{Interpolatable, Token};
 pub(crate) use enums::{Numeric, Segment};
 pub use nom::error::ErrorKind;
 pub use structs::tracked_location::TrackedLocation;
+pub use structs::metadata::Metadata;
 pub(crate) use types::{
     CharResult, InterpolatableResult, NumericResult, ParseResult, SegmentResult, StringResult,
     TokenResult,
