@@ -1,6 +1,3 @@
-use crate::lexers::identifier::*;
-use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
-use crate::lexers::program::*;
 use crate::{
     CharResult, Input, Interpolatable, InterpolatableResult, ParseResult, Segment, SegmentResult,
     StringResult, TokenResult, TrackedLocation,
@@ -11,7 +8,6 @@ use nom::character::complete::{anychar, char, none_of, one_of};
 use nom::combinator::{map, not, peek, recognize};
 use nom::multi::{many0, many1, many_m_n, separated_list1};
 use nom::sequence::{preceded, tuple};
-use std::convert::TryFrom;
 
 type DelimitedInput<'a> = TrackedLocation<&'a str, Option<char>>;
 type DelimitedStringResult<'a> = nom::IResult<DelimitedInput<'a>, String>;
@@ -79,7 +75,10 @@ pub(crate) fn non_expanded_literal_escape_sequence(i: DelimitedInput) -> Delimit
 pub(crate) fn non_expanded_literal_escape_character_sequence(
     i: DelimitedInput,
 ) -> DelimitedStringResult {
-    stub(i)
+    map(
+        tuple((char('\\'), non_expanded_literal_escaped_character)),
+        |t| t.1, // possibly buggy
+    )(i)
 }
 
 /// *literal_beginning_delimiter* | *literal_ending_delimiter* | `\`
@@ -103,7 +102,10 @@ pub(crate) fn quoted_literal_escape_character(i: DelimitedInput) -> DelimitedStr
 pub(crate) fn non_escaped_non_expanded_literal_character_sequence(
     i: DelimitedInput,
 ) -> DelimitedStringResult {
-    stub(i)
+    map(
+        tuple((char('\\'), non_escaped_non_expanded_literal_character)),
+        |t| t.1, // possibly buggy
+    )(i)
 }
 
 /// *source_character* **but not** *non_expanded_literal_escaped_character*
