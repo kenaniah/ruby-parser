@@ -8,7 +8,7 @@ use nom::character::complete::{anychar, char};
 use nom::combinator::verify;
 use nom::combinator::{map, not, peek};
 use nom::multi::many0;
-use nom::sequence::{preceded, tuple};
+use nom::sequence::{delimited, preceded, tuple};
 
 type DelimitedInput<'a> = TrackedLocation<&'a str, Option<char>>;
 type DelimitedStringResult<'a> = nom::IResult<DelimitedInput<'a>, String>;
@@ -53,14 +53,14 @@ pub(crate) fn non_expanded_delimited_string(i: Input) -> StringResult {
 /// *literal_beginning_delimiter* *non_expanded_literal_string** *literal_ending_delimiter*
 fn _non_expanded_delimited_string(i: DelimitedInput) -> DelimitedStringResult {
     map(
-        tuple((
+        delimited(
             literal_beginning_delimiter,
             many0(non_expanded_literal_string),
             literal_ending_delimiter,
-        )),
-        |t| {
+        ),
+        |vec| {
             let mut s = String::new();
-            for str in t.1 {
+            for str in vec {
                 s.push_str(&str);
             }
             s
@@ -166,6 +166,23 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_quoted_non_expanded_literal_string() {
+        use_parser!(quoted_non_expanded_literal_string);
+        // Parse errors
+        assert_err!("%q(");
+        assert_err!("%q((");
+        assert_err!("%q(");
+        assert_err!("%q:");
+        assert_err!("%q{foo");
+        // Success cases
+        assert_ok!("%q()", "");
+        assert_ok!("%q(foobar)", "foobar");
+        assert_ok!("%q<\0>", "\0");
+        assert_ok!("%q:foobar:", "foobar");
+        assert_ok!("%q%Smiley 😂 here!%", "Smiley 😂 here!");
+    }
+
+    #[test]
     fn test_literal_beginning_delimiter() {
         use_parser!(literal_beginning_delimiter);
         // Parse errors
@@ -173,8 +190,8 @@ mod tests {
         assert_err!("a");
         assert_err!(" ");
         assert_err!("5");
-        assert_err!("\n");
         assert_err!("東"); // U+6771: 'CJK Unified Ideograph-6771' "East"
+        assert_err!("\n");
         // Success cases
         assert_ok!("<", '<');
         assert_ok!("(", '(');
