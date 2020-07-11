@@ -203,10 +203,11 @@ mod tests {
         assert_ok!("%q(foobar)", "foobar");
         assert_ok!("%q<\0>", "\0");
         assert_ok!("%q:foo\nbar:", "foo\nbar");
-        assert_ok!("%q:foo\\n\\:bar:", "foo\\n:bar");
+        assert_ok!("%q:foo\\n\\:bar\\\\:", "foo\\n:bar\\");
         assert_ok!("%q%Smiley 😂 here!%", "Smiley 😂 here!");
         assert_ok!("%q[[abc] [def]]", "[abc] [def]");
         assert_ok!("%q[\\[abc\\)def(]", "[abc\\)def(");
+        assert_ok!("%q{{{\\{}}}", "{{{}}");
     }
 
     #[test]
