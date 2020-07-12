@@ -69,6 +69,8 @@ pub enum Token {
     // String literals
     String(String),
     InterpolatedString(Vec<Token>),
+    ExternalCommand(String),
+    InterpolatedExternalCommand(Vec<Token>),
     // Punctuation
     /// [
     LeftBracket,
