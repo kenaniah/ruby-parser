@@ -3,11 +3,10 @@ use crate::lexers::string::double::interpolated_character_sequence;
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{anychar, char};
-use nom::combinator::verify;
-use nom::combinator::{map, not, peek};
+use nom::character::complete::{anychar, char, none_of};
+use nom::combinator::{map, not, peek, verify};
 use nom::multi::many0;
-use nom::sequence::{delimited, preceded, tuple};
+use nom::sequence::{delimited, preceded, terminated, tuple};
 
 /// `%q` *non_expanded_delimited_string*
 pub(crate) fn quoted_non_expanded_literal_string(i: Input) -> StringResult {
@@ -20,8 +19,9 @@ pub(crate) fn quoted_expanded_literal_string(i: Input) -> InterpolatableResult {
 }
 
 /// *literal_beginning_delimiter* *non_expanded_literal_string** *literal_ending_delimiter*
-pub(crate) fn non_expanded_delimited_string(i: Input) -> StringResult {
+pub(crate) fn non_expanded_delimited_string(mut i: Input) -> StringResult {
     let delim = i.metadata.quote_delimiter;
+    i.metadata.quote_delimiter = None;
     let (mut i, str) = map(
         delimited(
             literal_beginning_delimiter,
@@ -61,8 +61,9 @@ fn _non_expanded_delimited_string(i: Input) -> StringResult {
 }
 
 /// *literal_beginning_delimiter* *expanded_literal_string** *literal_ending_delimiter*
-pub(crate) fn expanded_delimited_string(i: Input) -> InterpolatableResult {
+pub(crate) fn expanded_delimited_string(mut i: Input) -> InterpolatableResult {
     let delim = i.metadata.quote_delimiter;
+    i.metadata.quote_delimiter = None;
     let (mut i, res) = map(
         delimited(
             literal_beginning_delimiter,
@@ -78,12 +79,16 @@ pub(crate) fn expanded_delimited_string(i: Input) -> InterpolatableResult {
 /// *literal_beginning_delimiter* *expanded_literal_string** *literal_ending_delimiter*
 fn _expanded_delimited_string(i: Input) -> SegmentVecResult {
     map(
-        delimited(
+        tuple((
             literal_beginning_delimiter,
             many0(expanded_literal_string),
             literal_ending_delimiter,
-        ),
-        |vecs| vecs.into_iter().flatten().collect(),
+        )),
+        |mut t| {
+            t.1.insert(0, vec![Segment::Char(t.0)]);
+            t.1.push(vec![Segment::Char(t.2)]);
+            t.1.into_iter().flatten().collect()
+        },
     )(i)
 }
 
@@ -120,7 +125,9 @@ pub(crate) fn expanded_literal_character(i: Input) -> SegmentResult {
         ),
         map(double_escape_sequence, |s| Segment::String(s)),
         map(interpolated_character_sequence, |e| Segment::Expr(e)),
-        map(char('#'), |c| Segment::Char(c)),
+        map(terminated(char('#'), peek(none_of("$@{"))), |c| {
+            Segment::Char(c)
+        }),
     ))(i)
 }
 
@@ -214,6 +221,41 @@ fn end_delimiter(meta: &Metadata) -> Option<char> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    macro_rules! assert_string {
+        ($a:expr, $b:expr) => {
+            assert_ok!($a, Interpolatable::String($b.to_owned()))
+        };
+    }
+    macro_rules! assert_interpolated {
+        ($a:expr, $b:expr) => {
+            assert_ok!($a, Interpolatable::Interpolated($b))
+        };
+    }
+
+    #[test]
+    fn test_quoted_expanded_literal_string() {
+        use_parser!(quoted_expanded_literal_string);
+        // Parse errors
+        assert_err!("%(");
+        assert_err!("%Q(");
+        assert_err!("%(()");
+        assert_err!("%(#{foo)");
+        // Success cases
+        assert_string!("%::", "");
+        assert_string!("%Q<foo \\<bar>", "foo <bar");
+        assert_string!("%Q<#12>", "#12");
+        assert_interpolated!(
+            "%[foo#@hi [bar] [#{%Q((hello))}]]",
+            vec![
+                Token::Segment("foo".to_owned()),
+                Token::InstanceVariableIdentifier("@hi".to_owned()),
+                Token::Segment(" [bar] [".to_owned()),
+                Token::Block(vec![Token::String("(hello)".to_owned())]),
+                Token::Segment("]".to_owned()),
+            ]
+        );
+    }
 
     #[test]
     fn test_quoted_non_expanded_literal_string() {
