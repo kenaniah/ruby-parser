@@ -13,6 +13,7 @@ pub(crate) fn character_literal(i: Input) -> StringResult {
     preceded(
         char('?'),
         alt((
+            // An escaped newline should not be treated as a line continuation in this context
             map(tag("\\\n"), |_| "\n".to_owned()),
             double_escape_sequence,
             map(
