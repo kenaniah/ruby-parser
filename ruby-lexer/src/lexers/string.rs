@@ -13,16 +13,19 @@ pub(crate) mod single;
 pub fn string_literal(i: Input) -> TokenResult {
     alt((
         map(single::single_quoted_string, |s| {
-            Token::SingleQuotedString(s)
+            Token::String(s)
         }),
         map(double::double_quoted_string, |s| match s {
-            Interpolatable::String(s) => Token::DoubleQuotedString(s),
+            Interpolatable::String(s) => Token::String(s),
             Interpolatable::Interpolated(i) => Token::InterpolatedString(i),
         }),
         map(quoted::quoted_non_expanded_literal_string, |s| {
-            Token::DoubleQuotedString(s)
+            Token::String(s)
         }),
-        // quoted_expanded_literal_string,
+        map(quoted::quoted_expanded_literal_string, |s| match s {
+            Interpolatable::String(s) => Token::String(s),
+            Interpolatable::Interpolated(i) => Token::InterpolatedString(i),
+        })
         // here_document,
         // external_command_execution,
     ))(i)

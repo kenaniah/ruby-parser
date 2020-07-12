@@ -28,6 +28,9 @@ pub(crate) type ParseResult<'a> = Parsed<'a, Input<'a>>;
 /// Describes a segment of something that may be interpolated
 pub(crate) type SegmentResult<'a> = Parsed<'a, Segment>;
 
+/// Describes a segment of something that may be interpolated
+pub(crate) type SegmentVecResult<'a> = Parsed<'a, Vec<Segment>>;
+
 /// Describes a parsed string
 pub(crate) type StringResult<'a> = Parsed<'a, String>;
 

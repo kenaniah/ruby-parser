@@ -1,5 +1,5 @@
-//use crate::lexers::string::double::double_escape_sequence;
-//use crate::lexers::string::double::interpolated_character_sequence;
+use crate::lexers::string::double::double_escape_sequence;
+use crate::lexers::string::double::interpolated_character_sequence;
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -15,9 +15,9 @@ pub(crate) fn quoted_non_expanded_literal_string(i: Input) -> StringResult {
 }
 
 /// `%` `Q`? *expanded_delimited_string*
-// pub(crate) fn quoted_expanded_literal_string(i: Input) -> StringResult {
-//     preceded(alt((tag("%Q"), tag("%"))), expanded_delimited_string)(i)
-// }
+pub(crate) fn quoted_expanded_literal_string(i: Input) -> InterpolatableResult {
+    preceded(alt((tag("%Q"), tag("%"))), expanded_delimited_string)(i)
+}
 
 /// *literal_beginning_delimiter* *non_expanded_literal_string** *literal_ending_delimiter*
 pub(crate) fn non_expanded_delimited_string(i: Input) -> StringResult {
@@ -61,38 +61,31 @@ fn _non_expanded_delimited_string(i: Input) -> StringResult {
 }
 
 /// *literal_beginning_delimiter* *expanded_literal_string** *literal_ending_delimiter*
-// pub(crate) fn expanded_delimited_string(i: Input) -> StringResult {
-//     let (mut i, str) = map(
-//         delimited(
-//             literal_beginning_delimiter,
-//             many0(expanded_literal_string),
-//             literal_ending_delimiter,
-//         ),
-//         |vec| {
-//             let mut s = String::new();
-//             for str in vec {
-//                 s.push_str(&str);
-//             }
-//             s
-//         },
-//     )(i)?;
-//     i.metadata.quote_delimiter = None;
-//     Ok((i, str))
-// }
+pub(crate) fn expanded_delimited_string(i: Input) -> InterpolatableResult {
+    let delim = i.metadata.quote_delimiter;
+    let (mut i, res) = map(
+        delimited(
+            literal_beginning_delimiter,
+            many0(expanded_literal_string),
+            literal_ending_delimiter,
+        ),
+        |vecs| Interpolatable::from(vecs.into_iter().flatten().collect::<Vec<Segment>>()),
+    )(i)?;
+    i.metadata.quote_delimiter = delim;
+    Ok((i, res))
+}
 
 /// *literal_beginning_delimiter* *expanded_literal_string** *literal_ending_delimiter*
-// fn _expanded_delimited_string(i: Input) -> InterpolatableResult {
-//     map(
-//         tuple((
-//             literal_beginning_delimiter,
-//             many0(expanded_literal_string),
-//             literal_ending_delimiter,
-//         )),
-//         |t| {
-//             Interpolatable::from(t.1)
-//         },
-//     )(i)
-// }
+fn _expanded_delimited_string(i: Input) -> SegmentVecResult {
+    map(
+        delimited(
+            literal_beginning_delimiter,
+            many0(expanded_literal_string),
+            literal_ending_delimiter,
+        ),
+        |vecs| vecs.into_iter().flatten().collect(),
+    )(i)
+}
 
 /// *non_expanded_literal_character* | *non_expanded_delimited_string*
 pub(crate) fn non_expanded_literal_string(i: Input) -> StringResult {
@@ -103,9 +96,12 @@ pub(crate) fn non_expanded_literal_string(i: Input) -> StringResult {
 }
 
 /// *expanded_literal_character* | *expanded_delimited_string*
-// pub(crate) fn expanded_literal_string(i: Input) -> SegmentResult {
-//     alt((expanded_literal_character, _expanded_delimited_string))(i)
-// }
+pub(crate) fn expanded_literal_string(i: Input) -> SegmentVecResult {
+    alt((
+        map(expanded_literal_character, |s| vec![s]),
+        _expanded_delimited_string,
+    ))(i)
+}
 
 /// *non_escaped_literal_character* | *non_expanded_literal_escape_sequence*
 pub(crate) fn non_expanded_literal_character(i: Input) -> StringResult {
@@ -116,17 +112,17 @@ pub(crate) fn non_expanded_literal_character(i: Input) -> StringResult {
 }
 
 /// *non_escaped_literal_character* **but not** `#` | `#` **not** ( `$` | `@` | `{` ) | *double_escape_sequence* | *interpolated_character_sequence*
-// pub(crate) fn expanded_literal_character(i: Input) -> SegmentResult {
-//     alt((
-//         map(
-//             preceded(peek(not(char('#'))), non_escaped_literal_character),
-//             |s| Segment::String(s),
-//         ),
-//         map(double_escape_sequence, |s| Segment::String(s)),
-//         map(interpolated_character_sequence, |e| Segment::Expr(e)),
-//         map(char('#'), |c| Segment::Char(c)),
-//     ))(i)
-// }
+pub(crate) fn expanded_literal_character(i: Input) -> SegmentResult {
+    alt((
+        map(
+            preceded(peek(not(char('#'))), non_escaped_literal_character),
+            |s| Segment::String(s),
+        ),
+        map(double_escape_sequence, |s| Segment::String(s)),
+        map(interpolated_character_sequence, |e| Segment::Expr(e)),
+        map(char('#'), |c| Segment::Char(c)),
+    ))(i)
+}
 
 /// *source_character* **but not** *quoted_literal_escape_character*
 pub(crate) fn non_escaped_literal_character(i: Input) -> StringResult {

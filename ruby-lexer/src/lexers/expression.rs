@@ -43,10 +43,7 @@ pub fn expression(i: Input) -> TokenResult {
 
 /// `(` *compound_statement* `)`
 pub(crate) fn grouping_expression(i: Input) -> TokenResult {
-    map(
-        tuple((char('('), compound_statement, char(')'))),
-        |t| t.1,
-    )(i)
+    map(tuple((char('('), compound_statement, char(')'))), |t| t.1)(i)
 }
 
 #[cfg(test)]
@@ -69,10 +66,7 @@ mod tests {
         assert_ok!("24.2", Token::Float(24.2));
         assert_ok!("meh", Token::LocalVariableIdentifier("meh".to_owned()));
         assert_ok!("-23e4", Token::Float(-230000.0));
-        assert_ok!(
-            "'hello world'",
-            Token::SingleQuotedString("hello world".to_owned())
-        );
+        assert_ok!("'hello world'", Token::String("hello world".to_owned()));
         assert_ok!("()", Token::Block(vec![]));
         assert_ok!(
             "((false))",
@@ -82,9 +76,6 @@ mod tests {
             "(;2\n\t5;;)",
             Token::Block(vec![Token::Integer(2), Token::Integer(5)])
         );
-        assert_ok!(
-            "(;)",
-            Token::Block(vec![])
-        );
+        assert_ok!("(;)", Token::Block(vec![]));
     }
 }

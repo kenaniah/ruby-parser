@@ -268,9 +268,7 @@ mod tests {
         );
         assert_ok!(
             "#{\"foo#{2bar\"}",
-            Segment::Expr(Token::Block(vec![Token::DoubleQuotedString(
-                "foo#{2bar".to_owned()
-            )]))
+            Segment::Expr(Token::Block(vec![Token::String("foo#{2bar".to_owned())]))
         );
         assert_ok!(
             "#{\"foo#{2}bar\"}",

@@ -26,10 +26,10 @@ mod types;
 pub use enums::{Interpolatable, Token};
 pub(crate) use enums::{Numeric, Segment};
 pub use nom::error::ErrorKind;
-pub use structs::tracked_location::TrackedLocation;
 pub use structs::metadata::Metadata;
+pub use structs::tracked_location::TrackedLocation;
 pub(crate) use types::{
-    CharResult, InterpolatableResult, NumericResult, ParseResult, SegmentResult, StringResult,
-    TokenResult,
+    CharResult, InterpolatableResult, NumericResult, ParseResult, SegmentResult, SegmentVecResult,
+    StringResult, TokenResult,
 };
 pub use types::{Expression, Input, StatementList};

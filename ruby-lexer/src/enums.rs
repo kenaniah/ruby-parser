@@ -67,8 +67,7 @@ pub enum Token {
     Integer(isize),
     Float(f64),
     // String literals
-    SingleQuotedString(String),
-    DoubleQuotedString(String),
+    String(String),
     InterpolatedString(Vec<Token>),
     // Punctuation
     /// [
