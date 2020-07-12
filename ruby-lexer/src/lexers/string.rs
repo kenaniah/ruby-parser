@@ -5,6 +5,7 @@ use crate::*;
 use nom::branch::alt;
 use nom::combinator::map;
 
+pub(crate) mod character;
 pub(crate) mod command;
 pub(crate) mod double;
 pub(crate) mod quoted;
@@ -30,5 +31,6 @@ pub fn string_literal(i: Input) -> TokenResult {
             Interpolatable::String(s) => Token::ExternalCommand(s),
             Interpolatable::Interpolated(i) => Token::InterpolatedExternalCommand(i),
         }),
+        map(character::character_literal, |s| Token::String(s)),
     ))(i)
 }
