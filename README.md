@@ -34,3 +34,16 @@ to signal that the token has not been completed by the end of the user's input.
 
 I'm not yet sure if start / end tokens should be used for complex objects, but
 they may be helpful when dealing with partial inputs.
+
+## To Do
+
+ * https://ruby-doc.org/core-2.7.0/doc/syntax/literals_rdoc.html
+   * Rational / Complex numeric literals (r, i, ri)
+   * Here Documents (<<, <<-, <<~, UNQUOTED, 'QUOTE', "DBL QUOTE", `CMD QUOTE`)
+   * Character literals
+   * Arrays
+   * Hashes
+   * Ranges
+   * Regular expressions
+   * Procs
+   * Percent strings
