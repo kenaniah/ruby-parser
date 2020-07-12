@@ -2,7 +2,7 @@
 //use crate::lexers::comment::comment;
 use crate::lexers::statement::statement;
 //use crate::lexers::token::token;
-use crate::{CharResult, Input, ParseResult, Token, TokenResult};
+use crate::*;
 use nom::branch::alt;
 //use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, line_ending, one_of};

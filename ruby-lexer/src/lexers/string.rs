@@ -1,7 +1,7 @@
 /*!
 Provides support for lexing Ruby's string literal formats.
 !*/
-use crate::{Input, Interpolatable, Token, TokenResult};
+use crate::*;
 use nom::branch::alt;
 use nom::combinator::map;
 

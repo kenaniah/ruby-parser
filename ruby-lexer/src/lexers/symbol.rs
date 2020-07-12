@@ -4,7 +4,7 @@ use crate::lexers::string::double::double_quoted_string;
 use crate::lexers::string::quoted::non_expanded_delimited_string;
 use crate::lexers::string::single::single_quoted_string;
 use crate::lexers::token::operator;
-use crate::{Input, Interpolatable, Token, TokenResult, ParseResult};
+use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;

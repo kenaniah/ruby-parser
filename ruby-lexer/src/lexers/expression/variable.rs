@@ -1,5 +1,5 @@
 use crate::lexers::identifier::*;
-use crate::{Input, Token, TokenResult};
+use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::combinator::{map, not, peek};

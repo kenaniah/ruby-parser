@@ -1,10 +1,7 @@
 use crate::lexers::identifier::*;
 use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
 use crate::lexers::program::*;
-use crate::{
-    CharResult, Input, Interpolatable, InterpolatableResult, ParseResult, Segment, SegmentResult,
-    StringResult, TokenResult,
-};
+use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};

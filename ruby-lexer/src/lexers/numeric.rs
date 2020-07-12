@@ -1,4 +1,4 @@
-use crate::{CharResult, Input, Numeric, NumericResult, StringResult, Token, TokenResult};
+use crate::*;
 use nom::branch::alt;
 use nom::character::complete::{anychar, char, one_of};
 use nom::combinator::{map, opt, value, verify};

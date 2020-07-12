@@ -1,6 +1,6 @@
 use crate::lexers::program::compound_statement;
 use crate::lexers::token::literal;
-use crate::{Input, TokenResult};
+use crate::*;
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::map;

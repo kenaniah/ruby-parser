@@ -1,5 +1,5 @@
 use crate::lexers::{identifier, keyword, numeric_literal, string_literal};
-use crate::{Input, ParseResult, Token, TokenResult};
+use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{char, one_of};

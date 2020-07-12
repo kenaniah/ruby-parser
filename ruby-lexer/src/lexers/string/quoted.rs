@@ -1,10 +1,6 @@
 use crate::lexers::string::double::double_escape_sequence;
 use crate::lexers::string::double::interpolated_character_sequence;
-use crate::types::CharResult;
-use crate::{
-    Input, Interpolatable, InterpolatableResult, Metadata, ParseResult, Segment, SegmentResult,
-    StringResult,
-};
+use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char};
