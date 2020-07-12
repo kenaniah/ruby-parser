@@ -1,5 +1,5 @@
-use crate::lexers::string::double::double_escape_sequence;
-use crate::lexers::string::double::interpolated_character_sequence;
+//use crate::lexers::string::double::double_escape_sequence;
+//use crate::lexers::string::double::interpolated_character_sequence;
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -116,17 +116,17 @@ pub(crate) fn non_expanded_literal_character(i: Input) -> StringResult {
 }
 
 /// *non_escaped_literal_character* **but not** `#` | `#` **not** ( `$` | `@` | `{` ) | *double_escape_sequence* | *interpolated_character_sequence*
-pub(crate) fn expanded_literal_character(i: Input) -> SegmentResult {
-    alt((
-        map(
-            preceded(peek(not(char('#'))), non_escaped_literal_character),
-            |s| Segment::String(s),
-        ),
-        map(double_escape_sequence, |s| Segment::String(s)),
-        map(interpolated_character_sequence, |e| Segment::Expr(e)),
-        map(char('#'), |c| Segment::Char(c)),
-    ))(i)
-}
+// pub(crate) fn expanded_literal_character(i: Input) -> SegmentResult {
+//     alt((
+//         map(
+//             preceded(peek(not(char('#'))), non_escaped_literal_character),
+//             |s| Segment::String(s),
+//         ),
+//         map(double_escape_sequence, |s| Segment::String(s)),
+//         map(interpolated_character_sequence, |e| Segment::Expr(e)),
+//         map(char('#'), |c| Segment::Char(c)),
+//     ))(i)
+// }
 
 /// *source_character* **but not** *quoted_literal_escape_character*
 pub(crate) fn non_escaped_literal_character(i: Input) -> StringResult {
