@@ -77,7 +77,7 @@ mod tests {
         assert_string!("%x<foo \\<bar>", "foo <bar");
         assert_string!("`#\\\\foo\\1\\`2`", "#\\foo\u{1}`2");
         assert_interpolated!(
-            "%x[foo#@hi [bar] [#{%Q((hello))}]]",
+            "%x!foo#@hi [bar] [#{%Q((hello))}]!",
             vec![
                 Token::Segment("foo".to_owned()),
                 Token::InstanceVariableIdentifier("@hi".to_owned()),
