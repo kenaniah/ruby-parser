@@ -8,16 +8,17 @@ use nom::character::complete::char;
 use nom::combinator::{map, not, peek};
 use nom::sequence::preceded;
 
-/// `?` ( *double_escape_sequence* | *source_character* **but not** *whitespace* )
+/// `?` ( *double_escape_sequence* | *source_character* **but not** ( *whitespace* | `\` ) )
 pub(crate) fn character_literal(i: Input) -> StringResult {
     preceded(
         char('?'),
         alt((
             map(tag("\\\n"), |_| "\n".to_owned()),
             double_escape_sequence,
-            map(preceded(peek(not(whitespace)), source_character), |c| {
-                c.to_string()
-            }),
+            map(
+                preceded(peek(not(alt((whitespace, tag("\\"))))), source_character),
+                |c| c.to_string(),
+            ),
         )),
     )(i)
 }
@@ -33,6 +34,7 @@ mod tests {
         assert_err!("");
         assert_err!("?");
         assert_err!("? ");
+        assert_err!("?\\");
         assert_err!("?\t");
         assert_err!("a");
         assert_err!("?ab");
