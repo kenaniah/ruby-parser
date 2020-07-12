@@ -8,6 +8,7 @@ use nom::combinator::map;
 pub(crate) mod character;
 pub(crate) mod command;
 pub(crate) mod double;
+pub(crate) mod heredoc;
 pub(crate) mod quoted;
 pub(crate) mod single;
 
