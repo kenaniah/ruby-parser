@@ -19,15 +19,13 @@ pub(crate) fn quoted_expanded_literal_string(i: Input) -> InterpolatableResult {
 }
 
 /// *literal_beginning_delimiter* *non_expanded_literal_string** *literal_ending_delimiter*
-pub(crate) fn non_expanded_delimited_string(mut i: Input) -> StringResult {
-    let delim = i.metadata.quote_delimiter;
-    i.metadata.quote_delimiter = None;
-    let (mut i, str) = map(
-        delimited(
+pub(crate) fn non_expanded_delimited_string(i: Input) -> StringResult {
+    map(
+        wrap_quote_delimiter(delimited(
             literal_beginning_delimiter,
             many0(non_expanded_literal_string),
             literal_ending_delimiter,
-        ),
+        )),
         |vec| {
             let mut s = String::new();
             for str in vec {
@@ -35,9 +33,28 @@ pub(crate) fn non_expanded_delimited_string(mut i: Input) -> StringResult {
             }
             s
         },
-    )(i)?;
-    i.metadata.quote_delimiter = delim;
-    Ok((i, str))
+    )(i)
+}
+
+/// Manages the state of the input's quote delimiter when nested
+fn wrap_quote_delimiter<'a, O1, E, F>(
+    mut func: F,
+) -> impl FnMut(Input<'a>) -> nom::IResult<Input<'a>, O1, E>
+where
+    F: nom::Parser<Input<'a>, O1, E>,
+{
+    move |mut i: Input<'a>| {
+        let delim = i.metadata.quote_delimiter;
+        i.metadata.quote_delimiter = None;
+        let res = func.parse(i);
+        match res {
+            Ok((mut i, o1)) => {
+                i.metadata.quote_delimiter = delim;
+                Ok((i, o1))
+            }
+            error @ _ => error,
+        }
+    }
 }
 
 /// *literal_beginning_delimiter* *non_expanded_literal_string** *literal_ending_delimiter*
@@ -61,19 +78,15 @@ fn _non_expanded_delimited_string(i: Input) -> StringResult {
 }
 
 /// *literal_beginning_delimiter* *expanded_literal_string** *literal_ending_delimiter*
-pub(crate) fn expanded_delimited_string(mut i: Input) -> InterpolatableResult {
-    let delim = i.metadata.quote_delimiter;
-    i.metadata.quote_delimiter = None;
-    let (mut i, res) = map(
-        delimited(
+pub(crate) fn expanded_delimited_string(i: Input) -> InterpolatableResult {
+    map(
+        wrap_quote_delimiter(delimited(
             literal_beginning_delimiter,
             many0(expanded_literal_string),
             literal_ending_delimiter,
-        ),
+        )),
         |vecs| Interpolatable::from(vecs.into_iter().flatten().collect::<Vec<Segment>>()),
-    )(i)?;
-    i.metadata.quote_delimiter = delim;
-    Ok((i, res))
+    )(i)
 }
 
 /// *literal_beginning_delimiter* *expanded_literal_string** *literal_ending_delimiter*
@@ -264,6 +277,7 @@ mod tests {
         assert_err!("%q(");
         assert_err!("%q((");
         assert_err!("%q(");
+        assert_err!("%q(>");
         assert_err!("%q:");
         assert_err!("%q{foo");
         assert_err!("%q(foo)bar");
