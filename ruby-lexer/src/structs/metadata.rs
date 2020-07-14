@@ -12,3 +12,13 @@ pub struct Metadata<'a> {
     /// Tracks the identiation mode used when parsing a heredoc
     pub(crate) heredoc_intdent: Option<HeredocIndent>,
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_metadata_size() {
+        assert_eq!(24, std::mem::size_of::<Metadata>());
+    }
+}
