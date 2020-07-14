@@ -1,5 +1,6 @@
 use crate::lexers::identifier::identifier_character;
 use crate::*;
+use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::map;
 use nom::multi::many1;
@@ -104,7 +105,12 @@ pub(crate) fn non_indented_heredoc_end_line(i: Input) -> InterpolatableResult {
 
 /// *non_quoted_delimiter_identifier* | *single_quoted_delimiter_identifier* | *double_quoted_delimiter_identifier* | *command_quoted_delimiter_identifier*
 pub(crate) fn heredoc_delimiter_identifier(i: Input) -> StringResult {
-    stub_s(i)
+    alt((
+        non_quoted_delimiter_identifier,
+        single_quoted_delimiter_identifier,
+        double_quoted_delimiter_identifier,
+        command_quoted_delimiter_identifier,
+    ))(i)
 }
 
 fn stub_s(i: Input) -> StringResult {

@@ -23,11 +23,10 @@ pub mod lexers;
 mod structs;
 mod types;
 
-pub use enums::{Interpolatable, Token};
-pub(crate) use enums::{Numeric, Segment};
+pub use enums::{interpolable::Interpolatable, token::Token};
+pub(crate) use enums::{numeric::Numeric, segment::Segment};
 pub use nom::error::ErrorKind;
-pub use structs::metadata::Metadata;
-pub use structs::tracked_location::TrackedLocation;
+pub use structs::{metadata::Metadata, tracked_location::TrackedLocation};
 pub(crate) use types::{
     CharResult, InterpolatableResult, NumericResult, ParseResult, SegmentResult, SegmentVecResult,
     StringResult, TokenResult,
