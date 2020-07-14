@@ -23,8 +23,12 @@ pub mod lexers;
 mod structs;
 mod types;
 
+pub(crate) use enums::{
+    heredoc::{HeredocDelimiter, HeredocIndent},
+    numeric::Numeric,
+    segment::Segment,
+};
 pub use enums::{interpolable::Interpolatable, token::Token};
-pub(crate) use enums::{numeric::Numeric, segment::Segment};
 pub use nom::error::ErrorKind;
 pub use structs::{metadata::Metadata, tracked_location::TrackedLocation};
 pub(crate) use types::{
