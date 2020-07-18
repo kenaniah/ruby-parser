@@ -1,5 +1,5 @@
 use crate::lexers::identifier::identifier_character;
-use crate::lexers::program::{line_terminator, source_character};
+use crate::lexers::program::{line_terminator, source_character, whitespace};
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -75,6 +75,7 @@ pub(crate) fn single_quoted_delimiter(i: Input) -> ParseResult {
 
 /// ( ( *source_character* *source_character*? ) **but not** ( `'` | *line_terminator* ) )*
 pub(crate) fn single_quoted_delimiter_identifier(i: Input) -> ParseResult {
+    peek(not(whitespace))(i)?;
     recognize(many1(preceded(
         peek(not(alt((tag("'"), line_terminator)))),
         source_character,
@@ -88,6 +89,7 @@ pub(crate) fn double_quoted_delimiter(i: Input) -> ParseResult {
 
 /// ( ( *source_character* *source_character*? ) **but not** ( `"` | *line_terminator* ) )*
 pub(crate) fn double_quoted_delimiter_identifier(i: Input) -> ParseResult {
+    peek(not(whitespace))(i)?;
     recognize(many1(preceded(
         peek(not(alt((tag("\""), line_terminator)))),
         source_character,
@@ -101,6 +103,7 @@ pub(crate) fn command_quoted_delimiter(i: Input) -> ParseResult {
 
 /// ( ( *source_character* *source_character*? ) **but not** ( ``` | *line_terminator* ) )*
 pub(crate) fn command_quoted_delimiter_identifier(i: Input) -> ParseResult {
+    peek(not(whitespace))(i)?;
     recognize(many1(preceded(
         peek(not(alt((tag("`"), line_terminator)))),
         source_character,
@@ -220,8 +223,24 @@ mod tests {
     // }
 
     #[test]
-    fn test_heredoc_quote_type() {
-        use_parser!(heredoc_quote_type);
+    fn test_heredoc_signifier() {
+        use_parser!(heredoc_signifier);
+        assert_err!("<<");
+        assert_err!("<<FOO,");
+        assert_err!("<<FOO ");
+        assert_err!("<<'FOO");
+        assert_err!("<<'FOO\nBAR'");
+        assert_err!("<<\"bar\"\"");
+        assert_err!("<<`baz");
+        assert_err!("<<''");
+        assert_err!("<<-' foo'");
+        assert_err!("<<`baz");
+        assert_ok!("<<foo");
+        assert_ok!("<<-BAR");
+        assert_ok!("<<~'BA Z'");
+        assert_ok!("<<\"bar\"");
+        assert_ok!("<<-`FOO,`");
+        assert_ok!("<<~'foo '");
     }
 }
 
