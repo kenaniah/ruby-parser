@@ -7,19 +7,12 @@ pub struct Metadata<'a> {
     pub file: Option<&'a str>,
     /// Tracks the delimiter used when parsing a quoted string
     pub(crate) quote_delimiter: Option<char>,
-    /// Tracks information used when parsing a heredoc
-    pub(crate) heredoc: Option<&'a HeredocMeta<'a>>,
-}
-
-/// Tracks heredoc-specific metadata
-#[derive(Debug, Clone, Copy, Default)]
-pub struct HeredocMeta<'a> {
     /// Tracks the type of delimiter used when parsing a heredoc
-    pub(crate) delimiter: Option<HeredocDelimiter>,
+    pub(crate) heredoc_delimiter: Option<HeredocDelimiter>,
     /// Tracks the identiation mode used when parsing a heredoc
-    pub(crate) indentation: Option<HeredocIndent>,
+    pub(crate) heredoc_indentation: Option<HeredocIndent>,
     /// Tracks a reference to the heredoc identifier when parsing a heredoc
-    pub(crate) identifier: Option<&'a str>,
+    pub(crate) heredoc_identifier: Option<&'a str>,
 }
 
 #[cfg(test)]
@@ -28,6 +21,6 @@ mod test {
 
     #[test]
     fn test_metadata_size() {
-        assert_eq!(32, std::mem::size_of::<Metadata>());
+        assert_eq!(40, std::mem::size_of::<Metadata>());
     }
 }

@@ -147,12 +147,18 @@ where
     F: nom::Parser<Input<'a>, O1, E>,
 {
     move |mut i: Input<'a>| {
-        let heredoc = i.metadata.heredoc;
-        i.metadata.heredoc = None;
+        let delim = i.metadata.heredoc_delimiter;
+        let ident = i.metadata.heredoc_identifier;
+        let indent = i.metadata.heredoc_indentation;
+        i.metadata.heredoc_delimiter = None;
+        i.metadata.heredoc_identifier = None;
+        i.metadata.heredoc_indentation = None;
         let res = func.parse(i);
         match res {
             Ok((mut i, o1)) => {
-                i.metadata.heredoc = heredoc;
+                i.metadata.heredoc_delimiter = delim;
+                i.metadata.heredoc_identifier = ident;
+                i.metadata.heredoc_indentation = indent;
                 Ok((i, o1))
             }
             error @ _ => error,
