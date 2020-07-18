@@ -1,6 +1,6 @@
 /// Represents the delimiter type of a heredoc
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub(crate) enum HeredocType {
+pub(crate) enum HeredocQuoteType {
     Unquoted,
     SingleQuoted,
     DoubleQuoted,

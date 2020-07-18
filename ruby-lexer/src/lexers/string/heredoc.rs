@@ -18,7 +18,7 @@ pub(crate) fn heredoc_start_line(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
-/// `<<` *heredoc_type_specifier*
+/// `<<` *heredoc_quote_type_specifier*
 pub(crate) fn heredoc_signifier(i: Input) -> InterpolatableResult {
     stub(i)
 }
@@ -38,13 +38,13 @@ pub(crate) fn heredoc_body_line(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
-/// ( `-` | `~` )? *heredoc_type*
-pub(crate) fn heredoc_type_specifier(i: Input) -> InterpolatableResult {
+/// ( `-` | `~` )? *heredoc_quote_type*
+pub(crate) fn heredoc_quote_type_specifier(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
 /// *non_quoted_delimiter* | *single_quoted_delimiter* | *double_quoted_delimiter* | *command_quoted_delimiter*
-pub(crate) fn heredoc_type(i: Input) -> InterpolatableResult {
+pub(crate) fn heredoc_quote_type(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
@@ -113,7 +113,7 @@ pub(crate) fn heredoc_end_line(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
-/// [ beginning of a line ] *whitespace** *heredoc_type_identifier* *line_terminator*
+/// [ beginning of a line ] *whitespace** *heredoc_quote_type_identifier* *line_terminator*
 pub(crate) fn indented_heredoc_end_line(i: Input) -> InterpolatableResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
@@ -121,7 +121,7 @@ pub(crate) fn indented_heredoc_end_line(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
-/// [ beginning of a line ] *heredoc_type_identifier* *line_terminator*
+/// [ beginning of a line ] *heredoc_quote_type_identifier* *line_terminator*
 pub(crate) fn non_indented_heredoc_end_line(i: Input) -> InterpolatableResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
@@ -130,13 +130,42 @@ pub(crate) fn non_indented_heredoc_end_line(i: Input) -> InterpolatableResult {
 }
 
 /// *non_quoted_delimiter_identifier* | *single_quoted_delimiter_identifier* | *double_quoted_delimiter_identifier* | *command_quoted_delimiter_identifier*
-pub(crate) fn heredoc_type_identifier(i: Input) -> StringResult {
+pub(crate) fn heredoc_quote_type_identifier(i: Input) -> StringResult {
     alt((
-        non_quoted_delimiter_identifier,
-        single_quoted_delimiter_identifier,
-        double_quoted_delimiter_identifier,
-        command_quoted_delimiter_identifier,
+        set_quote_type(non_quoted_delimiter_identifier, HeredocQuoteType::Unquoted),
+        set_quote_type(
+            single_quoted_delimiter_identifier,
+            HeredocQuoteType::SingleQuoted,
+        ),
+        set_quote_type(
+            double_quoted_delimiter_identifier,
+            HeredocQuoteType::DoubleQuoted,
+        ),
+        set_quote_type(
+            command_quoted_delimiter_identifier,
+            HeredocQuoteType::CommandQuoted,
+        ),
     ))(i)
+}
+
+/// Sets the type of heredoc quoting used
+fn set_quote_type<'a, O1, E, F>(
+    mut func: F,
+    quote_type: HeredocQuoteType,
+) -> impl FnMut(Input<'a>) -> nom::IResult<Input<'a>, O1, E>
+where
+    F: nom::Parser<Input<'a>, O1, E>,
+{
+    move |mut i: Input<'a>| {
+        let res = func.parse(i);
+        match res {
+            Ok((mut i, o1)) => {
+                i.metadata.heredoc_quote_type = Some(quote_type);
+                Ok((i, o1))
+            }
+            error @ _ => error,
+        }
+    }
 }
 
 /// Manages the state of the input's heredoc parsing
@@ -147,17 +176,17 @@ where
     F: nom::Parser<Input<'a>, O1, E>,
 {
     move |mut i: Input<'a>| {
-        let delim = i.metadata.heredoc_type;
-        let ident = i.metadata.heredoc_delimiter;
+        let quote = i.metadata.heredoc_quote_type;
+        let delim = i.metadata.heredoc_delimiter;
         let indent = i.metadata.heredoc_indentation;
-        i.metadata.heredoc_type = None;
+        i.metadata.heredoc_quote_type = None;
         i.metadata.heredoc_delimiter = None;
         i.metadata.heredoc_indentation = None;
         let res = func.parse(i);
         match res {
             Ok((mut i, o1)) => {
-                i.metadata.heredoc_type = delim;
-                i.metadata.heredoc_delimiter = ident;
+                i.metadata.heredoc_quote_type = quote;
+                i.metadata.heredoc_delimiter = delim;
                 i.metadata.heredoc_indentation = indent;
                 Ok((i, o1))
             }

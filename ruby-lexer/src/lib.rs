@@ -24,7 +24,7 @@ mod structs;
 mod types;
 
 pub(crate) use enums::{
-    heredoc::{HeredocType, HeredocIndentation},
+    heredoc::{HeredocQuoteType, HeredocIndentation},
     numeric::Numeric,
     segment::Segment,
 };
