@@ -5,8 +5,8 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::{map, not, opt, peek, recognize};
-use nom::multi::many1;
-use nom::sequence::{delimited, preceded};
+use nom::multi::{many0, many1};
+use nom::sequence::{delimited, preceded, terminated};
 
 /// *heredoc_start_line* *heredoc_body* *heredoc_end_line*
 pub(crate) fn here_document(i: Input) -> InterpolatableResult {
@@ -111,29 +111,40 @@ pub(crate) fn command_quoted_delimiter_identifier(i: Input) -> ParseResult {
 }
 
 /// *indented_heredoc_end_line* | *non_indented_heredoc_end_line*
-pub(crate) fn heredoc_end_line(i: Input) -> InterpolatableResult {
-    stub(i)
+pub(crate) fn heredoc_end_line(i: Input) -> ParseResult {
+    match i.metadata.heredoc_indentation {
+        Some(HeredocIndentation::Unindented) => non_indented_heredoc_end_line(i),
+        _ => indented_heredoc_end_line(i),
+    }
 }
 
 /// [ beginning of a line ] *whitespace** *heredoc_quote_type_identifier* *line_terminator*
-pub(crate) fn indented_heredoc_end_line(i: Input) -> InterpolatableResult {
+pub(crate) fn indented_heredoc_end_line(i: Input) -> ParseResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
     }
-    stub(i)
+    delimited(
+        many0(whitespace),
+        heredoc_quote_type_identifier,
+        opt(line_terminator),
+    )(i)
 }
 
 /// [ beginning of a line ] *heredoc_quote_type_identifier* *line_terminator*
-pub(crate) fn non_indented_heredoc_end_line(i: Input) -> InterpolatableResult {
+pub(crate) fn non_indented_heredoc_end_line(i: Input) -> ParseResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
     }
-    stub(i)
+    terminated(heredoc_quote_type_identifier, opt(line_terminator))(i)
 }
 
 /// *non_quoted_delimiter_identifier* | *single_quoted_delimiter_identifier* | *double_quoted_delimiter_identifier* | *command_quoted_delimiter_identifier*
 pub(crate) fn heredoc_quote_type_identifier(i: Input) -> ParseResult {
-    stub_p(i)
+    if let Some(identifier) = i.metadata.heredoc_identifier {
+        tag(identifier)(i)
+    } else {
+        Err(nom::Err::Error((i, crate::ErrorKind::Char)))
+    }
 }
 
 /// Sets the type of heredoc indentation used
