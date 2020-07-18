@@ -77,5 +77,10 @@ macro_rules! use_parser {
             };
         };
 
+        #[allow(unused_macros)]
+        macro_rules! parser {
+            ($input:expr) => { parser($input.into()) }
+        }
+
     };
 }

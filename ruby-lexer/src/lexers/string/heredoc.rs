@@ -210,17 +210,14 @@ where
 mod tests {
     use super::*;
 
-    // macro_rules! assert_string {
-    //     ($a:expr, $b:expr) => {
-    //         parser($input.into())
-    //         assert_ok!($a, Interpolatable::String($b.to_owned()))
-    //     };
-    // }
-    // macro_rules! assert_interpolated {
-    //     ($a:expr, $b:expr) => {
-    //         assert_ok!($a, Interpolatable::Interpolated($b))
-    //     };
-    // }
+    macro_rules! assert_signifier {
+        ($input:expr, $ident:expr, $indent:expr, $quote:expr) => {
+            let (i, result) = parser!($input).unwrap();
+            assert_eq!(i.metadata.heredoc_identifier, Some($ident));
+            assert_eq!(i.metadata.heredoc_indentation, Some($indent));
+            assert_eq!(i.metadata.heredoc_quote_type, Some($quote));
+        };
+    }
 
     #[test]
     fn test_heredoc_signifier() {
@@ -235,12 +232,42 @@ mod tests {
         assert_err!("<<''");
         assert_err!("<<-' foo'");
         assert_err!("<<`baz");
-        assert_ok!("<<foo");
-        assert_ok!("<<-BAR");
-        assert_ok!("<<~'BA Z'");
-        assert_ok!("<<\"bar\"");
-        assert_ok!("<<-`FOO,`");
-        assert_ok!("<<~'foo '");
+        assert_signifier!(
+            "<<foo",
+            "foo",
+            HeredocIndentation::Unindented,
+            HeredocQuoteType::Unquoted
+        );
+        assert_signifier!(
+            "<<-BAR",
+            "BAR",
+            HeredocIndentation::Indented,
+            HeredocQuoteType::Unquoted
+        );
+        assert_signifier!(
+            "<<~'BA Z'",
+            "BA Z",
+            HeredocIndentation::FullyIntented,
+            HeredocQuoteType::SingleQuoted
+        );
+        assert_signifier!(
+            "<<\"bar\"",
+            "bar",
+            HeredocIndentation::Unindented,
+            HeredocQuoteType::DoubleQuoted
+        );
+        assert_signifier!(
+            "<<-`FOO,  `",
+            "FOO,  ",
+            HeredocIndentation::Indented,
+            HeredocQuoteType::CommandQuoted
+        );
+        assert_signifier!(
+            "<<'foo :bar'",
+            "foo :bar",
+            HeredocIndentation::Unindented,
+            HeredocQuoteType::SingleQuoted
+        );
     }
 }
 
