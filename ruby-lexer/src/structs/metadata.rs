@@ -11,8 +11,8 @@ pub struct Metadata<'a> {
     pub(crate) heredoc_quote_type: Option<HeredocQuoteType>,
     /// Tracks the identiation mode used when parsing a heredoc
     pub(crate) heredoc_indentation: Option<HeredocIndentation>,
-    /// Tracks a reference to the heredoc's delimiter when parsing a heredoc
-    pub(crate) heredoc_delimiter: Option<&'a str>,
+    /// Tracks a reference to the heredoc's identifier when parsing a heredoc
+    pub(crate) heredoc_identifier: Option<&'a str>,
 }
 
 #[cfg(test)]

@@ -4,7 +4,7 @@ use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{map, not, peek};
+use nom::combinator::{map, not, peek, recognize};
 use nom::multi::many1;
 use nom::sequence::{delimited, preceded};
 
@@ -49,63 +49,52 @@ pub(crate) fn heredoc_quote_type(i: Input) -> InterpolatableResult {
 }
 
 /// *non_quoted_delimiter_identifier*
-pub(crate) fn non_quoted_delimiter(i: Input) -> StringResult {
+pub(crate) fn non_quoted_delimiter(i: Input) -> ParseResult {
     non_quoted_delimiter_identifier(i)
 }
 
 /// *identifier_character*+
-pub(crate) fn non_quoted_delimiter_identifier(i: Input) -> StringResult {
-    map(many1(identifier_character), |chars| {
-        chars.into_iter().collect()
-    })(i)
+pub(crate) fn non_quoted_delimiter_identifier(i: Input) -> ParseResult {
+    recognize(many1(identifier_character))(i)
 }
 
 /// `'` *single_quoted_delimiter_identifier* `'`
-pub(crate) fn single_quoted_delimiter(i: Input) -> StringResult {
+pub(crate) fn single_quoted_delimiter(i: Input) -> ParseResult {
     delimited(char('\''), single_quoted_delimiter_identifier, char('\''))(i)
 }
 
 /// ( ( *source_character* *source_character*? ) **but not** ( `'` | *line_terminator* ) )*
-pub(crate) fn single_quoted_delimiter_identifier(i: Input) -> StringResult {
-    map(
-        many1(preceded(
-            peek(not(alt((tag("'"), line_terminator)))),
-            source_character,
-        )),
-        |chars| chars.into_iter().collect(),
-    )(i)
+pub(crate) fn single_quoted_delimiter_identifier(i: Input) -> ParseResult {
+    recognize(many1(preceded(
+        peek(not(alt((tag("'"), line_terminator)))),
+        source_character,
+    )))(i)
 }
 
 /// `"` *double_quoted_delimiter_identifier* `"`
-pub(crate) fn double_quoted_delimiter(i: Input) -> StringResult {
+pub(crate) fn double_quoted_delimiter(i: Input) -> ParseResult {
     delimited(char('"'), double_quoted_delimiter_identifier, char('"'))(i)
 }
 
 /// ( ( *source_character* *source_character*? ) **but not** ( `"` | *line_terminator* ) )*
-pub(crate) fn double_quoted_delimiter_identifier(i: Input) -> StringResult {
-    map(
-        many1(preceded(
-            peek(not(alt((tag("\""), line_terminator)))),
-            source_character,
-        )),
-        |chars| chars.into_iter().collect(),
-    )(i)
+pub(crate) fn double_quoted_delimiter_identifier(i: Input) -> ParseResult {
+    recognize(many1(preceded(
+        peek(not(alt((tag("\""), line_terminator)))),
+        source_character,
+    )))(i)
 }
 
 /// ``` *command_quoted_delimiter_identifier* ```
-pub(crate) fn command_quoted_delimiter(i: Input) -> StringResult {
+pub(crate) fn command_quoted_delimiter(i: Input) -> ParseResult {
     delimited(char('`'), command_quoted_delimiter_identifier, char('`'))(i)
 }
 
 /// ( ( *source_character* *source_character*? ) **but not** ( ``` | *line_terminator* ) )*
-pub(crate) fn command_quoted_delimiter_identifier(i: Input) -> StringResult {
-    map(
-        many1(preceded(
-            peek(not(alt((tag("`"), line_terminator)))),
-            source_character,
-        )),
-        |chars| chars.into_iter().collect(),
-    )(i)
+pub(crate) fn command_quoted_delimiter_identifier(i: Input) -> ParseResult {
+    recognize(many1(preceded(
+        peek(not(alt((tag("`"), line_terminator)))),
+        source_character,
+    )))(i)
 }
 
 /// *indented_heredoc_end_line* | *non_indented_heredoc_end_line*
@@ -130,8 +119,8 @@ pub(crate) fn non_indented_heredoc_end_line(i: Input) -> InterpolatableResult {
 }
 
 /// *non_quoted_delimiter_identifier* | *single_quoted_delimiter_identifier* | *double_quoted_delimiter_identifier* | *command_quoted_delimiter_identifier*
-pub(crate) fn heredoc_quote_type_identifier(i: Input) -> StringResult {
-    alt((
+pub(crate) fn heredoc_quote_type_identifier(i: Input) -> ParseResult {
+    let (mut i, res) = alt((
         set_quote_type(non_quoted_delimiter_identifier, HeredocQuoteType::Unquoted),
         set_quote_type(
             single_quoted_delimiter_identifier,
@@ -145,7 +134,9 @@ pub(crate) fn heredoc_quote_type_identifier(i: Input) -> StringResult {
             command_quoted_delimiter_identifier,
             HeredocQuoteType::CommandQuoted,
         ),
-    ))(i)
+    ))(i)?;
+    i.metadata.heredoc_identifier = Some(*res);
+    Ok((i, res))
 }
 
 /// Sets the type of heredoc quoting used
@@ -177,16 +168,16 @@ where
 {
     move |mut i: Input<'a>| {
         let quote = i.metadata.heredoc_quote_type;
-        let delim = i.metadata.heredoc_delimiter;
+        let delim = i.metadata.heredoc_identifier;
         let indent = i.metadata.heredoc_indentation;
         i.metadata.heredoc_quote_type = None;
-        i.metadata.heredoc_delimiter = None;
+        i.metadata.heredoc_identifier = None;
         i.metadata.heredoc_indentation = None;
         let res = func.parse(i);
         match res {
             Ok((mut i, o1)) => {
                 i.metadata.heredoc_quote_type = quote;
-                i.metadata.heredoc_delimiter = delim;
+                i.metadata.heredoc_identifier = delim;
                 i.metadata.heredoc_indentation = indent;
                 Ok((i, o1))
             }
