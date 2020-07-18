@@ -4,7 +4,7 @@ use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{map, not, peek, recognize};
+use nom::combinator::{map, not, opt, peek, recognize};
 use nom::multi::many1;
 use nom::sequence::{delimited, preceded};
 
@@ -19,8 +19,8 @@ pub(crate) fn heredoc_start_line(i: Input) -> InterpolatableResult {
 }
 
 /// `<<` *heredoc_quote_type_specifier*
-pub(crate) fn heredoc_signifier(i: Input) -> InterpolatableResult {
-    stub(i)
+pub(crate) fn heredoc_signifier(i: Input) -> ParseResult {
+    preceded(tag("<<"), heredoc_quote_type_specifier)(i)
 }
 
 /// *line_content*? *line_terminator*
@@ -39,13 +39,23 @@ pub(crate) fn heredoc_body_line(i: Input) -> InterpolatableResult {
 }
 
 /// ( `-` | `~` )? *heredoc_quote_type*
-pub(crate) fn heredoc_quote_type_specifier(i: Input) -> InterpolatableResult {
-    stub(i)
+pub(crate) fn heredoc_quote_type_specifier(i: Input) -> ParseResult {
+    preceded(
+        set_indentiation(opt(alt((char('-'), char('~'))))),
+        heredoc_quote_type,
+    )(i)
 }
 
 /// *non_quoted_delimiter* | *single_quoted_delimiter* | *double_quoted_delimiter* | *command_quoted_delimiter*
-pub(crate) fn heredoc_quote_type(i: Input) -> InterpolatableResult {
-    stub(i)
+pub(crate) fn heredoc_quote_type(i: Input) -> ParseResult {
+    let (mut i, res) = alt((
+        set_quote_type(non_quoted_delimiter, HeredocQuoteType::Unquoted),
+        set_quote_type(single_quoted_delimiter, HeredocQuoteType::SingleQuoted),
+        set_quote_type(double_quoted_delimiter, HeredocQuoteType::DoubleQuoted),
+        set_quote_type(command_quoted_delimiter, HeredocQuoteType::CommandQuoted),
+    ))(i)?;
+    i.metadata.heredoc_identifier = Some(*res);
+    Ok((i, res))
 }
 
 /// *non_quoted_delimiter_identifier*
@@ -120,23 +130,30 @@ pub(crate) fn non_indented_heredoc_end_line(i: Input) -> InterpolatableResult {
 
 /// *non_quoted_delimiter_identifier* | *single_quoted_delimiter_identifier* | *double_quoted_delimiter_identifier* | *command_quoted_delimiter_identifier*
 pub(crate) fn heredoc_quote_type_identifier(i: Input) -> ParseResult {
-    let (mut i, res) = alt((
-        set_quote_type(non_quoted_delimiter_identifier, HeredocQuoteType::Unquoted),
-        set_quote_type(
-            single_quoted_delimiter_identifier,
-            HeredocQuoteType::SingleQuoted,
-        ),
-        set_quote_type(
-            double_quoted_delimiter_identifier,
-            HeredocQuoteType::DoubleQuoted,
-        ),
-        set_quote_type(
-            command_quoted_delimiter_identifier,
-            HeredocQuoteType::CommandQuoted,
-        ),
-    ))(i)?;
-    i.metadata.heredoc_identifier = Some(*res);
-    Ok((i, res))
+    stub_p(i)
+}
+
+/// Sets the type of heredoc indentation used
+fn set_indentiation<'a, E, F>(
+    mut func: F,
+) -> impl FnMut(Input<'a>) -> nom::IResult<Input<'a>, Option<char>, E>
+where
+    F: nom::Parser<Input<'a>, Option<char>, E>,
+{
+    move |mut i: Input<'a>| {
+        let res = func.parse(i);
+        match res {
+            Ok((mut i, char)) => {
+                i.metadata.heredoc_indentation = match char {
+                    Some('-') => Some(HeredocIndentation::Indented),
+                    Some('~') => Some(HeredocIndentation::FullyIntented),
+                    _ => Some(HeredocIndentation::Unindented),
+                };
+                Ok((i, char))
+            }
+            error @ _ => error,
+        }
+    }
 }
 
 /// Sets the type of heredoc quoting used
@@ -184,6 +201,32 @@ where
             error @ _ => error,
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // macro_rules! assert_string {
+    //     ($a:expr, $b:expr) => {
+    //         parser($input.into())
+    //         assert_ok!($a, Interpolatable::String($b.to_owned()))
+    //     };
+    // }
+    // macro_rules! assert_interpolated {
+    //     ($a:expr, $b:expr) => {
+    //         assert_ok!($a, Interpolatable::Interpolated($b))
+    //     };
+    // }
+
+    #[test]
+    fn test_heredoc_quote_type() {
+        use_parser!(heredoc_quote_type);
+    }
+}
+
+fn stub_p(i: Input) -> ParseResult {
+    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
 
 fn stub_s(i: Input) -> StringResult {
