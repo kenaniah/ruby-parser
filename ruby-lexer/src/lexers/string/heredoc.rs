@@ -1,10 +1,12 @@
 use crate::lexers::identifier::identifier_character;
+use crate::lexers::program::{line_terminator, source_character};
 use crate::*;
 use nom::branch::alt;
+use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::map;
+use nom::combinator::{map, not, peek};
 use nom::multi::many1;
-use nom::sequence::delimited;
+use nom::sequence::{delimited, preceded};
 
 /// *heredoc_start_line* *heredoc_body* *heredoc_end_line*
 pub(crate) fn here_document(i: Input) -> InterpolatableResult {
@@ -47,8 +49,8 @@ pub(crate) fn heredoc_delimiter(i: Input) -> InterpolatableResult {
 }
 
 /// *non_quoted_delimiter_identifier*
-pub(crate) fn non_quoted_delimiter(i: Input) -> InterpolatableResult {
-    stub(i)
+pub(crate) fn non_quoted_delimiter(i: Input) -> StringResult {
+    non_quoted_delimiter_identifier(i)
 }
 
 /// *identifier_character*+
@@ -65,7 +67,13 @@ pub(crate) fn single_quoted_delimiter(i: Input) -> StringResult {
 
 /// ( ( *source_character* *source_character*? ) **but not** ( `'` | *line_terminator* ) )*
 pub(crate) fn single_quoted_delimiter_identifier(i: Input) -> StringResult {
-    stub_s(i)
+    map(
+        many1(preceded(
+            peek(not(alt((tag("'"), line_terminator)))),
+            source_character,
+        )),
+        |chars| chars.into_iter().collect(),
+    )(i)
 }
 
 /// `"` *double_quoted_delimiter_identifier* `"`
@@ -75,7 +83,13 @@ pub(crate) fn double_quoted_delimiter(i: Input) -> StringResult {
 
 /// ( ( *source_character* *source_character*? ) **but not** ( `"` | *line_terminator* ) )*
 pub(crate) fn double_quoted_delimiter_identifier(i: Input) -> StringResult {
-    stub_s(i)
+    map(
+        many1(preceded(
+            peek(not(alt((tag("\""), line_terminator)))),
+            source_character,
+        )),
+        |chars| chars.into_iter().collect(),
+    )(i)
 }
 
 /// ``` *command_quoted_delimiter_identifier* ```
@@ -85,7 +99,13 @@ pub(crate) fn command_quoted_delimiter(i: Input) -> StringResult {
 
 /// ( ( *source_character* *source_character*? ) **but not** ( ``` | *line_terminator* ) )*
 pub(crate) fn command_quoted_delimiter_identifier(i: Input) -> StringResult {
-    stub_s(i)
+    map(
+        many1(preceded(
+            peek(not(alt((tag("`"), line_terminator)))),
+            source_character,
+        )),
+        |chars| chars.into_iter().collect(),
+    )(i)
 }
 
 /// *indented_heredoc_end_line* | *non_indented_heredoc_end_line*
