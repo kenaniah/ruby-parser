@@ -1,4 +1,4 @@
-use crate::{HeredocDelimiter, HeredocIndent};
+use crate::{HeredocType, HeredocIndentation};
 
 /// Tracks lexer-specific metadata
 #[derive(Debug, Clone, Copy, Default)]
@@ -7,12 +7,12 @@ pub struct Metadata<'a> {
     pub file: Option<&'a str>,
     /// Tracks the delimiter used when parsing a quoted string
     pub(crate) quote_delimiter: Option<char>,
-    /// Tracks the type of delimiter used when parsing a heredoc
-    pub(crate) heredoc_delimiter: Option<HeredocDelimiter>,
+    /// Tracks the type of quotation used when parsing a heredoc
+    pub(crate) heredoc_type: Option<HeredocType>,
     /// Tracks the identiation mode used when parsing a heredoc
-    pub(crate) heredoc_indentation: Option<HeredocIndent>,
-    /// Tracks a reference to the heredoc identifier when parsing a heredoc
-    pub(crate) heredoc_identifier: Option<&'a str>,
+    pub(crate) heredoc_indentation: Option<HeredocIndentation>,
+    /// Tracks a reference to the heredoc's delimiter when parsing a heredoc
+    pub(crate) heredoc_delimiter: Option<&'a str>,
 }
 
 #[cfg(test)]

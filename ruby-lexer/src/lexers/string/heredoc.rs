@@ -18,7 +18,7 @@ pub(crate) fn heredoc_start_line(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
-/// `<<` *heredoc_delimiter_specifier*
+/// `<<` *heredoc_type_specifier*
 pub(crate) fn heredoc_signifier(i: Input) -> InterpolatableResult {
     stub(i)
 }
@@ -38,13 +38,13 @@ pub(crate) fn heredoc_body_line(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
-/// ( `-` | `~` )? *heredoc_delimiter*
-pub(crate) fn heredoc_delimiter_specifier(i: Input) -> InterpolatableResult {
+/// ( `-` | `~` )? *heredoc_type*
+pub(crate) fn heredoc_type_specifier(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
 /// *non_quoted_delimiter* | *single_quoted_delimiter* | *double_quoted_delimiter* | *command_quoted_delimiter*
-pub(crate) fn heredoc_delimiter(i: Input) -> InterpolatableResult {
+pub(crate) fn heredoc_type(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
@@ -113,7 +113,7 @@ pub(crate) fn heredoc_end_line(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
-/// [ beginning of a line ] *whitespace** *heredoc_delimiter_identifier* *line_terminator*
+/// [ beginning of a line ] *whitespace** *heredoc_type_identifier* *line_terminator*
 pub(crate) fn indented_heredoc_end_line(i: Input) -> InterpolatableResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
@@ -121,7 +121,7 @@ pub(crate) fn indented_heredoc_end_line(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
-/// [ beginning of a line ] *heredoc_delimiter_identifier* *line_terminator*
+/// [ beginning of a line ] *heredoc_type_identifier* *line_terminator*
 pub(crate) fn non_indented_heredoc_end_line(i: Input) -> InterpolatableResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
@@ -130,7 +130,7 @@ pub(crate) fn non_indented_heredoc_end_line(i: Input) -> InterpolatableResult {
 }
 
 /// *non_quoted_delimiter_identifier* | *single_quoted_delimiter_identifier* | *double_quoted_delimiter_identifier* | *command_quoted_delimiter_identifier*
-pub(crate) fn heredoc_delimiter_identifier(i: Input) -> StringResult {
+pub(crate) fn heredoc_type_identifier(i: Input) -> StringResult {
     alt((
         non_quoted_delimiter_identifier,
         single_quoted_delimiter_identifier,
@@ -147,17 +147,17 @@ where
     F: nom::Parser<Input<'a>, O1, E>,
 {
     move |mut i: Input<'a>| {
-        let delim = i.metadata.heredoc_delimiter;
-        let ident = i.metadata.heredoc_identifier;
+        let delim = i.metadata.heredoc_type;
+        let ident = i.metadata.heredoc_delimiter;
         let indent = i.metadata.heredoc_indentation;
+        i.metadata.heredoc_type = None;
         i.metadata.heredoc_delimiter = None;
-        i.metadata.heredoc_identifier = None;
         i.metadata.heredoc_indentation = None;
         let res = func.parse(i);
         match res {
             Ok((mut i, o1)) => {
-                i.metadata.heredoc_delimiter = delim;
-                i.metadata.heredoc_identifier = ident;
+                i.metadata.heredoc_type = delim;
+                i.metadata.heredoc_delimiter = ident;
                 i.metadata.heredoc_indentation = indent;
                 Ok((i, o1))
             }

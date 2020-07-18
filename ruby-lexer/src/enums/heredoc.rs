@@ -1,6 +1,6 @@
 /// Represents the delimiter type of a heredoc
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub(crate) enum HeredocDelimiter {
+pub(crate) enum HeredocType {
     Unquoted,
     SingleQuoted,
     DoubleQuoted,
@@ -9,7 +9,7 @@ pub(crate) enum HeredocDelimiter {
 
 /// Represents the indentation mode of a heredoc
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub(crate) enum HeredocIndent {
+pub(crate) enum HeredocIndentation {
     Unindented,
     Indented,
     FullyIntented,
