@@ -113,13 +113,19 @@ pub(crate) fn heredoc_end_line(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
-/// [beginning of a line] *whitespace** *heredoc_delimiter_identifier* *line_terminator*
+/// [ beginning of a line ] *whitespace** *heredoc_delimiter_identifier* *line_terminator*
 pub(crate) fn indented_heredoc_end_line(i: Input) -> InterpolatableResult {
+    if !i.beginning_of_line() {
+        return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
+    }
     stub(i)
 }
 
-/// [beginning of a line] *heredoc_delimiter_identifier* *line_terminator*
+/// [ beginning of a line ] *heredoc_delimiter_identifier* *line_terminator*
 pub(crate) fn non_indented_heredoc_end_line(i: Input) -> InterpolatableResult {
+    if !i.beginning_of_line() {
+        return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
+    }
     stub(i)
 }
 
@@ -131,6 +137,27 @@ pub(crate) fn heredoc_delimiter_identifier(i: Input) -> StringResult {
         double_quoted_delimiter_identifier,
         command_quoted_delimiter_identifier,
     ))(i)
+}
+
+/// Manages the state of the input's heredoc parsing
+fn wrap_heredoc<'a, O1, E, F>(
+    mut func: F,
+) -> impl FnMut(Input<'a>) -> nom::IResult<Input<'a>, O1, E>
+where
+    F: nom::Parser<Input<'a>, O1, E>,
+{
+    move |mut i: Input<'a>| {
+        let heredoc = i.metadata.heredoc;
+        i.metadata.heredoc = None;
+        let res = func.parse(i);
+        match res {
+            Ok((mut i, o1)) => {
+                i.metadata.heredoc = heredoc;
+                Ok((i, o1))
+            }
+            error @ _ => error,
+        }
+    }
 }
 
 fn stub_s(i: Input) -> StringResult {
