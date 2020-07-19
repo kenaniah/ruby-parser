@@ -54,7 +54,7 @@ pub(crate) fn heredoc_quote_type(i: Input) -> ParseResult {
         set_quote_type(double_quoted_delimiter, HeredocQuoteType::DoubleQuoted),
         set_quote_type(command_quoted_delimiter, HeredocQuoteType::CommandQuoted),
     ))(i)?;
-    i.metadata.heredoc_identifier = Some(*res);
+    i.metadata.heredoc.as_deref_mut().unwrap().identifier = Some(*res);
     Ok((i, res))
 }
 
@@ -118,9 +118,9 @@ pub(crate) fn command_quoted_delimiter_identifier(i: Input) -> ParseResult {
 
 /// *indented_heredoc_end_line* | *non_indented_heredoc_end_line*
 pub(crate) fn heredoc_end_line(i: Input) -> ParseResult {
-    match i.metadata.heredoc_indentation {
-        Some(HeredocIndentation::Unindented) => non_indented_heredoc_end_line(i),
-        _ => indented_heredoc_end_line(i),
+    match i.metadata.heredoc.as_ref().unwrap().indentation {
+        Some(HeredocIndentation::Unindented) => non_indented_heredoc_end_line(i.clone()),
+        _ => indented_heredoc_end_line(i.clone()),
     }
 }
 
@@ -146,10 +146,10 @@ pub(crate) fn non_indented_heredoc_end_line(i: Input) -> ParseResult {
 
 /// *non_quoted_delimiter_identifier* | *single_quoted_delimiter_identifier* | *double_quoted_delimiter_identifier* | *command_quoted_delimiter_identifier*
 pub(crate) fn heredoc_quote_type_identifier(i: Input) -> ParseResult {
-    if let Some(identifier) = i.metadata.heredoc_identifier {
-        tag(identifier)(i)
+    if let Some(identifier) = i.metadata.heredoc.as_ref().unwrap().identifier {
+        tag(identifier)(i.clone())
     } else {
-        Err(nom::Err::Error((i, crate::ErrorKind::Char)))
+        Err(nom::Err::Error((i.clone(), crate::ErrorKind::Char)))
     }
 }
 
@@ -164,7 +164,7 @@ where
         let res = func.parse(i);
         match res {
             Ok((mut i, char)) => {
-                i.metadata.heredoc_indentation = match char {
+                i.metadata.heredoc.as_deref_mut().unwrap().indentation = match char {
                     Some('-') => Some(HeredocIndentation::Indented),
                     Some('~') => Some(HeredocIndentation::FullyIntented),
                     _ => Some(HeredocIndentation::Unindented),
@@ -188,7 +188,7 @@ where
         let res = func.parse(i);
         match res {
             Ok((mut i, o1)) => {
-                i.metadata.heredoc_quote_type = Some(quote_type);
+                i.metadata.heredoc.as_deref_mut().unwrap().quote_type = Some(quote_type);
                 Ok((i, o1))
             }
             error @ _ => error,
@@ -204,18 +204,12 @@ where
     F: nom::Parser<Input<'a>, O1, E>,
 {
     move |mut i: Input<'a>| {
-        let quote = i.metadata.heredoc_quote_type;
-        let delim = i.metadata.heredoc_identifier;
-        let indent = i.metadata.heredoc_indentation;
-        i.metadata.heredoc_quote_type = None;
-        i.metadata.heredoc_identifier = None;
-        i.metadata.heredoc_indentation = None;
+        let original = i.metadata.heredoc;
+        i.metadata.heredoc = Some(Box::new(HeredocMetadata::default()));
         let res = func.parse(i);
         match res {
             Ok((mut i, o1)) => {
-                i.metadata.heredoc_quote_type = quote;
-                i.metadata.heredoc_identifier = delim;
-                i.metadata.heredoc_indentation = indent;
+                i.metadata.heredoc = original;
                 Ok((i, o1))
             }
             error @ _ => error,
@@ -230,9 +224,10 @@ mod tests {
     macro_rules! assert_signifier {
         ($input:expr, $ident:expr, $indent:expr, $quote:expr) => {
             let (i, result) = parser!($input).unwrap();
-            assert_eq!(i.metadata.heredoc_identifier, Some($ident));
-            assert_eq!(i.metadata.heredoc_indentation, Some($indent));
-            assert_eq!(i.metadata.heredoc_quote_type, Some($quote));
+            let heredoc = i.metadata.heredoc.as_ref().unwrap();
+            assert_eq!(heredoc.identifier, Some($ident));
+            assert_eq!(heredoc.indentation, Some($indent));
+            assert_eq!(heredoc.quote_type, Some($quote));
         };
     }
 

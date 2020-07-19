@@ -24,12 +24,13 @@ mod structs;
 mod types;
 
 pub(crate) use enums::{
-    heredoc::{HeredocQuoteType, HeredocIndentation},
+    heredoc::{HeredocIndentation, HeredocQuoteType},
     numeric::Numeric,
     segment::Segment,
 };
 pub use enums::{interpolable::Interpolatable, token::Token};
 pub use nom::error::ErrorKind;
+pub(crate) use structs::metadata::HeredocMetadata;
 pub use structs::{metadata::Metadata, tracked_location::TrackedLocation};
 pub(crate) use types::{
     CharResult, InterpolatableResult, NumericResult, ParseResult, SegmentResult, SegmentVecResult,
