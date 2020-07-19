@@ -75,8 +75,8 @@ pub(crate) fn non_escaped_sequence(i: Input) -> CharResult {
 
 /// *source_character* **but not** ( [ any escaping character ] | *line_terminator* )
 pub(crate) fn non_escaped_double_quoted_string_char(i: Input) -> CharResult {
-    peek(not(one_of("\\ntrfvaebsxucCM01234567")))(i)?;
-    peek(not(line_terminator))(i)?;
+    peek(not(one_of("\\ntrfvaebsxucCM01234567")))(i.clone())?;
+    peek(not(line_terminator))(i.clone())?;
     anychar(i)
 }
 

@@ -75,11 +75,13 @@ pub(crate) fn single_quoted_delimiter(i: Input) -> ParseResult {
 
 /// ( ( *source_character* *source_character*? ) **but not** ( `'` | *line_terminator* ) )*
 pub(crate) fn single_quoted_delimiter_identifier(i: Input) -> ParseResult {
-    peek(not(whitespace))(i)?;
-    recognize(many1(preceded(
-        peek(not(alt((tag("'"), line_terminator)))),
-        source_character,
-    )))(i)
+    preceded(
+        peek(not(whitespace)),
+        recognize(many1(preceded(
+            peek(not(alt((tag("'"), line_terminator)))),
+            source_character,
+        ))),
+    )(i)
 }
 
 /// `"` *double_quoted_delimiter_identifier* `"`
@@ -89,11 +91,13 @@ pub(crate) fn double_quoted_delimiter(i: Input) -> ParseResult {
 
 /// ( ( *source_character* *source_character*? ) **but not** ( `"` | *line_terminator* ) )*
 pub(crate) fn double_quoted_delimiter_identifier(i: Input) -> ParseResult {
-    peek(not(whitespace))(i)?;
-    recognize(many1(preceded(
-        peek(not(alt((tag("\""), line_terminator)))),
-        source_character,
-    )))(i)
+    preceded(
+        peek(not(whitespace)),
+        recognize(many1(preceded(
+            peek(not(alt((tag("\""), line_terminator)))),
+            source_character,
+        ))),
+    )(i)
 }
 
 /// ``` *command_quoted_delimiter_identifier* ```
@@ -103,11 +107,13 @@ pub(crate) fn command_quoted_delimiter(i: Input) -> ParseResult {
 
 /// ( ( *source_character* *source_character*? ) **but not** ( ``` | *line_terminator* ) )*
 pub(crate) fn command_quoted_delimiter_identifier(i: Input) -> ParseResult {
-    peek(not(whitespace))(i)?;
-    recognize(many1(preceded(
-        peek(not(alt((tag("`"), line_terminator)))),
-        source_character,
-    )))(i)
+    preceded(
+        peek(not(whitespace)),
+        recognize(many1(preceded(
+            peek(not(alt((tag("`"), line_terminator)))),
+            source_character,
+        ))),
+    )(i)
 }
 
 /// *indented_heredoc_end_line* | *non_indented_heredoc_end_line*

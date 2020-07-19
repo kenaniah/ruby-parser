@@ -146,8 +146,10 @@ pub(crate) fn expanded_literal_character(i: Input) -> SegmentResult {
 
 /// *source_character* **but not** *quoted_literal_escape_character*
 pub(crate) fn non_escaped_literal_character(i: Input) -> StringResult {
-    peek(not(quoted_literal_escape_character))(i)?;
-    map(anychar, |c| c.to_string())(i)
+    preceded(
+        peek(not(quoted_literal_escape_character)),
+        map(anychar, |c| c.to_string()),
+    )(i)
 }
 
 /// *non_expanded_literal_escape_character_sequence* | *non_escaped_non_expanded_literal_character_sequence*
@@ -195,8 +197,10 @@ pub(crate) fn non_escaped_non_expanded_literal_character_sequence(i: Input) -> S
 
 /// *source_character* **but not** *non_expanded_literal_escaped_character*
 pub(crate) fn non_escaped_non_expanded_literal_character(i: Input) -> StringResult {
-    peek(not(non_expanded_literal_escaped_character))(i)?;
-    map(anychar, |c| c.to_string())(i)
+    preceded(
+        peek(not(non_expanded_literal_escaped_character)),
+        map(anychar, |c| c.to_string()),
+    )(i)
 }
 
 /// *source_character* **but not** *alpha_numeric_character*

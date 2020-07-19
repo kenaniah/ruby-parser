@@ -1,7 +1,7 @@
 use crate::{HeredocIndentation, HeredocQuoteType, Input};
 
 /// Tracks lexer-specific metadata
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Metadata<'a> {
     /// Provides a reference to the name of the file being parsed
     pub file: Option<&'a str>,

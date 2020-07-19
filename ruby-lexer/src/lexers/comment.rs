@@ -7,7 +7,7 @@ use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::{map, not, opt, peek, recognize};
 use nom::multi::{many0, many1};
-use nom::sequence::tuple;
+use nom::sequence::{preceded, tuple};
 
 /// *single_line_comment* | *multi_line_comment*
 pub fn comment(i: Input) -> TokenResult {
@@ -33,8 +33,7 @@ pub(crate) fn line_content(i: Input) -> StringResult {
 }
 
 fn _line_content(i: Input) -> CharResult {
-    peek(not(line_terminator))(i)?;
-    source_character(i)
+    preceded(peek(not(line_terminator)), source_character)(i)
 }
 
 /// *multi_line_comment_begin_line* *multi_line_comment_line** *multi_line_comment_end_line*
@@ -71,8 +70,7 @@ pub(crate) fn rest_of_begin_end_line(i: Input) -> ParseResult {
 
 /// *comment_line* **but not** *multi_line_comment_end_line*
 pub(crate) fn multi_line_comment_line(i: Input) -> ParseResult {
-    peek(not(multi_line_comment_end_line))(i)?;
-    comment_line(i)
+    preceded(peek(not(multi_line_comment_end_line)), comment_line)(i)
 }
 
 /// *comment_content*? *line_terminator*
