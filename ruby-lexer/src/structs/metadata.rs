@@ -1,4 +1,4 @@
-use crate::{HeredocQuoteType, HeredocIndentation};
+use crate::{HeredocIndentation, HeredocQuoteType, Input};
 
 /// Tracks lexer-specific metadata
 #[derive(Debug, Clone, Copy, Default)]
@@ -13,6 +13,8 @@ pub struct Metadata<'a> {
     pub(crate) heredoc_indentation: Option<HeredocIndentation>,
     /// Tracks a reference to the heredoc's identifier when parsing a heredoc
     pub(crate) heredoc_identifier: Option<&'a str>,
+    // Tracks continuations
+    //pub(crate) continued_input: Option<&'a Input<'a>>,
 }
 
 #[cfg(test)]
