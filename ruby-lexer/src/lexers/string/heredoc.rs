@@ -20,7 +20,7 @@ fn heredoc_start_line(i: Input) -> InterpolatableResult {
 
 /// `<<` *heredoc_quote_type_specifier*
 fn heredoc_signifier(i: Input) -> ParseResult {
-    wrap_heredoc(preceded(tag("<<"), heredoc_quote_type_specifier))(i)
+    preceded(tag("<<"), heredoc_quote_type_specifier)(i)
 }
 
 /// *line_content*? *line_terminator*
@@ -209,16 +209,17 @@ where
         let res = func.parse(i);
         match res {
             Ok((mut i, o1)) => {
-                #[cfg(not(test))]
-                {
-                    i.metadata.heredoc = original;
-                }
+                // The following is a hack to intentionally expose the heredoc parser's state
+                // for verification purposes within this module's unit tests
                 #[cfg(test)]
                 {
-                    println!("{:?}", original);
                     if original.is_none() || !original.as_deref().unwrap().should_leak {
                         i.metadata.heredoc = original;
                     }
+                }
+                #[cfg(not(test))]
+                {
+                    i.metadata.heredoc = original;
                 }
                 Ok((i, o1))
             }
@@ -233,10 +234,12 @@ mod tests {
 
     macro_rules! assert_signifier {
         ($input:expr, $ident:expr, $indent:expr, $quote:expr) => {
+            // Bootstrap the input with a flag that will cause the heredoc parser's state to leak
             let mut i: Input = $input.into();
             i.metadata.heredoc = Some(Box::new(HeredocMetadata::default()));
             i.metadata.heredoc.as_deref_mut().unwrap().should_leak = true;
             let (i, result) = parser!(i).unwrap();
+            // Verifies the state of the heredoc parser
             let heredoc = i.metadata.heredoc.as_ref().unwrap();
             assert_eq!(heredoc.identifier, Some($ident));
             assert_eq!(heredoc.indentation, Some($indent));
@@ -244,9 +247,16 @@ mod tests {
         };
     }
 
+    /// `<<` *heredoc_quote_type_specifier*
+    fn wrapped_heredoc_signifier(i: Input) -> ParseResult {
+        wrap_heredoc(heredoc_signifier)(i)
+    }
+
     #[test]
     fn test_heredoc_signifier() {
-        use_parser!(heredoc_signifier);
+        // This unit test uses a wrapped testing harness that intentionally leaks the
+        // heredoc parser's top-level state
+        use_parser!(wrapped_heredoc_signifier);
         assert_err!("<<");
         assert_err!("<<FOO,");
         assert_err!("<<FOO ");
