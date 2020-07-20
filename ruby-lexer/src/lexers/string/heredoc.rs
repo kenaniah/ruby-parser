@@ -14,32 +14,32 @@ pub(crate) fn here_document(i: Input) -> InterpolatableResult {
 }
 
 /// *heredoc_signifier* *rest_of_line*
-pub(crate) fn heredoc_start_line(i: Input) -> InterpolatableResult {
+fn heredoc_start_line(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
 /// `<<` *heredoc_quote_type_specifier*
-pub(crate) fn heredoc_signifier(i: Input) -> ParseResult {
+fn heredoc_signifier(i: Input) -> ParseResult {
     wrap_heredoc(preceded(tag("<<"), heredoc_quote_type_specifier))(i)
 }
 
 /// *line_content*? *line_terminator*
-pub(crate) fn rest_of_line(i: Input) -> InterpolatableResult {
+fn rest_of_line(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
 /// *heredoc_body_line**
-pub(crate) fn heredoc_body(i: Input) -> InterpolatableResult {
+fn heredoc_body(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
 /// *comment_line* **but not** *heredoc_end_line*
-pub(crate) fn heredoc_body_line(i: Input) -> InterpolatableResult {
+fn heredoc_body_line(i: Input) -> InterpolatableResult {
     stub(i)
 }
 
 /// ( `-` | `~` )? *heredoc_quote_type*
-pub(crate) fn heredoc_quote_type_specifier(i: Input) -> ParseResult {
+fn heredoc_quote_type_specifier(i: Input) -> ParseResult {
     preceded(
         set_indentiation(opt(alt((char('-'), char('~'))))),
         heredoc_quote_type,
@@ -47,7 +47,7 @@ pub(crate) fn heredoc_quote_type_specifier(i: Input) -> ParseResult {
 }
 
 /// *non_quoted_delimiter* | *single_quoted_delimiter* | *double_quoted_delimiter* | *command_quoted_delimiter*
-pub(crate) fn heredoc_quote_type(i: Input) -> ParseResult {
+fn heredoc_quote_type(i: Input) -> ParseResult {
     let (mut i, res) = alt((
         set_quote_type(non_quoted_delimiter, HeredocQuoteType::Unquoted),
         set_quote_type(single_quoted_delimiter, HeredocQuoteType::SingleQuoted),
@@ -117,7 +117,7 @@ pub(crate) fn command_quoted_delimiter_identifier(i: Input) -> ParseResult {
 }
 
 /// *indented_heredoc_end_line* | *non_indented_heredoc_end_line*
-pub(crate) fn heredoc_end_line(i: Input) -> ParseResult {
+fn heredoc_end_line(i: Input) -> ParseResult {
     match i.metadata.heredoc.as_ref().unwrap().indentation {
         Some(HeredocIndentation::Unindented) => non_indented_heredoc_end_line(i.clone()),
         _ => indented_heredoc_end_line(i.clone()),
@@ -125,7 +125,7 @@ pub(crate) fn heredoc_end_line(i: Input) -> ParseResult {
 }
 
 /// [ beginning of a line ] *whitespace** *heredoc_quote_type_identifier* *line_terminator*
-pub(crate) fn indented_heredoc_end_line(i: Input) -> ParseResult {
+fn indented_heredoc_end_line(i: Input) -> ParseResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
     }
@@ -137,7 +137,7 @@ pub(crate) fn indented_heredoc_end_line(i: Input) -> ParseResult {
 }
 
 /// [ beginning of a line ] *heredoc_quote_type_identifier* *line_terminator*
-pub(crate) fn non_indented_heredoc_end_line(i: Input) -> ParseResult {
+fn non_indented_heredoc_end_line(i: Input) -> ParseResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
     }
@@ -145,7 +145,7 @@ pub(crate) fn non_indented_heredoc_end_line(i: Input) -> ParseResult {
 }
 
 /// *non_quoted_delimiter_identifier* | *single_quoted_delimiter_identifier* | *double_quoted_delimiter_identifier* | *command_quoted_delimiter_identifier*
-pub(crate) fn heredoc_quote_type_identifier(i: Input) -> ParseResult {
+fn heredoc_quote_type_identifier(i: Input) -> ParseResult {
     if let Some(identifier) = i.metadata.heredoc.as_ref().unwrap().identifier {
         tag(identifier)(i.clone())
     } else {
