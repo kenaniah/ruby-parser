@@ -20,7 +20,7 @@ pub(crate) fn heredoc_start_line(i: Input) -> InterpolatableResult {
 
 /// `<<` *heredoc_quote_type_specifier*
 pub(crate) fn heredoc_signifier(i: Input) -> ParseResult {
-    preceded(tag("<<"), heredoc_quote_type_specifier)(i)
+    wrap_heredoc(preceded(tag("<<"), heredoc_quote_type_specifier))(i)
 }
 
 /// *line_content*? *line_terminator*
@@ -209,7 +209,17 @@ where
         let res = func.parse(i);
         match res {
             Ok((mut i, o1)) => {
-                i.metadata.heredoc = original;
+                #[cfg(not(test))]
+                {
+                    i.metadata.heredoc = original;
+                }
+                #[cfg(test)]
+                {
+                    println!("{:?}", original);
+                    if original.is_none() || !original.as_deref().unwrap().should_leak {
+                        i.metadata.heredoc = original;
+                    }
+                }
                 Ok((i, o1))
             }
             error @ _ => error,
@@ -223,7 +233,10 @@ mod tests {
 
     macro_rules! assert_signifier {
         ($input:expr, $ident:expr, $indent:expr, $quote:expr) => {
-            let (i, result) = parser!($input).unwrap();
+            let mut i: Input = $input.into();
+            i.metadata.heredoc = Some(Box::new(HeredocMetadata::default()));
+            i.metadata.heredoc.as_deref_mut().unwrap().should_leak = true;
+            let (i, result) = parser!(i).unwrap();
             let heredoc = i.metadata.heredoc.as_ref().unwrap();
             assert_eq!(heredoc.identifier, Some($ident));
             assert_eq!(heredoc.indentation, Some($indent));

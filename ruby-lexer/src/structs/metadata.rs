@@ -22,6 +22,9 @@ pub struct HeredocMetadata<'a> {
     pub(crate) identifier: Option<&'a str>,
     /// Tracks a reference to the remaining input from the heredoc's start line
     pub(crate) remaining_input: Option<&'a Input<'a>>,
+    /// Allows heredoc metadata to leak for test verification purposes
+    #[cfg(test)]
+    pub(crate) should_leak: bool,
 }
 
 #[cfg(test)]
