@@ -15,8 +15,8 @@ pub(crate) fn here_document(i: Input) -> InterpolatableResult {
 }
 
 /// *heredoc_signifier* *rest_of_line*
-fn heredoc_start_line(i: Input) -> InterpolatableResult {
-    stub(i)
+fn heredoc_start_line(i: Input) -> ParseResult {
+    preceded(heredoc_signifier, rest_of_line)(i)
 }
 
 /// `<<` *heredoc_quote_type_specifier*
@@ -248,15 +248,13 @@ mod tests {
         };
     }
 
-    /// `<<` *heredoc_quote_type_specifier*
-    fn wrapped_heredoc_signifier(i: Input) -> ParseResult {
-        wrap_heredoc(heredoc_signifier)(i)
-    }
-
     #[test]
     fn test_heredoc_signifier() {
         // This unit test uses a wrapped testing harness that intentionally leaks the
         // heredoc parser's top-level state
+        fn wrapped_heredoc_signifier(i: Input) -> ParseResult {
+            wrap_heredoc(heredoc_signifier)(i)
+        }
         use_parser!(wrapped_heredoc_signifier);
         assert_err!("<<");
         assert_err!("<<FOO,");
@@ -304,6 +302,19 @@ mod tests {
             HeredocIndentation::Unindented,
             HeredocQuoteType::SingleQuoted
         );
+    }
+
+    #[test]
+    fn test_heredoc_start_line() {
+        fn wrapped_heredoc_start_line(i: Input) -> StringResult {
+            map(wrap_heredoc(heredoc_start_line), |s| (*s).to_owned())(i)
+        }
+        use_parser!(wrapped_heredoc_start_line);
+        assert_err!("<<-Foo");
+        assert_err!("<<-Foo\nbar\n");
+        assert_ok!("<<-Foo\n", "");
+        assert_ok!("<<-FOO BAR\n", " BAR");
+        assert_ok!("<<foo, 2; 3 * blah\n", ", 2; 3 * blah");
     }
 }
 
