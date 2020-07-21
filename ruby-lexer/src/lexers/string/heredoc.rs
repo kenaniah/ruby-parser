@@ -1,3 +1,4 @@
+use crate::lexers::comment::line_content;
 use crate::lexers::identifier::identifier_character;
 use crate::lexers::program::{line_terminator, source_character, whitespace};
 use crate::*;
@@ -24,8 +25,8 @@ fn heredoc_signifier(i: Input) -> ParseResult {
 }
 
 /// *line_content*? *line_terminator*
-fn rest_of_line(i: Input) -> InterpolatableResult {
-    stub(i)
+fn rest_of_line(i: Input) -> ParseResult {
+    terminated(recognize(opt(line_content)), line_terminator)(i)
 }
 
 /// *heredoc_body_line**

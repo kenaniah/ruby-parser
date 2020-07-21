@@ -21,15 +21,13 @@ pub(crate) fn single_line_comment(i: Input) -> ParseResult {
 }
 
 /// *line_content*
-pub(crate) fn comment_content(i: Input) -> StringResult {
+pub(crate) fn comment_content(i: Input) -> ParseResult {
     line_content(i)
 }
 
 /// ( *source_character*+ ) **but not** ( *source_character** *line_terminator* *source_character** )
-pub(crate) fn line_content(i: Input) -> StringResult {
-    map(many1(_line_content), |chars: Vec<char>| {
-        chars.into_iter().collect::<String>()
-    })(i)
+pub(crate) fn line_content(i: Input) -> ParseResult {
+    recognize(many1(_line_content))(i)
 }
 
 fn _line_content(i: Input) -> CharResult {
