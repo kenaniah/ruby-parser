@@ -167,7 +167,7 @@ where
             Ok((mut i, char)) => {
                 i.metadata.heredoc.as_deref_mut().unwrap().indentation = match char {
                     Some('-') => Some(HeredocIndentation::Indented),
-                    Some('~') => Some(HeredocIndentation::FullyIntented),
+                    Some('~') => Some(HeredocIndentation::FullyIndented),
                     _ => Some(HeredocIndentation::Unindented),
                 };
                 Ok((i, char))
@@ -281,7 +281,7 @@ mod tests {
         assert_signifier!(
             "<<~'BA Z'",
             "BA Z",
-            HeredocIndentation::FullyIntented,
+            HeredocIndentation::FullyIndented,
             HeredocQuoteType::SingleQuoted
         );
         assert_signifier!(
@@ -313,8 +313,14 @@ mod tests {
         assert_err!("<<-Foo");
         assert_err!("<<-Foo\nbar\n");
         assert_ok!("<<-Foo\n", "");
-        assert_ok!("<<-FOO BAR\n", " BAR");
+        assert_ok!("<<-'FOO BAR' BAZ\n", " BAZ");
         assert_ok!("<<foo, 2; 3 * blah\n", ", 2; 3 * blah");
+        assert_signifier!(
+            "<<~'foo' bar\n",
+            "foo",
+            HeredocIndentation::FullyIndented,
+            HeredocQuoteType::SingleQuoted
+        );
     }
 }
 

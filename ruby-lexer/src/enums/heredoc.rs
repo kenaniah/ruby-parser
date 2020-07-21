@@ -12,5 +12,5 @@ pub(crate) enum HeredocQuoteType {
 pub(crate) enum HeredocIndentation {
     Unindented,
     Indented,
-    FullyIntented,
+    FullyIndented,
 }
