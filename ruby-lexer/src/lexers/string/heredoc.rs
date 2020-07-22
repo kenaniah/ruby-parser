@@ -181,7 +181,7 @@ fn set_indentiation<'a, E, F>(
 where
     F: nom::Parser<Input<'a>, Option<char>, E>,
 {
-    move |mut i: Input<'a>| {
+    move |i: Input<'a>| {
         let res = func.parse(i);
         match res {
             Ok((mut i, char)) => {
@@ -205,7 +205,7 @@ fn set_quote_type<'a, O1, E, F>(
 where
     F: nom::Parser<Input<'a>, O1, E>,
 {
-    move |mut i: Input<'a>| {
+    move |i: Input<'a>| {
         let res = func.parse(i);
         match res {
             Ok((mut i, o1)) => {
@@ -259,7 +259,7 @@ mod tests {
             let mut i: Input = $input.into();
             i.metadata.heredoc = Some(Box::new(HeredocMetadata::default()));
             i.metadata.heredoc.as_deref_mut().unwrap().should_leak = true;
-            let (i, result) = parser!(i).unwrap();
+            let (i, _result) = parser!(i).unwrap();
             // Verifies the state of the heredoc parser
             let heredoc = i.metadata.heredoc.as_ref().unwrap();
             assert_eq!(heredoc.identifier, Some($ident));
@@ -342,8 +342,4 @@ mod tests {
             HeredocQuoteType::SingleQuoted
         );
     }
-}
-
-fn stub(i: Input) -> SegmentVecResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }

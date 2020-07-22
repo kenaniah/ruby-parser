@@ -27,7 +27,10 @@ pub fn string_literal(i: Input) -> TokenResult {
             Interpolatable::String(s) => Token::String(s),
             Interpolatable::Interpolated(i) => Token::InterpolatedString(i),
         }),
-        // here_document,
+        map(heredoc::here_document, |s| match s {
+            Interpolatable::String(s) => Token::String(s),
+            Interpolatable::Interpolated(i) => Token::InterpolatedString(i),
+        }),
         map(command::external_command_execution, |s| match s {
             Interpolatable::String(s) => Token::ExternalCommand(s),
             Interpolatable::Interpolated(i) => Token::InterpolatedExternalCommand(i),

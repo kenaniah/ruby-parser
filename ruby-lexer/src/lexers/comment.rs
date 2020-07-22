@@ -5,7 +5,7 @@ use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{map, not, opt, peek, recognize};
+use nom::combinator::{not, opt, peek, recognize};
 use nom::multi::{many0, many1};
 use nom::sequence::{preceded, tuple};
 
