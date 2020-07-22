@@ -1,17 +1,22 @@
 use crate::lexers::comment::line_content;
 use crate::lexers::identifier::identifier_character;
 use crate::lexers::program::{line_terminator, source_character, whitespace};
+use crate::lexers::string::double::{double_escape_sequence, interpolated_character_sequence};
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::char;
+use nom::character::complete::{char, none_of};
 use nom::combinator::{map, not, opt, peek, recognize};
 use nom::multi::{many0, many1};
 use nom::sequence::{delimited, preceded, terminated};
 
 /// *heredoc_start_line* *heredoc_body* *heredoc_end_line*
 pub(crate) fn here_document(i: Input) -> InterpolatableResult {
-    stub(i)
+    wrap_heredoc(delimited(
+        heredoc_start_line,
+        heredoc_body,
+        heredoc_end_line,
+    ))(i)
 }
 
 /// *heredoc_signifier* *rest_of_line*
@@ -29,14 +34,29 @@ fn rest_of_line(i: Input) -> ParseResult {
     terminated(recognize(opt(line_content)), line_terminator)(i)
 }
 
-/// *heredoc_body_line**
+/// *comment_line** **but not** *heredoc_end_line*
 fn heredoc_body(i: Input) -> InterpolatableResult {
-    stub(i)
+    let heredoc_contents = match i.metadata.heredoc.as_deref().unwrap().quote_type.unwrap() {
+        HeredocQuoteType::SingleQuoted => single_quoted_character,
+        _ => double_quoted_character,
+    };
+    map(
+        many0(preceded(peek(not(heredoc_end_line)), heredoc_contents)),
+        |vec| Interpolatable::from(vec.into_iter().collect::<Vec<Segment>>()),
+    )(i)
 }
 
-/// *comment_line* **but not** *heredoc_end_line*
-fn heredoc_body_line(i: Input) -> InterpolatableResult {
-    stub(i)
+fn single_quoted_character(i: Input) -> SegmentResult {
+    map(source_character, |c| Segment::Char(c))(i)
+}
+
+fn double_quoted_character(i: Input) -> SegmentResult {
+    alt((
+        map(none_of("#\\"), |c| Segment::Char(c)),
+        map(double_escape_sequence, |s| Segment::String(s)),
+        map(interpolated_character_sequence, |e| Segment::Expr(e)),
+        map(char('#'), |c| Segment::Char(c)),
+    ))(i)
 }
 
 /// ( `-` | `~` )? *heredoc_quote_type*
@@ -324,14 +344,6 @@ mod tests {
     }
 }
 
-fn stub_p(i: Input) -> ParseResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
-}
-
-fn stub_s(i: Input) -> StringResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
-}
-
-fn stub(i: Input) -> InterpolatableResult {
+fn stub(i: Input) -> SegmentVecResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
