@@ -269,6 +269,15 @@ mod tests {
     }
 
     #[test]
+    fn test_here_document(){
+        use_parser!(here_document);
+        assert_err!("<<foo\nbar\nfood\n");
+        assert_err!("<<foo\nbar\nfoo\nextra");
+        assert_ok!("<<foo + rest * of * line\nbar\nfoo\n", Interpolatable::String("bar\n".to_owned()));
+        assert_ok!("<<foo\nmeh\nbar\n\nfoo", Interpolatable::String("meh\nbar\n\n".to_owned()));
+    }
+
+    #[test]
     fn test_heredoc_signifier() {
         // This unit test uses a wrapped testing harness that intentionally leaks the
         // heredoc parser's top-level state
