@@ -269,12 +269,36 @@ mod tests {
     }
 
     #[test]
-    fn test_here_document(){
+    fn test_here_document() {
+        fn s(v: &str) -> Interpolatable {
+            Interpolatable::String(v.to_owned())
+        }
+        fn i(v: Vec<Token>) -> Interpolatable {
+            Interpolatable::Interpolated(v)
+        }
         use_parser!(here_document);
+        // Synax errors
         assert_err!("<<foo\nbar\nfood\n");
         assert_err!("<<foo\nbar\nfoo\nextra");
-        assert_ok!("<<foo + rest * of * line\nbar\nfoo\n", Interpolatable::String("bar\n".to_owned()));
-        assert_ok!("<<foo\nmeh\nbar\n\nfoo", Interpolatable::String("meh\nbar\n\n".to_owned()));
+        // Unindented heredocs
+        assert_ok!("<<h\nh", s(""));
+        assert_ok!("<<foo + rest * of * line\nbar\nfoo\n", s("bar\n"));
+        assert_ok!("<<foo\n  meh\n  bar\n\nfoo", s("  meh\n  bar\n\n"));
+        assert_err!("<<foo\nbar\n  foo\n");
+        // Indented marker heredocs
+        assert_ok!("<<-foo\n  bar\nfoo", s("  bar\n"));
+        assert_ok!("<<-foo\n  bar\n  foo", s("  bar\n"));
+        // Interpolated heredocs
+        assert_ok!(
+            "<<-foo\nbar#{2.4}\nfoo",
+            i(vec![
+                Token::Segment("bar".to_owned()),
+                Token::Block(vec![Token::Float(2.4)]),
+                Token::Segment("\n".to_owned())
+            ])
+        );
+        // Literal heredocs
+        assert_ok!("<<-'foo'\nbar#{2.4}\nfoo", s("bar#{2.4}\n"));
     }
 
     #[test]
