@@ -10,6 +10,13 @@ use nom::combinator::{map, not, opt, peek, recognize};
 use nom::multi::{many0, many1};
 use nom::sequence::{delimited, preceded, terminated};
 
+// TODO: implement the squiggly heredoc
+// TODO: make here_document return a TokenResult
+// TODO: return an input that continues the heredoc's rest of line with a jump offset
+// TODO: cause TrackedLocation to use and clear the jump offset once a newline is encountered
+// TODO: ensure nested interpolated heredocs work
+// TODO: ensure sequenced heredocs work
+
 /// *heredoc_start_line* *heredoc_body* *heredoc_end_line*
 pub(crate) fn here_document(i: Input) -> InterpolatableResult {
     wrap_heredoc(delimited(
