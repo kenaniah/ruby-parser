@@ -10,7 +10,6 @@ use nom::combinator::{map, not, opt, peek, recognize};
 use nom::multi::{many0, many1};
 use nom::sequence::{delimited, preceded, terminated};
 
-// TODO: implement the squiggly heredoc
 // TODO: return an input that continues the heredoc's rest of line with a jump offset
 // TODO: cause TrackedLocation to use and clear the jump offset once a newline is encountered
 // TODO: ensure nested interpolated heredocs work
