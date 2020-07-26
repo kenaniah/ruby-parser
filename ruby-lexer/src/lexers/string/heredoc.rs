@@ -46,11 +46,18 @@ fn heredoc_body(i: Input) -> TokenResult {
         HeredocQuoteType::SingleQuoted => single_quoted_character,
         _ => double_quoted_character,
     };
+    let indentation = i.metadata.heredoc.as_deref().unwrap().indentation;
     let (i, contents) = map(
         many0(preceded(peek(not(heredoc_end_line)), heredoc_contents)),
-        |vec| Interpolatable::from(vec.into_iter().collect::<Vec<Segment>>()),
+        |vec| {
+            let val = Interpolatable::from(vec.into_iter().collect::<Vec<Segment>>());
+            match indentation {
+                Some(HeredocIndentation::FullyIndented) => val.to_unindented(),
+                _ => val,
+            }
+        },
     )(i)?;
-    let token = match i.clone().metadata.heredoc.as_deref().unwrap().quote_type {
+    let token = match i.metadata.heredoc.as_deref().unwrap().quote_type {
         Some(HeredocQuoteType::CommandQuoted) => match contents {
             Interpolatable::String(v) => Token::ExternalCommand(v),
             Interpolatable::Interpolated(v) => Token::InterpolatedExternalCommand(v),

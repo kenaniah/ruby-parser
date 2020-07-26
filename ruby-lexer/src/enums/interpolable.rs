@@ -36,3 +36,10 @@ impl From<Vec<Segment>> for Interpolatable {
         }
     }
 }
+
+impl Interpolatable {
+    /// Strips leading indentation from the content according to the rules for squiggly heredocs
+    pub fn to_unindented(self) -> Self {
+        unimplemented!()
+    }
+}

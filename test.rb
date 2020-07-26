@@ -4,10 +4,20 @@ MARK
 "meh"  "Blah"
 puts res
 
-puts  "----"
+puts "----"
 
 puts <<~STUFF
   #{<<-foo * 2} bar
   meh
   foo
 STUFF
+
+puts "----"
+
+puts <<~INDENT
+    foo
+    bar#{
+2+8
+}
+  3
+INDENT
