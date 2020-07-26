@@ -336,6 +336,7 @@ mod tests {
         );
         // Literal heredocs
         assert_ok!("<<-'foo'\nbar#{2.4}\nfoo", s("bar#{2.4}\n"));
+        assert_ok!("<<-foo\nbar\\#{2.4}\nfoo", s("bar#{2.4}\n"));
     }
 
     #[test]
