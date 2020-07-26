@@ -344,6 +344,26 @@ mod tests {
         // Literal heredocs
         assert_ok!("<<-'foo'\nbar#{2.4}\nfoo", s("bar#{2.4}\n"));
         assert_ok!("<<-foo\nbar\\#{2.4}\nfoo", s("bar#{2.4}\n"));
+        // Squiggly heredocs
+        assert_ok!("<<~foo rest_of_line\n    foo", s(""));
+        assert_ok!("<<~foo\n#bar\nbaz\nfoo", s("#bar\nbaz\n"));
+        assert_ok!(
+            "<<~foo\n#{2}  bar\nfoo",
+            i(vec![
+                Token::Block(vec![Token::Integer(2)]),
+                Token::Segment("  bar\n".to_owned())
+            ])
+        );
+        // Squiggly heredocs with indented content
+        assert_ok!("<<~foo\n    bar\n  baz\nfoo", s("  bar\nbaz\n"));
+        assert_ok!(
+            "<<~foo\n    bar#{\n2\n} stuff\n  3\nfoo",
+            i(vec![
+                Token::Segment("  bar".to_owned()),
+                Token::Block(vec![Token::Integer(2)]),
+                Token::Segment(" stuff\n3\n".to_owned())
+            ])
+        );
     }
 
     #[test]

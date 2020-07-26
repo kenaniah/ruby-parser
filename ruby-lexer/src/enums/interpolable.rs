@@ -53,7 +53,7 @@ impl Interpolatable {
             }
         }
     }
-    fn unindent_tokens(tokens: Vec<Token>) -> Vec<Token> {
+    fn unindent_tokens(mut tokens: Vec<Token>) -> Vec<Token> {
         let mut after_newline = true;
         let mut indentation = usize::MAX;
         // Determine the indentation level
@@ -64,8 +64,7 @@ impl Interpolatable {
                     if after_newline {
                         for c in line.chars() {
                             match c {
-                                ' ' => whitespace += 1,
-                                '\t' => whitespace += 1,
+                                ' ' | '\t' => whitespace += 1,
                                 _ => {
                                     // Short-circuit if no adjustments are needed
                                     if whitespace == 0 {
@@ -88,6 +87,33 @@ impl Interpolatable {
             return tokens;
         }
         // Adjust the indentation of string segments accordingly
-        unimplemented!()
+        after_newline = true;
+        let mut whitespace = indentation;
+        for t in &mut tokens {
+            if let Token::Segment(ref mut string) = t {
+                let mut new_string = String::new();
+                for c in string.chars() {
+                    match c {
+                        ' ' | '\t' => {
+                            if after_newline && whitespace > 0 {
+                                whitespace -= 1;
+                                continue;
+                            }
+                            new_string.push(c);
+                        }
+                        '\n' => {
+                            after_newline = true;
+                            whitespace = indentation;
+                            new_string.push(c);
+                        }
+                        _ => new_string.push(c),
+                    };
+                }
+                *string = new_string;
+            } else {
+                after_newline = false;
+            }
+        }
+        tokens
     }
 }

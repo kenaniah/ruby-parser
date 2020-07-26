@@ -18,6 +18,6 @@ puts <<~INDENT
     foo
     bar#{
 2+8
-}
+} stuff
   3
 INDENT
