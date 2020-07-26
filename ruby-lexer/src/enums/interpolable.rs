@@ -106,7 +106,10 @@ impl Interpolatable {
                             whitespace = indentation;
                             new_string.push(c);
                         }
-                        _ => new_string.push(c),
+                        _ => {
+                            after_newline = false;
+                            new_string.push(c);
+                        }
                     };
                 }
                 *string = new_string;

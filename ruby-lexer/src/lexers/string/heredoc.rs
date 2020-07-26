@@ -357,11 +357,11 @@ mod tests {
         // Squiggly heredocs with indented content
         assert_ok!("<<~foo\n    bar\n  baz\nfoo", s("  bar\nbaz\n"));
         assert_ok!(
-            "<<~foo\n    bar#{\n2\n} stuff\n  3\nfoo",
+            "<<~foo\n    bar#{\n2\n} stuff\n\t\n     \n  3\nfoo",
             i(vec![
                 Token::Segment("  bar".to_owned()),
                 Token::Block(vec![Token::Integer(2)]),
-                Token::Segment(" stuff\n3\n".to_owned())
+                Token::Segment(" stuff\n\n   \n3\n".to_owned())
             ])
         );
     }
