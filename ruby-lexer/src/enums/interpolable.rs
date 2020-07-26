@@ -1,4 +1,5 @@
 use crate::{Segment, Token};
+use std::cmp::min;
 
 /// Defines something that may be interpolated
 #[derive(Debug, PartialEq)]
@@ -40,6 +41,53 @@ impl From<Vec<Segment>> for Interpolatable {
 impl Interpolatable {
     /// Strips leading indentation from the content according to the rules for squiggly heredocs
     pub fn to_unindented(self) -> Self {
+        match self {
+            Self::Interpolated(tokens) => Self::Interpolated(Self::unindent_tokens(tokens)),
+            Self::String(string) => {
+                let mut tokens = Self::unindent_tokens(vec![Token::Segment(string)]);
+                if let Token::Segment(string) = tokens.remove(0) {
+                    Self::String(string)
+                } else {
+                    unreachable!()
+                }
+            }
+        }
+    }
+    fn unindent_tokens(tokens: Vec<Token>) -> Vec<Token> {
+        let mut after_newline = true;
+        let mut indentation = usize::MAX;
+        // Determine the indentation level
+        for t in &tokens {
+            if let Token::Segment(string) = t {
+                for line in string.lines() {
+                    let mut whitespace = 0usize;
+                    if after_newline {
+                        for c in line.chars() {
+                            match c {
+                                ' ' => whitespace += 1,
+                                '\t' => whitespace += 1,
+                                _ => {
+                                    // Short-circuit if no adjustments are needed
+                                    if whitespace == 0 {
+                                        return tokens;
+                                    }
+                                    indentation = min(indentation, whitespace);
+                                    break;
+                                }
+                            }
+                        }
+                    };
+                    after_newline = true;
+                }
+            } else {
+                after_newline = false;
+            }
+        }
+        // Return if no adjustments need to be made
+        if indentation == usize::MAX {
+            return tokens;
+        }
+        // Adjust the indentation of string segments accordingly
         unimplemented!()
     }
 }
