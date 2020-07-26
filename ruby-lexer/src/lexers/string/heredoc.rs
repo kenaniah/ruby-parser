@@ -5,7 +5,7 @@ use crate::lexers::string::double::{double_escape_sequence, interpolated_charact
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{char, none_of};
+use nom::character::complete::{anychar, char, none_of};
 use nom::combinator::{map, not, opt, peek, recognize};
 use nom::multi::{many0, many1};
 use nom::sequence::{delimited, preceded, terminated};
@@ -18,7 +18,7 @@ use nom::sequence::{delimited, preceded, terminated};
 // TODO: ensure sequenced heredocs work
 
 /// *heredoc_start_line* *heredoc_body* *heredoc_end_line*
-pub(crate) fn here_document(i: Input) -> InterpolatableResult {
+pub(crate) fn here_document(i: Input) -> TokenResult {
     wrap_heredoc(delimited(
         heredoc_start_line,
         heredoc_body,
@@ -42,15 +42,26 @@ fn rest_of_line(i: Input) -> ParseResult {
 }
 
 /// *comment_line** **but not** *heredoc_end_line*
-fn heredoc_body(i: Input) -> InterpolatableResult {
+fn heredoc_body(i: Input) -> TokenResult {
     let heredoc_contents = match i.metadata.heredoc.as_deref().unwrap().quote_type.unwrap() {
         HeredocQuoteType::SingleQuoted => single_quoted_character,
         _ => double_quoted_character,
     };
-    map(
+    let (i, contents) = map(
         many0(preceded(peek(not(heredoc_end_line)), heredoc_contents)),
         |vec| Interpolatable::from(vec.into_iter().collect::<Vec<Segment>>()),
-    )(i)
+    )(i)?;
+    let token = match i.clone().metadata.heredoc.as_deref().unwrap().quote_type {
+        Some(HeredocQuoteType::CommandQuoted) => match contents {
+            Interpolatable::String(v) => Token::ExternalCommand(v),
+            Interpolatable::Interpolated(v) => Token::InterpolatedExternalCommand(v),
+        },
+        _ => match contents {
+            Interpolatable::String(v) => Token::String(v),
+            Interpolatable::Interpolated(v) => Token::InterpolatedString(v),
+        },
+    };
+    Ok((i, token))
 }
 
 fn single_quoted_character(i: Input) -> SegmentResult {
@@ -160,8 +171,13 @@ fn indented_heredoc_end_line(i: Input) -> ParseResult {
     delimited(
         many0(whitespace),
         heredoc_quote_type_identifier,
-        opt(line_terminator),
+        alt((line_terminator, at_eof)),
     )(i)
+}
+
+// Success if the end of the input has been reached
+fn at_eof(i: Input) -> ParseResult {
+    recognize(not(peek(anychar)))(i)
 }
 
 /// [ beginning of a line ] *heredoc_quote_type_identifier* *line_terminator*
@@ -277,11 +293,17 @@ mod tests {
 
     #[test]
     fn test_here_document() {
-        fn s(v: &str) -> Interpolatable {
-            Interpolatable::String(v.to_owned())
+        fn s(v: &str) -> Token {
+            Token::String(v.to_owned())
         }
-        fn i(v: Vec<Token>) -> Interpolatable {
-            Interpolatable::Interpolated(v)
+        fn i(v: Vec<Token>) -> Token {
+            Token::InterpolatedString(v)
+        }
+        fn cs(v: &str) -> Token {
+            Token::ExternalCommand(v.to_owned())
+        }
+        fn ci(v: Vec<Token>) -> Token {
+            Token::InterpolatedExternalCommand(v)
         }
         use_parser!(here_document);
         // Synax errors
@@ -291,14 +313,23 @@ mod tests {
         assert_ok!("<<h\nh", s(""));
         assert_ok!("<<foo + rest * of * line\nbar\nfoo\n", s("bar\n"));
         assert_ok!("<<foo\n  meh\n  bar\n\nfoo", s("  meh\n  bar\n\n"));
+        assert_ok!("<<-`foo`\nbar\n foot\nfoo", cs("bar\n foot\n"));
         assert_err!("<<foo\nbar\n  foo\n");
         // Indented marker heredocs
-        assert_ok!("<<-foo\n  bar\nfoo", s("  bar\n"));
+        assert_ok!("<<-foo\n  bar\nfoo\n", s("  bar\n"));
         assert_ok!("<<-foo\n  bar\n  foo", s("  bar\n"));
         // Interpolated heredocs
         assert_ok!(
             "<<-foo\nbar#{2.4}\nfoo",
             i(vec![
+                Token::Segment("bar".to_owned()),
+                Token::Block(vec![Token::Float(2.4)]),
+                Token::Segment("\n".to_owned())
+            ])
+        );
+        assert_ok!(
+            "<<-`foo`\nbar#{2.4}\nfoo",
+            ci(vec![
                 Token::Segment("bar".to_owned()),
                 Token::Block(vec![Token::Float(2.4)]),
                 Token::Segment("\n".to_owned())
