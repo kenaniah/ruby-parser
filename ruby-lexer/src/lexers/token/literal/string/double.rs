@@ -1,6 +1,6 @@
-use crate::lexers::identifier::*;
-use crate::lexers::numeric::{hexadecimal_digit, octal_digit};
 use crate::lexers::program::*;
+use crate::lexers::token::identifier::*;
+use crate::lexers::token::literal::numeric::{hexadecimal_digit, octal_digit};
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;

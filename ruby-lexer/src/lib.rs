@@ -37,3 +37,8 @@ pub(crate) use types::{
     StringResult, TokenResult,
 };
 pub use types::{Expression, Input, StatementList};
+
+/// Parses a ruby program
+pub fn parse(i: Input) -> TokenResult {
+    lexers::program::program(i)
+}

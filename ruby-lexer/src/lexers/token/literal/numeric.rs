@@ -17,19 +17,17 @@ tuple of the remaining input and a `Token::Integer` or `Token::Float` value when
 ## Example
 
 ```
-use ruby_lexer::lexers::numeric_literal;
-use ruby_lexer::Input;
-use ruby_lexer::Token;
+use ruby_lexer::*;
 
 let input = "12_345";
-let (remaining, token) = numeric_literal(input.into()).unwrap();
+let (remaining, token) = parse(input.into()).unwrap();
 assert_eq!("", *remaining);
-assert_eq!(Token::Integer(12345), token);
+assert_eq!(Token::Block(vec![Token::Integer(12345)]), token);
 
 let input = "-12.34e+4 + 12";
-let (remaining, token) = numeric_literal(input.into()).unwrap();
+let (remaining, token) = parse(input.into()).unwrap();
 assert_eq!(" + 12", *remaining);
-assert_eq!(Token::Float(-123400.0), token);
+assert_eq!(Token::Block(vec![Token::Float(-123400.0)]), token);
 ```
 
 ## ISO Spec

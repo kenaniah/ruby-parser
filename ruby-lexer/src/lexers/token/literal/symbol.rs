@@ -1,10 +1,7 @@
-use crate::lexers::identifier::identifier;
-use crate::lexers::keyword::keyword;
-use crate::lexers::string::double::double_quoted_string;
-use crate::lexers::string::quoted::non_expanded_delimited_string;
-use crate::lexers::string::single::single_quoted_string;
-use crate::lexers::token::operator;
-use crate::*;
+use crate::lexers::token::literal::string::double::double_quoted_string;
+use crate::lexers::token::literal::string::quoted::non_expanded_delimited_string;
+use crate::lexers::token::literal::string::single::single_quoted_string;
+use crate::lexers::token::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;

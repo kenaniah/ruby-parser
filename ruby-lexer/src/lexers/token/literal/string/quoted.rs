@@ -1,5 +1,5 @@
-use crate::lexers::string::double::double_escape_sequence;
-use crate::lexers::string::double::interpolated_character_sequence;
+use super::double::double_escape_sequence;
+use super::double::interpolated_character_sequence;
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;

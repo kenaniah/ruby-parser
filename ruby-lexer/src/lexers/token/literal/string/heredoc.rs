@@ -1,7 +1,7 @@
+use super::double::{double_escape_sequence, interpolated_character_sequence};
 use crate::lexers::comment::line_content;
-use crate::lexers::identifier::identifier_character;
 use crate::lexers::program::{line_terminator, source_character, whitespace};
-use crate::lexers::string::double::{double_escape_sequence, interpolated_character_sequence};
+use crate::lexers::token::identifier::identifier_character;
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;

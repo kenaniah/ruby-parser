@@ -1,4 +1,4 @@
-pub use crate::*;
+use crate::*;
 
 /// `/` *regular_expression_body* `/` *regular_expression_option** | `%r` *literal_beginning_delimiter* *expanded_literal_string** *literal_ending_delimiter* *regular_expression_option**
 pub fn regular_expression_literal(i: Input) -> TokenResult {

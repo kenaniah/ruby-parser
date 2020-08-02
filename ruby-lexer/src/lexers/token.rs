@@ -1,10 +1,18 @@
-use crate::lexers::*;
 use crate::*;
 use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{char, one_of};
-use nom::combinator::{map, recognize};
-use nom::sequence::tuple;
+use nom::combinator::map;
+
+pub(crate) mod identifier;
+pub(crate) mod keyword;
+pub(crate) mod literal;
+pub(crate) mod operator;
+pub(crate) mod punctuator;
+
+pub(crate) use identifier::identifier;
+pub(crate) use keyword::keyword;
+pub(crate) use literal::*;
+pub(crate) use operator::operator;
+pub(crate) use punctuator::punctuator;
 
 /// *keyword* | *identifier* | *punctuator* | *operator* | *literal*
 pub fn token(i: Input) -> TokenResult {
@@ -14,117 +22,6 @@ pub fn token(i: Input) -> TokenResult {
         punctuator,
         operator,
         literal,
-    ))(i)
-}
-
-/// *numeric_literal* | *string_literal* | *array_literal* | *regular_expression_literal* | *symbol*
-pub(crate) fn literal(i: Input) -> TokenResult {
-    alt((
-        numeric_literal,
-        string_literal,
-        array_literal,
-        regular_expression_literal,
-        symbol,
-    ))(i)
-}
-
-pub(crate) fn punctuator(i: Input) -> TokenResult {
-    let (i, res) = alt((
-        tag("..."),
-        tag(".."),
-        tag("::"),
-        tag("=>"),
-        recognize(one_of("[](){},;:?")),
-    ))(i)?;
-    let token = match *res {
-        "[" => Token::LeftBracket,
-        "]" => Token::RightBracket,
-        "(" => Token::LeftParen,
-        ")" => Token::RightParen,
-        "," => Token::Comma,
-        ";" => Token::Semicolon,
-        ":" => Token::Colon,
-        "?" => Token::QuestionMark,
-        ".." => Token::DotDot,
-        "..." => Token::DotDotDot,
-        "=>" => Token::Arrow,
-        "::" => Token::DoubleColon,
-        _ => unreachable!(),
-    };
-    Ok((i, token))
-}
-
-/// `!` | `!=` | `!~` | `&&` | `||` | *operator_method_name* | `=` | *assignment_operator*
-pub(crate) fn operator(i: Input) -> TokenResult {
-    map(
-        recognize(alt((
-            assignment_operator,
-            operator_method_name,
-            tag("="),
-            tag("||"),
-            tag("&&"),
-            tag("!~"),
-            tag("!="),
-            tag("!"),
-        ))),
-        |s: Input| Token::Operator((*s).to_owned()),
-    )(i)
-}
-
-/// `^` | `&` | `|` | `<=>` | `==` | `===` | `=~` | `>` | `>=` | `<` | `<=` | `<<` | `>>` | `+` | `-` | `*` | `/` | `%` | `**` | `~` | `+@` | `-@` | `[]` | `[]=`
-pub(crate) fn operator_method_name(i: Input) -> ParseResult {
-    recognize(alt((
-        alt((
-            tag("<=>"),
-            tag("==="),
-            tag("[]="),
-            tag("=="),
-            tag("=~"),
-            tag(">="),
-            tag(">>"),
-            tag("<="),
-            tag("<<"),
-            tag("**"),
-            tag(">"),
-            tag("<"),
-        )),
-        alt((
-            tag("^"),
-            tag("&"),
-            tag("|"),
-            tag("+"),
-            tag("-"),
-            tag("*"),
-            tag("/"),
-            tag("%"),
-            tag("~"),
-            tag("+@"),
-            tag("-@"),
-            tag("[]"),
-        )),
-    )))(i)
-}
-
-/// *assignment_operator_name* `=`
-pub(crate) fn assignment_operator(i: Input) -> ParseResult {
-    recognize(tuple((assignment_operator_name, char('='))))(i)
-}
-
-/// `&&` | `||` | `^` | `&` | `|` | `<<` | `>>` | `+` | `-` | `%` | `/` | `**`
-pub(crate) fn assignment_operator_name(i: Input) -> ParseResult {
-    alt((
-        tag("&&"),
-        tag("||"),
-        tag("^"),
-        tag("&"),
-        tag("|"),
-        tag("<<"),
-        tag(">>"),
-        tag("+"),
-        tag("-"),
-        tag("%"),
-        tag("/"),
-        tag("**"),
     ))(i)
 }
 

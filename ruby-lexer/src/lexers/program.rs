@@ -10,7 +10,7 @@ use nom::combinator::{map, opt, recognize};
 use nom::multi::{many0, many1, separated_list0};
 use nom::sequence::{terminated, tuple};
 
-// /// *compound_statement*
+/// *compound_statement*
 pub fn program(i: Input) -> TokenResult {
     compound_statement(i)
 }

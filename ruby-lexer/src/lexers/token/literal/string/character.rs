@@ -1,6 +1,5 @@
-use crate::lexers::program::source_character;
-use crate::lexers::program::whitespace;
-use crate::lexers::string::double::double_escape_sequence;
+use super::double::double_escape_sequence;
+use crate::lexers::program::*;
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;

@@ -1,7 +1,7 @@
+use super::double::double_escape_sequence;
+use super::double::interpolated_character_sequence;
+use super::quoted::expanded_delimited_string;
 use crate::lexers::program::source_character;
-use crate::lexers::string::double::double_escape_sequence;
-use crate::lexers::string::double::interpolated_character_sequence;
-use crate::lexers::string::quoted::expanded_delimited_string;
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -87,5 +87,4 @@ mod tests {
             ]
         );
     }
-
 }
