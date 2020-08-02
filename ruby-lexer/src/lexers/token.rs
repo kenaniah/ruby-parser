@@ -1,4 +1,4 @@
-use crate::lexers::{array_literal, identifier, keyword, numeric_literal, string_literal, symbol};
+use crate::lexers::*;
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -23,7 +23,7 @@ pub(crate) fn literal(i: Input) -> TokenResult {
         numeric_literal,
         string_literal,
         array_literal,
-        //regular_expression_literal,
+        regular_expression_literal,
         symbol,
     ))(i)
 }
