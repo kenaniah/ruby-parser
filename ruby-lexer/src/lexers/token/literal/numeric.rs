@@ -35,7 +35,7 @@ assert_eq!(Token::Block(vec![Token::Float(-123400.0)]), token);
 
 *signed_number* | *unsigned_number*
 */
-pub fn numeric_literal(i: Input) -> TokenResult {
+pub(crate) fn numeric_literal(i: Input) -> TokenResult {
     // Ordered to match the largest production first
     let (i, num) = alt((signed_number, unsigned_number))(i)?;
     let token = match num {

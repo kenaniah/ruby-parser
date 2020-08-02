@@ -3,7 +3,7 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 
 /// `__LINE__` | `__ENCODING__` | `__FILE__` | `BEGIN` | `END` | `alias` | `and` | `begin` | `break` | `case` | `class` | `def` | `defined?` | `do` | `else` | `elsif` | `end` | `ensure` | `for` | `false` | `if` | `in` | `module` | `next` | `nil` | `not` | `or` | `redo` | `rescue` | `retry` | `return` | `self` | `super` | `then` | `true` | `undef` | `unless` | `until` | `when` | `while` | `yield`
-pub fn keyword(i: Input) -> ParseResult {
+pub(crate) fn keyword(i: Input) -> ParseResult {
     alt((
         alt((
             tag("alias"),

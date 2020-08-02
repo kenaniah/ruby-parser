@@ -379,6 +379,7 @@ where
 }
 
 /// Captures the current position within the input
+#[allow(unused)]
 pub fn position<T, E>(i: T) -> IResult<T, T, E>
 where
     E: ParseError<T>,

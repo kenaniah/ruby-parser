@@ -19,7 +19,7 @@ extern crate nom;
 #[macro_use]
 mod macros;
 mod enums;
-pub mod lexers;
+mod lexers;
 mod structs;
 mod types;
 

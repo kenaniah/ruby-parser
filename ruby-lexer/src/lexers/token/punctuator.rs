@@ -4,7 +4,7 @@ use nom::bytes::complete::tag;
 use nom::character::complete::one_of;
 use nom::combinator::recognize;
 
-pub fn punctuator(i: Input) -> TokenResult {
+pub(crate) fn punctuator(i: Input) -> TokenResult {
     let (i, res) = alt((
         tag("..."),
         tag(".."),

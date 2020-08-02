@@ -9,7 +9,7 @@ use nom::combinator::{map, recognize};
 use nom::sequence::tuple;
 
 /// *symbol_literal* | *dynamic_symbol*
-pub fn symbol(i: Input) -> TokenResult {
+pub(crate) fn symbol(i: Input) -> TokenResult {
     alt((symbol_literal, dynamic_symbol))(i)
 }
 

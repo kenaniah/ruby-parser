@@ -6,7 +6,7 @@ use nom::combinator::{map, recognize};
 use nom::sequence::tuple;
 
 /// `!` | `!=` | `!~` | `&&` | `||` | *operator_method_name* | `=` | *assignment_operator*
-pub fn operator(i: Input) -> TokenResult {
+pub(crate) fn operator(i: Input) -> TokenResult {
     map(
         recognize(alt((
             assignment_operator,

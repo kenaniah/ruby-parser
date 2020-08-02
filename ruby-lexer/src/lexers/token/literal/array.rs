@@ -1,7 +1,7 @@
 use crate::*;
 
 /// *quoted_non_expanded_array_constructor* | *quoted_expanded_array_constructor*
-pub fn array_literal(i: Input) -> TokenResult {
+pub(crate) fn array_literal(i: Input) -> TokenResult {
     stub(i)
 }
 

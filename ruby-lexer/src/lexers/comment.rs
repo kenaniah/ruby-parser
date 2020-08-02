@@ -10,7 +10,7 @@ use nom::multi::{many0, many1};
 use nom::sequence::{preceded, tuple};
 
 /// *single_line_comment* | *multi_line_comment*
-pub fn comment(i: Input) -> TokenResult {
+pub(crate) fn comment(i: Input) -> TokenResult {
     let (i, content) = alt((single_line_comment, multi_line_comment))(i)?;
     Ok((i, Token::Comment((*content).to_owned())))
 }

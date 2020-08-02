@@ -10,12 +10,12 @@ pub(crate) mod punctuator;
 
 pub(crate) use identifier::identifier;
 pub(crate) use keyword::keyword;
-pub(crate) use literal::*;
+pub(crate) use literal::literal;
 pub(crate) use operator::operator;
 pub(crate) use punctuator::punctuator;
 
 /// *keyword* | *identifier* | *punctuator* | *operator* | *literal*
-pub fn token(i: Input) -> TokenResult {
+pub(crate) fn token(i: Input) -> TokenResult {
     alt((
         map(keyword, |s| Token::Keyword((*s).to_owned())),
         identifier,

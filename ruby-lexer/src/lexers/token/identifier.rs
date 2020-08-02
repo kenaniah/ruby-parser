@@ -7,7 +7,7 @@ use nom::multi::many0;
 use nom::sequence::tuple;
 
 /// *local_variable_identifier* | *global_variable_identifier* | *class_variable_identifier* | *instance_variable_identifier* | *constant_identifier* | *method_only_identifier* | *assignment_like_method_identifier*
-pub fn identifier(i: Input) -> TokenResult {
+pub(crate) fn identifier(i: Input) -> TokenResult {
     // Reordered to use the longest production
     alt((
         method_only_identifier,
