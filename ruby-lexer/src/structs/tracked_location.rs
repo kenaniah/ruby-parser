@@ -7,7 +7,7 @@ use nom::{
 };
 
 /// Tracks location information and user-defined metadata for nom's source input.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct TrackedLocation<T, X> {
     /// The offset represents the current byte position relative to the original input
     offset: usize,
@@ -19,6 +19,8 @@ pub struct TrackedLocation<T, X> {
     input: T,
     /// Any user-defined metadata that should be tracked in addition to the location
     pub metadata: X,
+    /// Tracks a reference to the remaining input from the heredoc's start line
+    pub(crate) remaining_input: Option<Box<Self>>,
 }
 
 impl<T, X> Deref for TrackedLocation<T, X> {
@@ -36,6 +38,7 @@ impl<T: AsBytes, X> TrackedLocation<T, X> {
             char: 1,
             input: program,
             metadata: metadata,
+            remaining_input: None,
         }
     }
     pub fn offset(&self) -> usize {
@@ -66,6 +69,7 @@ impl<T: AsBytes, X: Default> TrackedLocation<T, X> {
             char: 1,
             input: program,
             metadata: X::default(),
+            remaining_input: None,
         }
     }
     pub fn new_with_pos(program: T, offset: usize, line: usize, char: usize) -> Self {
@@ -75,6 +79,7 @@ impl<T: AsBytes, X: Default> TrackedLocation<T, X> {
             char: char,
             input: program,
             metadata: X::default(),
+            remaining_input: None,
         }
     }
 }
@@ -93,6 +98,7 @@ impl<T: AsBytes, X> TrackedLocation<T, X> {
             char: char,
             input: program,
             metadata: metadata,
+            remaining_input: None,
         }
     }
 }
@@ -239,7 +245,7 @@ impl<'a, X> IntoIterator for TrackedLocation<&'a str, X> {
     }
 }
 
-impl<A: Compare<B>, B: Into<TrackedLocation<B, X>>, X> Compare<B> for TrackedLocation<A, X> {
+impl<'a, A: Compare<B>, B: Into<TrackedLocation<B, X>>, X> Compare<B> for TrackedLocation<A, X> {
     fn compare(&self, other: B) -> CompareResult {
         self.input.compare(other.into().input)
     }
@@ -254,59 +260,81 @@ impl<T, X> Offset for TrackedLocation<T, X> {
     }
 }
 
-macro_rules! impl_slice_range {
-    ( $fragment_type:ty, $range_type:ty, $can_return_self:expr ) => {
-        impl<'a, X: Clone> Slice<$range_type> for TrackedLocation<$fragment_type, X> {
-            fn slice(&self, range: $range_type) -> Self {
-                if $can_return_self(&range) {
-                    return self.clone();
-                }
-                let next_fragment = self.input.slice(range);
-                let consumed_len = self.input.offset(&next_fragment);
-                if consumed_len == 0 {
-                    return Self {
-                        line: self.line,
-                        char: self.char,
-                        offset: self.offset,
-                        input: next_fragment,
-                        metadata: self.metadata.clone(),
-                    };
-                }
-
-                let consumed = self.input.slice(..consumed_len);
-                let next_offset = self.offset + consumed_len;
-
-                let consumed_as_bytes = consumed.as_bytes();
-                let iter = memchr::Memchr::new(b'\n', consumed_as_bytes);
-                let number_of_lines = iter.count();
-                let next_line = self.line + number_of_lines;
-                let next_char = if number_of_lines == 0 {
-                    self.char + consumed.chars().count()
-                } else {
-                    1 + consumed.chars().rev().position(|c| c == '\n').unwrap()
-                };
-
-                Self {
-                    line: next_line,
-                    char: next_char,
-                    offset: next_offset,
-                    input: next_fragment,
-                    metadata: self.metadata.clone(),
-                }
-            }
-        }
-    };
-}
-
-macro_rules! impl_slice_ranges {
-    ( $fragment_type:ty ) => {
-        impl_slice_range! {$fragment_type, Range<usize>, |_| false }
-        impl_slice_range! {$fragment_type, RangeTo<usize>, |_| false }
-        impl_slice_range! {$fragment_type, RangeFrom<usize>, |range:&RangeFrom<usize>| range.start == 0}
-        impl_slice_range! {$fragment_type, RangeFull, |_| true}
+impl<'a, T: Clone, X: Clone> Slice<RangeFull> for TrackedLocation<T, X> {
+    fn slice(&self, _range: RangeFull) -> Self {
+        self.clone()
     }
 }
-impl_slice_ranges! {&'a str}
+
+impl<'a, X: Clone> Slice<RangeFrom<usize>> for TrackedLocation<&'a str, X> {
+    fn slice(&self, range: RangeFrom<usize>) -> Self {
+        if range.start == 0 {
+            return self.clone();
+        }
+        let next_fragment = self.input.slice(range);
+        if let Some(j) = &self.remaining_input {
+            if next_fragment.input_len() == 0 {
+                return (**j).to_owned();
+            }
+        };
+        self.next_from_slice(next_fragment)
+    }
+}
+
+impl<'a, X: Clone> Slice<RangeTo<usize>> for TrackedLocation<&'a str, X> {
+    fn slice(&self, range: RangeTo<usize>) -> Self {
+        self.next_from_slice(self.input.slice(range))
+    }
+}
+
+impl<'a, X: Clone> Slice<Range<usize>> for TrackedLocation<&'a str, X> {
+    fn slice(&self, range: Range<usize>) -> Self {
+        self.next_from_slice(self.input.slice(range))
+    }
+}
+
+impl<'a, X: Clone> TrackedLocation<&'a str, X> {
+    fn next_from_slice(&self, next_fragment: &'a str) -> Self {
+        let consumed_len = self.input.offset(&next_fragment);
+        if let Some(j) = &self.remaining_input {
+            if self.input.input_len() == 0 {
+                return (**j).to_owned();
+            }
+        };
+        if consumed_len == 0 {
+            return Self {
+                line: self.line,
+                char: self.char,
+                offset: self.offset,
+                input: next_fragment,
+                metadata: self.metadata.clone(),
+                remaining_input: self.remaining_input.clone(),
+            };
+        }
+
+        let consumed = self.input.slice(..consumed_len);
+        let next_offset = self.offset + consumed_len;
+
+        let consumed_as_bytes = consumed.as_bytes();
+        let iter = memchr::Memchr::new(b'\n', consumed_as_bytes);
+        let number_of_lines = iter.count();
+        let next_line = self.line + number_of_lines;
+        let next_char = if number_of_lines == 0 {
+            self.char + consumed.chars().count()
+        } else {
+            1 + consumed.chars().rev().position(|c| c == '\n').unwrap()
+        };
+
+        Self {
+            line: next_line,
+            char: next_char,
+            offset: next_offset,
+            input: next_fragment,
+            metadata: self.metadata.clone(),
+            remaining_input: self.remaining_input.clone(),
+        }
+    }
+}
 
 impl<T: FindToken<Token>, Token, X> FindToken<Token> for TrackedLocation<T, X> {
     fn find_token(&self, token: Token) -> bool {
@@ -357,4 +385,24 @@ where
     T: InputIter + InputTake,
 {
     nom::bytes::complete::take(0usize)(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    type Input<'a> = TrackedLocation<&'a str, ()>;
+    #[test]
+    fn test_continuations() {
+        let mut i = Input::new("foobar");
+        let j = Input::new_with_pos("baz", 12, 4, 0);
+        assert_eq!(6, i.input_len());
+        i.remaining_input = Some(Box::new(j));
+        assert_eq!(6, i.input_len());
+        assert_eq!(
+            Input::new_with_pos("baz", 12, 4, 0),
+            nom::combinator::rest::<Input, (Input, nom::error::ErrorKind)>(i)
+                .unwrap()
+                .0
+        );
+    }
 }

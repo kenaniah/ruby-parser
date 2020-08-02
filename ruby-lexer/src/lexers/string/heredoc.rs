@@ -10,18 +10,22 @@ use nom::combinator::{map, not, opt, peek, recognize};
 use nom::multi::{many0, many1};
 use nom::sequence::{delimited, preceded, terminated};
 
-// TODO: return an input that continues the heredoc's rest of line with a jump offset
-// TODO: cause TrackedLocation to use and clear the jump offset once a newline is encountered
 // TODO: ensure nested interpolated heredocs work
 // TODO: ensure sequenced heredocs work
 
 /// *heredoc_start_line* *heredoc_body* *heredoc_end_line*
 pub(crate) fn here_document(i: Input) -> TokenResult {
-    wrap_heredoc(delimited(
-        heredoc_start_line,
-        heredoc_body,
-        heredoc_end_line,
-    ))(i)
+    wrap_heredoc(_here_document)(i)
+}
+
+// When dealing with heredocs, the parser has to make a jump in the input.
+// First, the heredoc is parsed, and parsing continues using the rest of the heredoc's start line.
+// Only then does parsing resume after the heredoc's ending identifier.
+fn _here_document(i: Input) -> TokenResult {
+    let (i, mut line) = heredoc_start_line(i)?;
+    let (remaining, token) = terminated(heredoc_body, heredoc_end_line)(i)?;
+    line.remaining_input = Some(Box::new(remaining));
+    Ok((line, token))
 }
 
 /// *heredoc_signifier* *rest_of_line*
@@ -190,7 +194,10 @@ fn non_indented_heredoc_end_line(i: Input) -> ParseResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
     }
-    terminated(heredoc_quote_type_identifier, opt(line_terminator))(i)
+    terminated(
+        heredoc_quote_type_identifier,
+        alt((line_terminator, at_eof)),
+    )(i)
 }
 
 /// *non_quoted_delimiter_identifier* | *single_quoted_delimiter_identifier* | *double_quoted_delimiter_identifier* | *command_quoted_delimiter_identifier*
@@ -313,10 +320,10 @@ mod tests {
         use_parser!(here_document);
         // Synax errors
         assert_err!("<<foo\nbar\nfood\n");
-        assert_err!("<<foo\nbar\nfoo\nextra");
+        assert_partial!("<<foo\nbar\nfoo\nextra");
         // Unindented heredocs
         assert_ok!("<<h\nh", s(""));
-        assert_ok!("<<foo + rest * of * line\nbar\nfoo\n", s("bar\n"));
+        assert_partial!("<<foo + rest * of * line\nbar\nfoo\n", s("bar\n"));
         assert_ok!("<<foo\n  meh\n  bar\n\nfoo", s("  meh\n  bar\n\n"));
         assert_ok!("<<-`foo`\nbar\n foot\nfoo", cs("bar\n foot\n"));
         assert_err!("<<foo\nbar\n  foo\n");
@@ -344,7 +351,7 @@ mod tests {
         assert_ok!("<<-'foo'\nbar#{2.4}\nfoo", s("bar#{2.4}\n"));
         assert_ok!("<<-foo\nbar\\#{2.4}\nfoo", s("bar#{2.4}\n"));
         // Squiggly heredocs
-        assert_ok!("<<~foo rest_of_line\n    foo", s(""));
+        assert_partial!("<<~foo rest_of_line\n    foo", s(""));
         assert_ok!("<<~foo\n#bar\nbaz\nfoo", s("#bar\nbaz\n"));
         assert_ok!(
             "<<~foo\n#{2}  bar\nfoo",
