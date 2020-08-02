@@ -1,5 +1,6 @@
 //! Parser combinators for lexing Ruby's syntax
 
+mod array;
 mod comment;
 mod expression;
 mod identifier;
@@ -12,6 +13,7 @@ mod symbol;
 mod token;
 
 pub use crate::structs::tracked_location::position;
+pub use array::array_literal;
 pub use comment::comment;
 pub use expression::expression;
 pub use identifier::identifier;
