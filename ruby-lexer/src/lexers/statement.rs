@@ -1,4 +1,4 @@
-use crate::lexers::expression::expression;
+use crate::lexers::expression::primary_expression;
 use crate::*;
 use nom::branch::alt;
 
@@ -18,7 +18,7 @@ pub(crate) fn statement(i: Input) -> TokenResult {
 }
 
 pub(crate) fn expression_statement(i: Input) -> TokenResult {
-    expression(i)
+    primary_expression(i)
 }
 
 pub(crate) fn alias_statement(i: Input) -> TokenResult {
