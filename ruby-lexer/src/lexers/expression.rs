@@ -6,7 +6,9 @@ use nom::character::complete::char;
 use nom::combinator::map;
 use nom::sequence::tuple;
 
+mod argument;
 mod logical;
+mod method;
 mod variable;
 
 pub(crate) fn expression(i: Input) -> TokenResult {
