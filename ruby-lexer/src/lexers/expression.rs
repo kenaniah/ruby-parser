@@ -7,6 +7,7 @@ use nom::combinator::map;
 use nom::sequence::tuple;
 
 mod argument;
+mod block;
 mod logical;
 mod method;
 mod variable;

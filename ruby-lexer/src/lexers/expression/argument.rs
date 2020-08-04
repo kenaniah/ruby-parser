@@ -30,11 +30,6 @@ pub(crate) fn block_argument(i: Input) -> TokenResult {
     stub(i)
 }
 
-// /// docs
-// pub(crate) fn func(i: Input) -> TokenResult {
-//     stub(i)
-// }
-
 fn stub(i: Input) -> TokenResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
