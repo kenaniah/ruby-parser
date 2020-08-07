@@ -10,6 +10,7 @@ mod argument;
 mod block;
 mod logical;
 mod method;
+mod super_;
 mod variable;
 
 pub(crate) fn expression(i: Input) -> TokenResult {
