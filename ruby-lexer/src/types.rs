@@ -36,3 +36,6 @@ pub(crate) type StringResult<'a> = Parsed<'a, String>;
 
 /// Describes a single parsed token
 pub(crate) type TokenResult<'a> = Parsed<'a, Token>;
+
+/// Describes a list of parsed tokens
+pub(crate) type TokenizedResult<'a> = Parsed<'a, Vec<Token>>;

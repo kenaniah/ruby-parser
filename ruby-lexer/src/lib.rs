@@ -34,11 +34,15 @@ pub(crate) use structs::metadata::HeredocMetadata;
 pub use structs::{metadata::Metadata, tracked_location::TrackedLocation};
 pub(crate) use types::{
     CharResult, InterpolatableResult, NumericResult, ParseResult, SegmentResult, SegmentVecResult,
-    StringResult, TokenResult,
+    StringResult, TokenResult, TokenizedResult
 };
 pub use types::{Expression, Input, StatementList};
 
 /// Parses a ruby program
 pub fn parse(i: Input) -> TokenResult {
     lexers::program::program(i)
+}
+
+pub fn tokenize(i: Input) -> TokenizedResult {
+    nom::multi::many0(lexers::program::input_element)(i)
 }
