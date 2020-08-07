@@ -12,6 +12,7 @@ mod logical;
 mod method;
 mod super_;
 mod variable;
+mod yield_;
 
 pub(crate) fn expression(i: Input) -> TokenResult {
     logical::keyword_logical_expression(i)
