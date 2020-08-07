@@ -43,6 +43,7 @@ pub fn parse(i: Input) -> TokenResult {
     lexers::program::program(i)
 }
 
+/// Tokenizes a ruby program
 pub fn tokenize(i: Input) -> TokenizedResult {
     nom::multi::many0(lexers::program::input_element)(i)
 }
