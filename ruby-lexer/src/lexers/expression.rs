@@ -7,6 +7,7 @@ use nom::combinator::map;
 use nom::sequence::tuple;
 
 mod argument;
+mod assignment;
 mod block;
 mod logical;
 mod method;
@@ -54,6 +55,11 @@ pub(crate) fn primary_expression(i: Input) -> TokenResult {
 /// `(` *compound_statement* `)`
 pub(crate) fn grouping_expression(i: Input) -> TokenResult {
     map(tuple((char('('), compound_statement, char(')'))), |t| t.1)(i)
+}
+
+/// *assignment_expression* | *defined_without_parenthesis* | *conditional_operator_expression*
+pub(crate) fn operator_expression(i: Input) -> TokenResult {
+    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
 
 #[cfg(test)]
