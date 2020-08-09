@@ -57,6 +57,11 @@ pub(crate) fn multiple_assignment_statement(i: Input) -> TokenResult {
 
 // TODO: fill out 11.4.2.4
 
+/// *left_hand_side* [ no line terminator here ] `=` *operator_expression* [ no line terminator here ] `rescue` *operator_expression*
+pub(crate) fn assignment_with_rescue_modifier(i: Input) -> TokenResult {
+    stub(i)
+}
+
 /// ( *operator_expression* | *method_invocation_without_parenthesis* )
 pub(crate) fn rhs_expression(i: Input) -> TokenResult {
     stub(i)
