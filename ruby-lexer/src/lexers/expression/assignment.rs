@@ -35,6 +35,28 @@ pub(crate) fn single_method_assignment(i: Input) -> TokenResult {
     stub(i)
 }
 
+/// *variable* [ no line terminator here ] *assignment_operator* *rhs_expression*
+pub(crate) fn abbreviated_variable_assignment(i: Input) -> TokenResult {
+    stub(i)
+}
+
+/// *primary_expression* [ no line terminator here ] [ no whitespace here ] `[` *indexing_argument_list*? `]` [ no line terminator here ] *assignment_operator* *rhs_expression*
+pub(crate) fn abbreviated_indexing_assignment(i: Input) -> TokenResult {
+    stub(i)
+}
+
+/// *primary_expression* [ no line terminator here ] ( `.` | `::` ) *local_variable_identifier* [ no line terminator here ] *assignment_operator* *rhs_expression* | *primary_expression* [ no line terminator here ] `.` *constant_identifier* [ no line terimanator here ] *assignment_operator* *rhs_expression*
+pub(crate) fn abbreviated_method_assignment(i: Input) -> TokenResult {
+    stub(i)
+}
+
+/// *many_to_one_assignment_statement* | *one_to_packing_assignment_statement* | *many_to_many_assignment_statement*
+pub(crate) fn multiple_assignment_statement(i: Input) -> TokenResult {
+    stub(i)
+}
+
+// TODO: fill out 11.4.2.4
+
 /// ( *operator_expression* | *method_invocation_without_parenthesis* )
 pub(crate) fn rhs_expression(i: Input) -> TokenResult {
     stub(i)
