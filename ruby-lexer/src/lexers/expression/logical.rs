@@ -30,7 +30,7 @@ pub(crate) fn keyword_or_expression(i: Input) -> TokenResult {
     stub(i)
 }
 
-/// *operator_and_expression* | *opeartor_or_expression* [ no line terminator here ] `||` *operator_and_expression*
+/// *operator_and_expression* | *operator_or_expression* [ no line terminator here ] `||` *operator_and_expression*
 pub(crate) fn operator_or_expression(i: Input) ->  TokenResult {
     stub(i)
 }
