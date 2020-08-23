@@ -1,5 +1,4 @@
-use crate::ast::Literal;
-use crate::{Expression, StatementList};
+use crate::*;
 
 /// Defines the tokens that are returned as a result of lexing
 #[derive(Debug, PartialEq)]

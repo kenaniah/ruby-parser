@@ -335,7 +335,7 @@ mod tests {
             "<<-foo\nbar#{2.4}\nfoo",
             i(vec![
                 Token::Segment("bar".to_owned()),
-                Token::Block(vec![Token::Literal(Literal::Float(2.4))]),
+                Token::Block(vec![Token::from(2.4)]),
                 Token::Segment("\n".to_owned())
             ])
         );
@@ -343,7 +343,7 @@ mod tests {
             "<<-`foo`\nbar#{2.4}\nfoo",
             ci(vec![
                 Token::Segment("bar".to_owned()),
-                Token::Block(vec![Token::Literal(Literal::Float(2.4))]),
+                Token::Block(vec![Token::from(2.4)]),
                 Token::Segment("\n".to_owned())
             ])
         );
