@@ -79,10 +79,10 @@ mod tests {
         assert_err!("((foo)");
         // Success cases
         assert_ok!("nil", Token::Nil);
-        assert_ok!("42", Token::Integer(42));
-        assert_ok!("24.2", Token::Float(24.2));
+        assert_ok!("42", Token::Literal(Literal::Integer(42)));
+        assert_ok!("24.2", Token::Literal(Literal::Float(24.2)));
         assert_ok!("meh", Token::LocalVariableIdentifier("meh".to_owned()));
-        assert_ok!("-23e4", Token::Float(-230000.0));
+        assert_ok!("-23e4", Token::Literal(Literal::Float(-230000.0)));
         assert_ok!("'hello world'", Token::String("hello world".to_owned()));
         assert_ok!("()", Token::Block(vec![]));
         assert_ok!(
@@ -91,7 +91,10 @@ mod tests {
         );
         assert_ok!(
             "(;2\n\t5;;)",
-            Token::Block(vec![Token::Integer(2), Token::Integer(5)])
+            Token::Block(vec![
+                Token::Literal(Literal::Integer(2)),
+                Token::Literal(Literal::Integer(5))
+            ])
         );
         assert_ok!("(;)", Token::Block(vec![]));
     }

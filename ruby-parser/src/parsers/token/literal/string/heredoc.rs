@@ -335,7 +335,7 @@ mod tests {
             "<<-foo\nbar#{2.4}\nfoo",
             i(vec![
                 Token::Segment("bar".to_owned()),
-                Token::Block(vec![Token::Float(2.4)]),
+                Token::Block(vec![Token::Literal(Literal::Float(2.4))]),
                 Token::Segment("\n".to_owned())
             ])
         );
@@ -343,7 +343,7 @@ mod tests {
             "<<-`foo`\nbar#{2.4}\nfoo",
             ci(vec![
                 Token::Segment("bar".to_owned()),
-                Token::Block(vec![Token::Float(2.4)]),
+                Token::Block(vec![Token::Literal(Literal::Float(2.4))]),
                 Token::Segment("\n".to_owned())
             ])
         );
@@ -356,7 +356,7 @@ mod tests {
         assert_ok!(
             "<<~foo\n#{2}  bar\nfoo",
             i(vec![
-                Token::Block(vec![Token::Integer(2)]),
+                Token::Block(vec![Token::Literal(Literal::Integer(2))]),
                 Token::Segment("  bar\n".to_owned())
             ])
         );
@@ -366,7 +366,7 @@ mod tests {
             "<<~foo\n    bar#{\n2\n} stuff\n\t\n     \n  3\nfoo",
             i(vec![
                 Token::Segment("  bar".to_owned()),
-                Token::Block(vec![Token::Integer(2)]),
+                Token::Block(vec![Token::Literal(Literal::Integer(2))]),
                 Token::Segment(" stuff\n\n   \n3\n".to_owned())
             ])
         );

@@ -1,5 +1,5 @@
-use crate::ast::Node;
-use crate::{Interpolatable, Metadata, Numeric, Segment, Token, TrackedLocation};
+use crate::ast::{Literal, Node};
+use crate::{Interpolatable, Metadata, Segment, Token, TrackedLocation};
 use nom::IResult;
 
 /// Intermediate type used to build the result types for lexing combinators
@@ -20,8 +20,8 @@ pub(crate) type AstResult<'a> = Parsed<'a, Node>;
 /// Describes a parsed character
 pub(crate) type CharResult<'a> = Parsed<'a, char>;
 
-/// Describes a parsed numeric literal
-pub(crate) type NumericResult<'a> = Parsed<'a, Numeric>;
+/// Describes a parsed literal
+pub(crate) type LiteralResult<'a> = Parsed<'a, Literal>;
 
 /// Describes an interpolated result
 pub(crate) type InterpolatableResult<'a> = Parsed<'a, Interpolatable>;

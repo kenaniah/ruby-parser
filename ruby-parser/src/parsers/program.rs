@@ -100,7 +100,10 @@ mod tests {
         use_parser!(compound_statement);
         assert_ok!(
             "2; 5",
-            Token::Block(vec![Token::Integer(2), Token::Integer(5)])
+            Token::Block(vec![
+                Token::Literal(Literal::Integer(2)),
+                Token::Literal(Literal::Integer(5))
+            ])
         );
     }
 

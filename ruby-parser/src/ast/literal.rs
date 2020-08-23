@@ -1,4 +1,5 @@
 // TODO: add complex, irrational, bigint
+#[derive(Debug, PartialEq)]
 pub enum Literal {
     Nil,
     Boolean(bool),

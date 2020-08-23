@@ -1,3 +1,4 @@
+use crate::ast::Literal;
 use crate::*;
 use nom::branch::alt;
 use nom::character::complete::{anychar, char, one_of};
@@ -6,7 +7,7 @@ use nom::multi::many0;
 use nom::sequence::{preceded, tuple};
 
 /**
-Provides support for lexing Ruby's numeric literal formats.
+Provides support for lexing Ruby's Literal literal formats.
 
 ## How To Use
 
@@ -22,12 +23,12 @@ use ruby_parser::*;
 let input = "12_345";
 let (remaining, token) = parse(input.into()).unwrap();
 assert_eq!("", *remaining);
-assert_eq!(Token::Block(vec![Token::Integer(12345)]), token);
+assert_eq!(Token::Block(vec![Token::Literal(Literal::Integer(12345))]), token);
 
 let input = "-12.34e+4 + 12";
 let (remaining, token) = parse(input.into()).unwrap();
 assert_eq!(" + 12", *remaining);
-assert_eq!(Token::Block(vec![Token::Float(-123400.0)]), token);
+assert_eq!(Token::Block(vec![Token::Literal(Literal::Float(-123400.0))]), token);
 ```
 
 ## ISO Spec
@@ -38,21 +39,19 @@ assert_eq!(Token::Block(vec![Token::Float(-123400.0)]), token);
 pub(crate) fn numeric_literal(i: Input) -> TokenResult {
     // Ordered to match the largest production first
     let (i, num) = alt((signed_number, unsigned_number))(i)?;
-    let token = match num {
-        Numeric::Integer(v) => Token::Integer(v),
-        Numeric::Float(v) => Token::Float(v),
-    };
+    let token = Token::Literal(num);
     Ok((i, token))
 }
 
 /// ( `+` | `-` ) *unsigned_number*
-pub(crate) fn signed_number(i: Input) -> NumericResult {
+pub(crate) fn signed_number(i: Input) -> LiteralResult {
     let (i, sign) = opt(one_of("+-"))(i)?;
     let (i, token) = unsigned_number(i)?;
     if sign == Some('-') {
         let token = match token {
-            Numeric::Integer(v) => Numeric::Integer(v * -1),
-            Numeric::Float(v) => Numeric::Float(v * -1f64),
+            Literal::Integer(v) => Literal::Integer(v * -1),
+            Literal::Float(v) => Literal::Float(v * -1f64),
+            v => v,
         };
         return Ok((i, token));
     }
@@ -60,13 +59,13 @@ pub(crate) fn signed_number(i: Input) -> NumericResult {
 }
 
 /// *float_literal* | *integer_literal*
-pub(crate) fn unsigned_number(i: Input) -> NumericResult {
+pub(crate) fn unsigned_number(i: Input) -> LiteralResult {
     // Ordered to match the largest production first
     alt((float_literal, integer_literal))(i)
 }
 
 /// *binary_integer_literal* | *octal_integer_literal* | *hexadecimal_integer_literal* | *decimal_integer_literal*
-pub(crate) fn integer_literal(i: Input) -> NumericResult {
+pub(crate) fn integer_literal(i: Input) -> LiteralResult {
     // Ordered to match the largest production first
     alt((
         binary_integer_literal,
@@ -77,14 +76,14 @@ pub(crate) fn integer_literal(i: Input) -> NumericResult {
 }
 
 /// *prefixed_decimal_integer_literal* | *unprefixed_decimal_integer_literal*
-pub(crate) fn decimal_integer_literal(i: Input) -> NumericResult {
+pub(crate) fn decimal_integer_literal(i: Input) -> LiteralResult {
     // Ordered to match the largest production first
     map(
         alt((
             prefixed_decimal_integer_literal,
             unprefixed_decimal_integer_literal,
         )),
-        |s| Numeric::Integer(isize::from_str_radix(&s, 10).unwrap()),
+        |s| Literal::Integer(isize::from_str_radix(&s, 10).unwrap()),
     )(i)
 }
 
@@ -112,41 +111,41 @@ pub(crate) fn digit_decimal_part(i: Input) -> StringResult {
 }
 
 /// `0` ( `b` | `B` ) *binary_digit* ( `_`? *binary_digit* )*
-pub(crate) fn binary_integer_literal(i: Input) -> NumericResult {
+pub(crate) fn binary_integer_literal(i: Input) -> LiteralResult {
     let (i, digit) = preceded(char('0'), preceded(one_of("bB"), binary_digit))(i)?;
     let (i, rest) = many0(preceded(opt(char('_')), binary_digit))(i)?;
     Ok((
         i,
-        Numeric::Integer(isize::from_str_radix(&concat(digit, rest), 2).unwrap()),
+        Literal::Integer(isize::from_str_radix(&concat(digit, rest), 2).unwrap()),
     ))
 }
 
 /// `0` ( `_` | `o` | `O` )? *octal_digit* ( `_`? *octal_digit* )*
-pub(crate) fn octal_integer_literal(i: Input) -> NumericResult {
+pub(crate) fn octal_integer_literal(i: Input) -> LiteralResult {
     let (i, digit) = preceded(char('0'), preceded(opt(one_of("_oO")), octal_digit))(i)?;
     let (i, rest) = many0(preceded(opt(char('_')), octal_digit))(i)?;
     Ok((
         i,
-        Numeric::Integer(isize::from_str_radix(&concat(digit, rest), 8).unwrap()),
+        Literal::Integer(isize::from_str_radix(&concat(digit, rest), 8).unwrap()),
     ))
 }
 
 /// `0` ( `x` | `X` ) *hexadecimal_digit* ( `_`? *hexadecimal_digit* )*
-pub(crate) fn hexadecimal_integer_literal(i: Input) -> NumericResult {
+pub(crate) fn hexadecimal_integer_literal(i: Input) -> LiteralResult {
     let (i, digit) = preceded(char('0'), preceded(one_of("xX"), hexadecimal_digit))(i)?;
     let (i, rest) = many0(preceded(opt(char('_')), hexadecimal_digit))(i)?;
     Ok((
         i,
-        Numeric::Integer(isize::from_str_radix(&concat(digit, rest), 16).unwrap()),
+        Literal::Integer(isize::from_str_radix(&concat(digit, rest), 16).unwrap()),
     ))
 }
 
 /// *float_literal_with_exponent* | *float_literal_without_exponent*
-pub(crate) fn float_literal(i: Input) -> NumericResult {
+pub(crate) fn float_literal(i: Input) -> LiteralResult {
     // Ordered to match the largest production first
     map(
         alt((float_literal_with_exponent, float_literal_without_exponent)),
-        |s| Numeric::Float(s.parse::<f64>().unwrap()),
+        |s| Literal::Float(s.parse::<f64>().unwrap()),
     )(i)
 }
 
@@ -240,10 +239,10 @@ mod tests {
         assert_err!("2");
         assert_err!("0101");
         // Success cases
-        assert_ok!("0b0", Numeric::Integer(0));
-        assert_ok!("0b0110", Numeric::Integer(6));
-        assert_ok!("0B0000_1111", Numeric::Integer(15));
-        assert_ok!("0b1111111101", Numeric::Integer(1021));
+        assert_ok!("0b0", Literal::Integer(0));
+        assert_ok!("0b0110", Literal::Integer(6));
+        assert_ok!("0B0000_1111", Literal::Integer(15));
+        assert_ok!("0b1111111101", Literal::Integer(1021));
         // Non-exhaustive cases
         assert_err!("0b1111 foobar");
         assert_err!("0b1251");
@@ -258,13 +257,13 @@ mod tests {
         assert_err!("0b0");
         assert_err!("09");
         // Success cases
-        assert_ok!("0_0", Numeric::Integer(0));
-        assert_ok!("00", Numeric::Integer(0));
-        assert_ok!("0o0", Numeric::Integer(0));
-        assert_ok!("0O0", Numeric::Integer(0));
-        assert_ok!("01234", Numeric::Integer(668));
-        assert_ok!("0_755", Numeric::Integer(493));
-        assert_ok!("0_00_10", Numeric::Integer(8));
+        assert_ok!("0_0", Literal::Integer(0));
+        assert_ok!("00", Literal::Integer(0));
+        assert_ok!("0o0", Literal::Integer(0));
+        assert_ok!("0O0", Literal::Integer(0));
+        assert_ok!("01234", Literal::Integer(668));
+        assert_ok!("0_755", Literal::Integer(493));
+        assert_ok!("0_00_10", Literal::Integer(8));
         // Non-exhaustive cases
         assert_err!(
             "0_1__0",
@@ -288,10 +287,10 @@ mod tests {
         assert_err!("0X");
         assert_err!("0AC");
         // Success cases
-        assert_ok!("0x0", Numeric::Integer(0));
-        assert_ok!("0XF", Numeric::Integer(15));
-        assert_ok!("0xAB_CD_EF", Numeric::Integer(11259375));
-        assert_ok!("0x10", Numeric::Integer(16));
+        assert_ok!("0x0", Literal::Integer(0));
+        assert_ok!("0XF", Literal::Integer(15));
+        assert_ok!("0xAB_CD_EF", Literal::Integer(11259375));
+        assert_ok!("0x10", Literal::Integer(16));
         // Non-exhaustive cases
         assert_err!("0x14 ");
         assert_err!("0xAC foobar");
@@ -304,12 +303,12 @@ mod tests {
         assert_err!("foo");
         assert_err!("d20");
         // Success cases
-        assert_ok!("0", Numeric::Integer(0));
-        assert_ok!("12034", Numeric::Integer(12034));
-        assert_ok!("0d0", Numeric::Integer(0));
-        assert_ok!("0D52", Numeric::Integer(52));
-        assert_ok!("5_923_032", Numeric::Integer(5923032));
-        assert_ok!("0d12_000", Numeric::Integer(12000));
+        assert_ok!("0", Literal::Integer(0));
+        assert_ok!("12034", Literal::Integer(12034));
+        assert_ok!("0d0", Literal::Integer(0));
+        assert_ok!("0D52", Literal::Integer(52));
+        assert_ok!("5_923_032", Literal::Integer(5923032));
+        assert_ok!("0d12_000", Literal::Integer(12000));
         // Non-exhaustive cases
         assert_err!("42_");
         assert_err!("0b0");
@@ -332,31 +331,31 @@ mod tests {
         assert_err!("-1d0");
         assert_err!("-1d");
         // Success cases
-        assert_ok!("0", Numeric::Integer(0));
-        assert_ok!("29_0", Numeric::Integer(290));
-        assert_ok!("0b1111", Numeric::Integer(15));
-        assert_ok!("0xFF", Numeric::Integer(255));
+        assert_ok!("0", Literal::Integer(0));
+        assert_ok!("29_0", Literal::Integer(290));
+        assert_ok!("0b1111", Literal::Integer(15));
+        assert_ok!("0xFF", Literal::Integer(255));
         // Positive
-        assert_ok!("+0", Numeric::Integer(0));
-        assert_ok!("+29_0", Numeric::Integer(290));
-        assert_ok!("+0755", Numeric::Integer(493));
-        assert_ok!("+0b1111", Numeric::Integer(15));
-        assert_ok!("+0xFF", Numeric::Integer(255));
+        assert_ok!("+0", Literal::Integer(0));
+        assert_ok!("+29_0", Literal::Integer(290));
+        assert_ok!("+0755", Literal::Integer(493));
+        assert_ok!("+0b1111", Literal::Integer(15));
+        assert_ok!("+0xFF", Literal::Integer(255));
         // Negative
-        assert_ok!("-0", Numeric::Integer(0));
-        assert_ok!("-5", Numeric::Integer(-5));
-        assert_ok!("-1_2", Numeric::Integer(-12));
-        assert_ok!("-0b11", Numeric::Integer(-3));
-        assert_ok!("-0x0000_0000F", Numeric::Integer(-15));
-        assert_ok!("-0d20", Numeric::Integer(-20));
-        assert_ok!("-0755", Numeric::Integer(-493));
+        assert_ok!("-0", Literal::Integer(0));
+        assert_ok!("-5", Literal::Integer(-5));
+        assert_ok!("-1_2", Literal::Integer(-12));
+        assert_ok!("-0b11", Literal::Integer(-3));
+        assert_ok!("-0x0000_0000F", Literal::Integer(-15));
+        assert_ok!("-0d20", Literal::Integer(-20));
+        assert_ok!("-0755", Literal::Integer(-493));
         // Floats
-        assert_ok!("0.0", Numeric::Float(0.0));
-        assert_ok!("+0.0", Numeric::Float(0.0));
-        assert_ok!("-0.0", Numeric::Float(-0.0));
-        assert_ok!("-12.345e-2", Numeric::Float(-0.12345));
-        assert_ok!("+12.4e0", Numeric::Float(12.4));
-        assert_ok!("0.312_24E7", Numeric::Float(3122400.0));
+        assert_ok!("0.0", Literal::Float(0.0));
+        assert_ok!("+0.0", Literal::Float(0.0));
+        assert_ok!("-0.0", Literal::Float(-0.0));
+        assert_ok!("-12.345e-2", Literal::Float(-0.12345));
+        assert_ok!("+12.4e0", Literal::Float(12.4));
+        assert_ok!("0.312_24E7", Literal::Float(3122400.0));
     }
 
     #[test]
@@ -390,13 +389,13 @@ mod tests {
         assert_err!("-12.0");
         assert_err!("e");
         // Success cases
-        assert_ok!("0.0", Numeric::Float(0.));
-        assert_ok!("12.0", Numeric::Float(12.0));
-        assert_ok!("12e0", Numeric::Float(12.0));
-        assert_ok!("12.34_005E-5", Numeric::Float(0.0001234005));
-        assert_ok!("1_23e+1_0", Numeric::Float(1230000000000.0));
-        assert_ok!("99.9e-0", Numeric::Float(99.9));
-        assert_ok!("1825_345e-12", Numeric::Float(1825345e-12));
+        assert_ok!("0.0", Literal::Float(0.));
+        assert_ok!("12.0", Literal::Float(12.0));
+        assert_ok!("12e0", Literal::Float(12.0));
+        assert_ok!("12.34_005E-5", Literal::Float(0.0001234005));
+        assert_ok!("1_23e+1_0", Literal::Float(1230000000000.0));
+        assert_ok!("99.9e-0", Literal::Float(99.9));
+        assert_ok!("1825_345e-12", Literal::Float(1825345e-12));
         // Non-exhaustive cases
         assert_err!("12.2492.");
         assert_err!("12.4+12");

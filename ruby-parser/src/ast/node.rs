@@ -42,8 +42,7 @@ impl From<Token> for Node {
                 ty: IdentifierType::AssignmentMethod,
             }),
             // Literals
-            Token::Integer(val) => Self::Literal(Literal::Integer(val)),
-            Token::Float(val) => Self::Literal(Literal::Float(val)),
+            Token::Literal(val) => Self::Literal(val),
             Token::String(val) => Self::Literal(Literal::String(val)),
             Token::ExternalCommand(val) => Self::Literal(Literal::ExternalCommand(val)),
             Token::Symbol(val) => Self::Literal(Literal::Symbol(val)),

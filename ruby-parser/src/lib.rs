@@ -24,9 +24,9 @@ mod parsers;
 mod structs;
 mod types;
 
+pub use ast::*;
 pub(crate) use enums::{
     heredoc::{HeredocIndentation, HeredocQuoteType},
-    numeric::Numeric,
     segment::Segment,
 };
 pub use enums::{interpolable::Interpolatable, token::Token};
@@ -34,7 +34,7 @@ pub use nom::error::ErrorKind;
 pub(crate) use structs::metadata::HeredocMetadata;
 pub use structs::{metadata::Metadata, tracked_location::TrackedLocation};
 pub(crate) use types::{
-    AstResult, CharResult, InterpolatableResult, NumericResult, ParseResult, SegmentResult,
+    AstResult, CharResult, InterpolatableResult, LiteralResult, ParseResult, SegmentResult,
     SegmentVecResult, StringResult, TokenResult, TokenizedResult,
 };
 pub use types::{Expression, Input, StatementList};

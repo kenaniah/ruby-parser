@@ -227,7 +227,10 @@ mod tests {
             "\"#@@VAR#{2; 3.5} \"",
             is(vec![
                 Token::ClassVariableIdentifier("@@VAR".to_owned()),
-                Token::Block(vec![Token::Integer(2), Token::Float(3.5)]),
+                Token::Block(vec![
+                    Token::Literal(Literal::Integer(2)),
+                    Token::Literal(Literal::Float(3.5))
+                ]),
                 seg(" ")
             ])
         );
@@ -274,7 +277,7 @@ mod tests {
             "#{\"foo#{2}bar\"}",
             Segment::Expr(Token::Block(vec![Token::InterpolatedString(vec![
                 Token::Segment("foo".to_owned()),
-                Token::Block(vec![Token::Integer(2)]),
+                Token::Block(vec![Token::Literal(Literal::Integer(2))]),
                 Token::Segment("bar".to_owned())
             ])]))
         );

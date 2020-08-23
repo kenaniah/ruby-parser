@@ -1,3 +1,4 @@
+use crate::ast::Literal;
 use crate::{Expression, StatementList};
 
 /// Defines the tokens that are returned as a result of lexing
@@ -11,9 +12,7 @@ pub enum Token {
     ConstantIdentifier(String),
     MethodIdentifier(String),
     AssignmentMethodIdentifier(String),
-    // Numeric literals
-    Integer(isize),
-    Float(f64),
+    Literal(Literal),
     // String literals
     String(String),
     InterpolatedString(Vec<Token>),
@@ -72,6 +71,6 @@ mod test {
 
     #[test]
     fn test_token_size() {
-        assert_eq!(32, std::mem::size_of::<Token>());
+        assert_eq!(40, std::mem::size_of::<Token>());
     }
 }
