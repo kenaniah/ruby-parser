@@ -55,7 +55,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ruby-lexer"
+name = "ruby-parser"
 version = "0.0.0-dev1"
 dependencies = [
  "codemap",

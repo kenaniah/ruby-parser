@@ -1,5 +1,4 @@
 [workspace]
 members = [
-  "ruby-lexer",
-  #"ruby-lexer-benchmarks"
+  "ruby-parser"
 ]

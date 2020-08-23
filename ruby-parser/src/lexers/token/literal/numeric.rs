@@ -17,7 +17,7 @@ tuple of the remaining input and a `Token::Integer` or `Token::Float` value when
 ## Example
 
 ```
-use ruby_lexer::*;
+use ruby_parser::*;
 
 let input = "12_345";
 let (remaining, token) = parse(input.into()).unwrap();
