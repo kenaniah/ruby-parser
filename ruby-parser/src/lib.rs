@@ -34,8 +34,8 @@ pub use nom::error::ErrorKind;
 pub(crate) use structs::metadata::HeredocMetadata;
 pub use structs::{metadata::Metadata, tracked_location::TrackedLocation};
 pub(crate) use types::{
-    CharResult, InterpolatableResult, NumericResult, ParseResult, SegmentResult, SegmentVecResult,
-    StringResult, TokenResult, TokenizedResult,
+    AstResult, CharResult, InterpolatableResult, NumericResult, ParseResult, SegmentResult,
+    SegmentVecResult, StringResult, TokenResult, TokenizedResult,
 };
 pub use types::{Expression, Input, StatementList};
 

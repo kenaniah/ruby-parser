@@ -1,3 +1,4 @@
+use crate::ast::Node;
 use crate::{Interpolatable, Metadata, Numeric, Segment, Token, TrackedLocation};
 use nom::IResult;
 
@@ -12,6 +13,9 @@ pub type Input<'a> = TrackedLocation<&'a str, Metadata<'a>>;
 
 /// Describes a list of statements
 pub type StatementList = Vec<Token>;
+
+// Describes a parsed AST node
+pub(crate) type AstResult<'a> = Parsed<'a, Node>;
 
 /// Describes a parsed character
 pub(crate) type CharResult<'a> = Parsed<'a, char>;
