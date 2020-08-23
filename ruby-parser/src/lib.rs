@@ -18,6 +18,7 @@ extern crate nom;
 
 #[macro_use]
 mod macros;
+pub mod ast;
 mod enums;
 mod lexers;
 mod structs;
@@ -34,7 +35,7 @@ pub(crate) use structs::metadata::HeredocMetadata;
 pub use structs::{metadata::Metadata, tracked_location::TrackedLocation};
 pub(crate) use types::{
     CharResult, InterpolatableResult, NumericResult, ParseResult, SegmentResult, SegmentVecResult,
-    StringResult, TokenResult, TokenizedResult
+    StringResult, TokenResult, TokenizedResult,
 };
 pub use types::{Expression, Input, StatementList};
 
