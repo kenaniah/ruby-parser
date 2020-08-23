@@ -1,5 +1,5 @@
 use super::double::double_escape_sequence;
-use crate::lexers::program::*;
+use crate::parsers::program::*;
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;

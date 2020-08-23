@@ -1,7 +1,7 @@
 use super::double::double_escape_sequence;
 use super::double::interpolated_character_sequence;
 use super::quoted::expanded_delimited_string;
-use crate::lexers::program::source_character;
+use crate::parsers::program::source_character;
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;

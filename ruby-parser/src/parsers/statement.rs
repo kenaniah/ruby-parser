@@ -1,4 +1,4 @@
-use crate::lexers::expression::primary_expression;
+use crate::parsers::expression::primary_expression;
 use crate::*;
 use nom::branch::alt;
 

@@ -1,6 +1,6 @@
 //! Provides parsers for comments
 
-use crate::lexers::program::*;
+use crate::parsers::program::*;
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;

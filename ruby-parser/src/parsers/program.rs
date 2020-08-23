@@ -1,7 +1,7 @@
 //! Provides parsers for program text
-use crate::lexers::comment::comment;
-use crate::lexers::statement::statement;
-use crate::lexers::token::token;
+use crate::parsers::comment::comment;
+use crate::parsers::statement::statement;
+use crate::parsers::token::token;
 use crate::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;

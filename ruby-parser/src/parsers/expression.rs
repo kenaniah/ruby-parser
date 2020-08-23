@@ -1,5 +1,5 @@
-use crate::lexers::program::compound_statement;
-use crate::lexers::token::literal;
+use crate::parsers::program::compound_statement;
+use crate::parsers::token::literal;
 use crate::*;
 use nom::branch::alt;
 use nom::character::complete::char;

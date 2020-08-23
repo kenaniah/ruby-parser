@@ -11,7 +11,7 @@ All of the parser combinators are structured to semantically reflect the ISO Rub
 but minor deviations from the spec have been made when necessary (namely, re-ordering alternative
 parsers to consume the largest production first).
 
-The top-level parser combinators that return tokens are publically exported within the lexers module.
+The top-level parser combinators that return tokens are publically exported within the parsers module.
 !*/
 
 extern crate nom;
@@ -20,7 +20,7 @@ extern crate nom;
 mod macros;
 pub mod ast;
 mod enums;
-mod lexers;
+mod parsers;
 mod structs;
 mod types;
 
@@ -41,10 +41,10 @@ pub use types::{Expression, Input, StatementList};
 
 /// Parses a ruby program
 pub fn parse(i: Input) -> TokenResult {
-    lexers::program::program(i)
+    parsers::program::program(i)
 }
 
 /// Tokenizes a ruby program
 pub fn tokenize(i: Input) -> TokenizedResult {
-    nom::multi::many0(lexers::program::input_element)(i)
+    nom::multi::many0(parsers::program::input_element)(i)
 }
