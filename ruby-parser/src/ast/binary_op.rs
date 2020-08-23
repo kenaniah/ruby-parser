@@ -30,7 +30,7 @@ pub enum BinaryOpToken {
     /// |
     BitOr,
     /// ^
-    BitNot,
+    BitXor,
     /// &
     BitAnd,
     /// <<

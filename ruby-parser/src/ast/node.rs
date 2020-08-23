@@ -2,10 +2,14 @@ use super::*;
 use crate::Token;
 
 pub enum Node {
+    LogicalAnd(LogicalAnd),
+    LogicalOr(LogicalOr),
     Literal(Literal),
     Identifier(Identifier),
     Interpolated(Interpolated),
     BinaryOp(BinaryOp),
+    UnaryOp(UnaryOp),
+    Junk(Token),
     FromTokenError,
 }
 
@@ -49,7 +53,7 @@ impl From<Token> for Node {
             Token::InterpolatedString(val) => Self::Interpolated(Interpolated::String(val)),
             Token::InterpolatedSymbol(val) => Self::Interpolated(Interpolated::Symbol(val)),
             // Errors
-            _ => Self::FromTokenError,
+            v => Self::Junk(v),
         }
     }
 }
