@@ -84,7 +84,9 @@ fn uppercase_character(i: Input) -> CharResult {
 
 /// Returns any UTF-8 non-upper case character
 fn lowercase_character(i: Input) -> CharResult {
-    verify(anychar, |c: &char| c.is_lowercase() || (!c.is_ascii() && !c.is_uppercase()))(i)
+    verify(anychar, |c: &char| {
+        c.is_lowercase() || (!c.is_ascii() && !c.is_uppercase())
+    })(i)
 }
 
 /// ( *constant_identifier* | *local_variable_identifier* ) ( `!` | `?` )
@@ -175,23 +177,24 @@ mod tests {
 
     #[test]
     fn test_identifier() {
+        use IdentifierType::*;
         use_parser!(identifier);
         // Parse errors
         assert_err!("=");
         assert_err!("@");
         assert_err!("var\t");
         // Success cases
-        assert_ok!("_", Token::LocalVariableIdentifier("_".to_owned()));
-        assert_ok!("local", Token::LocalVariableIdentifier("local".to_owned()));
-        assert_ok!("local_Variable", Token::LocalVariableIdentifier("local_Variable".to_owned()));
-        assert_ok!("ClassName", Token::ConstantIdentifier("ClassName".to_owned()));
-        assert_ok!("FOO", Token::ConstantIdentifier("FOO".to_owned()));
-        assert_ok!("@_", Token::InstanceVariableIdentifier("@_".to_owned()));
-        assert_ok!("@@prop", Token::ClassVariableIdentifier("@@prop".to_owned()));
-        assert_ok!("$_foo", Token::GlobalVariableIdentifier("$_foo".to_owned()));
-        assert_ok!("is_valid?", Token::MethodIdentifier("is_valid?".to_owned()));
-        assert_ok!("bang!", Token::MethodIdentifier("bang!".to_owned()));
-        assert_ok!("var=", Token::AssignmentMethodIdentifier("var=".to_owned()));
+        assert_ok!("_", Token::ident("_", LocalVariable));
+        assert_ok!("local", Token::ident("local", LocalVariable));
+        assert_ok!("local_Var", Token::ident("local_Var", LocalVariable));
+        assert_ok!("ClassName", Token::ident("ClassName", Constant));
+        assert_ok!("FOO", Token::ident("FOO", Constant));
+        assert_ok!("@_", Token::ident("@_", InstanceVariable));
+        assert_ok!("@@prop", Token::ident("@@prop", ClassVariable));
+        assert_ok!("$_foo", Token::ident("$_foo", GlobalVariable));
+        assert_ok!("is_valid?", Token::ident("is_valid?", Method));
+        assert_ok!("bang!", Token::ident("bang!", Method));
+        assert_ok!("var=", Token::ident("var=", AssignmentMethod));
     }
 
     #[test]

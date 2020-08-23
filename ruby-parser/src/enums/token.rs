@@ -78,6 +78,18 @@ impl Token {
     pub(crate) fn literal_string(val: &str) -> Self {
         Self::Literal(Literal::String(val.to_owned()))
     }
+    /// Creates a token that represents an identifier
+    pub(crate) fn ident(name: &str, ty: IdentifierType) -> Self {
+        match ty {
+            IdentifierType::AssignmentMethod => Token::AssignmentMethodIdentifier(name.to_owned()),
+            IdentifierType::ClassVariable => Token::ClassVariableIdentifier(name.to_owned()),
+            IdentifierType::Constant => Token::ConstantIdentifier(name.to_owned()),
+            IdentifierType::GlobalVariable => Token::GlobalVariableIdentifier(name.to_owned()),
+            IdentifierType::InstanceVariable => Token::InstanceVariableIdentifier(name.to_owned()),
+            IdentifierType::LocalVariable => Token::LocalVariableIdentifier(name.to_owned()),
+            IdentifierType::Method => Token::MethodIdentifier(name.to_owned()),
+        }
+    }
 }
 
 #[cfg(test)]
