@@ -1,7 +1,7 @@
 /*!
-# Ruby Lexer - a library for parsing Ruby syntax
+# Ruby Parser - a library for parsing Ruby syntax
 
-ruby-lexer is a library that provides the APIs needed to lex the Ruby programming language's
+ruby-parser is a library that provides the APIs needed to lex the Ruby programming language's
 syntax into a stream of tokens.
 
 ## Parser combinators
