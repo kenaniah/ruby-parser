@@ -87,7 +87,7 @@ mod tests {
         assert_ok!("()", Token::Block(vec![]));
         assert_ok!(
             "((false))",
-            Token::Block(vec![Token::Block(vec![Token::False])])
+            Token::Block(vec![Token::Block(vec![Token::from(false)])])
         );
         assert_ok!(
             "(;2\n\t5;;)",

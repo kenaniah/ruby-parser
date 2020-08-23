@@ -46,8 +46,6 @@ impl From<Token> for Node {
             Token::String(val) => Self::Literal(Literal::String(val)),
             Token::ExternalCommand(val) => Self::Literal(Literal::ExternalCommand(val)),
             Token::Nil => Self::Literal(Literal::Nil),
-            Token::True => Self::Literal(Literal::Boolean(true)),
-            Token::False => Self::Literal(Literal::Boolean(false)),
             // Interpolations
             Token::InterpolatedExternalCommand(val) => {
                 Self::Interpolated(Interpolated::ExternalCommand(val))

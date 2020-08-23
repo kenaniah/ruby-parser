@@ -56,13 +56,17 @@ pub enum Token {
     EndOfProgram,
     Keyword(String),
     Nil,
-    True,
-    False,
     Self_,
     Expression(Expression),
     Block(StatementList),
     InterpolatedSymbol(Vec<Token>),
     Segment(String),
+}
+
+impl From<bool> for Token {
+    fn from(val: bool) -> Self {
+        Self::Literal(Literal::Boolean(val))
+    }
 }
 
 impl From<isize> for Token {

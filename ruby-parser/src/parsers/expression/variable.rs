@@ -42,7 +42,7 @@ pub(crate) fn nil_expression(i: Input) -> TokenResult {
 pub(crate) fn true_expression(i: Input) -> TokenResult {
     map(
         tuple((tag("true"), not(peek(identifier_character)))),
-        |_| Token::True,
+        |_| Token::Literal(Literal::Boolean(true)),
     )(i)
 }
 
@@ -50,7 +50,7 @@ pub(crate) fn true_expression(i: Input) -> TokenResult {
 pub(crate) fn false_expression(i: Input) -> TokenResult {
     map(
         tuple((tag("false"), not(peek(identifier_character)))),
-        |_| Token::False,
+        |_| Token::Literal(Literal::Boolean(false)),
     )(i)
 }
 
@@ -75,8 +75,8 @@ mod tests {
         assert_err!("bar\n");
         // Success cases
         assert_ok!("nil", Token::Nil);
-        assert_ok!("true", Token::True);
-        assert_ok!("false", Token::False);
+        assert_ok!("true", Token::Literal(Literal::Boolean(true)));
+        assert_ok!("false", Token::Literal(Literal::Boolean(false)));
         assert_ok!("self", Token::Self_);
         assert_ok!("TRUE", Token::ConstantIdentifier("TRUE".to_owned()));
         assert_ok!("False", Token::ConstantIdentifier("False".to_owned()));
