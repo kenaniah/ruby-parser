@@ -1,6 +1,7 @@
 use super::*;
 
 pub enum Node {
-    Literal,
+    Literal(Literal),
+    Interpolated(Interpolated),
     BinaryOp(BinaryOp)
 }
