@@ -62,8 +62,8 @@ fn heredoc_body(i: Input) -> TokenResult {
     )(i)?;
     let token = match i.metadata.heredoc.as_deref().unwrap().quote_type {
         Some(HeredocQuoteType::CommandQuoted) => match contents {
-            Interpolatable::String(v) => Token::Literal(Literal::ExternalCommand(v)),
-            Interpolatable::Interpolated(v) => Token::InterpolatedExternalCommand(v),
+            Interpolatable::String(v) => Token::Literal(Literal::Command(v)),
+            Interpolatable::Interpolated(v) => Token::InterpolatedCommand(v),
         },
         _ => match contents {
             Interpolatable::String(v) => Token::Literal(Literal::String(v)),
@@ -312,10 +312,10 @@ mod tests {
             Token::InterpolatedString(v)
         }
         fn cs(v: &str) -> Token {
-            Token::Literal(Literal::ExternalCommand(v.to_owned()))
+            Token::Literal(Literal::Command(v.to_owned()))
         }
         fn ci(v: Vec<Token>) -> Token {
-            Token::InterpolatedExternalCommand(v)
+            Token::InterpolatedCommand(v)
         }
         use_parser!(here_document);
         // Synax errors

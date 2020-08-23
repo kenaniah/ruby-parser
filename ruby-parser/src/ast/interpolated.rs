@@ -1,7 +1,7 @@
 use crate::Token;
 
 pub enum Interpolated {
-    ExternalCommand(Vec<Token>),
+    Command(Vec<Token>),
     String(Vec<Token>),
     Symbol(Vec<Token>),
 }

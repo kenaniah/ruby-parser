@@ -35,8 +35,8 @@ pub(crate) fn string_literal(i: Input) -> TokenResult {
         }),
         here_document,
         map(external_command_execution, |s| match s {
-            Interpolatable::String(s) => Token::Literal(Literal::ExternalCommand(s)),
-            Interpolatable::Interpolated(i) => Token::InterpolatedExternalCommand(i),
+            Interpolatable::String(s) => Token::Literal(Literal::Command(s)),
+            Interpolatable::Interpolated(i) => Token::InterpolatedCommand(i),
         }),
         map(character_literal, |s| Token::Literal(Literal::String(s))),
     ))(i)

@@ -15,7 +15,7 @@ pub enum Token {
     Literal(Literal),
     // String literals
     InterpolatedString(Vec<Token>),
-    InterpolatedExternalCommand(Vec<Token>),
+    InterpolatedCommand(Vec<Token>),
     // Punctuation
     /// [
     LeftBracket,
