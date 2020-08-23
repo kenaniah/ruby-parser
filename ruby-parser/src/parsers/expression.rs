@@ -91,10 +91,7 @@ mod tests {
         );
         assert_ok!(
             "(;2\n\t5;;)",
-            Token::Block(vec![
-                Token::Literal(Literal::Integer(2)),
-                Token::Literal(Literal::Integer(5))
-            ])
+            Token::Block(vec![Token::from(2), Token::from(5)])
         );
         assert_ok!("(;)", Token::Block(vec![]));
     }

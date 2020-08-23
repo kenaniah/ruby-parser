@@ -98,13 +98,7 @@ mod tests {
     #[test]
     fn test_compound_statement() {
         use_parser!(compound_statement);
-        assert_ok!(
-            "2; 5",
-            Token::Block(vec![
-                Token::Literal(Literal::Integer(2)),
-                Token::Literal(Literal::Integer(5))
-            ])
-        );
+        assert_ok!("2; 5", Token::Block(vec![Token::from(2), Token::from(5)]));
     }
 
     #[test]

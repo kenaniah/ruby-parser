@@ -16,7 +16,7 @@ pub(crate) fn symbol(i: Input) -> TokenResult {
 /// `:` *symbol_name*
 pub(crate) fn symbol_literal(i: Input) -> TokenResult {
     map(recognize(tuple((char(':'), symbol_name))), |s| {
-        Token::Symbol((*s).to_owned())
+        Token::Literal(Literal::Symbol((*s).to_owned()))
     })(i)
 }
 
@@ -25,12 +25,12 @@ pub(crate) fn dynamic_symbol(i: Input) -> TokenResult {
     alt((
         map(tuple((char(':'), single_quoted_string)), |mut t| {
             t.1.insert(0, ':');
-            Token::Symbol(t.1)
+            Token::Literal(Literal::Symbol(t.1))
         }),
         map(tuple((char(':'), double_quoted_string)), |t| match t.1 {
             Interpolatable::String(mut s) => {
                 s.insert(0, ':');
-                Token::Symbol(s)
+                Token::Literal(Literal::Symbol(s))
             }
             Interpolatable::Interpolated(mut vec) => {
                 vec.insert(0, Token::Segment(":".to_owned()));
@@ -41,7 +41,7 @@ pub(crate) fn dynamic_symbol(i: Input) -> TokenResult {
             tuple((tag("%s"), non_expanded_delimited_string)),
             |mut t| {
                 t.1.insert(0, ':');
-                Token::Symbol(t.1)
+                Token::Literal(Literal::Symbol(t.1))
             },
         ),
     ))(i)
@@ -58,7 +58,7 @@ mod tests {
 
     macro_rules! assert_symbol {
         ($a:expr, $b:expr) => {
-            assert_ok!($a, Token::Symbol($b.to_owned()))
+            assert_ok!($a, Token::Literal(Literal::Symbol($b.to_owned())))
         };
     }
     macro_rules! assert_interpolated {

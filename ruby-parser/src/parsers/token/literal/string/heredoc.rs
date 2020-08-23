@@ -356,7 +356,7 @@ mod tests {
         assert_ok!(
             "<<~foo\n#{2}  bar\nfoo",
             i(vec![
-                Token::Block(vec![Token::Literal(Literal::Integer(2))]),
+                Token::Block(vec![Token::from(2)]),
                 Token::Segment("  bar\n".to_owned())
             ])
         );
@@ -366,7 +366,7 @@ mod tests {
             "<<~foo\n    bar#{\n2\n} stuff\n\t\n     \n  3\nfoo",
             i(vec![
                 Token::Segment("  bar".to_owned()),
-                Token::Block(vec![Token::Literal(Literal::Integer(2))]),
+                Token::Block(vec![Token::from(2)]),
                 Token::Segment(" stuff\n\n   \n3\n".to_owned())
             ])
         );

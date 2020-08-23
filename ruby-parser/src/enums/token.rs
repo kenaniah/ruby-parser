@@ -12,6 +12,7 @@ pub enum Token {
     ConstantIdentifier(String),
     MethodIdentifier(String),
     AssignmentMethodIdentifier(String),
+    // Literal values
     Literal(Literal),
     // String literals
     String(String),
@@ -60,9 +61,20 @@ pub enum Token {
     Self_,
     Expression(Expression),
     Block(StatementList),
-    Symbol(String),
     InterpolatedSymbol(Vec<Token>),
     Segment(String),
+}
+
+impl From<isize> for Token {
+    fn from(val: isize) -> Self {
+        Self::Literal(Literal::Integer(val))
+    }
+}
+
+impl From<f64> for Token {
+    fn from(val: f64) -> Self {
+        Self::Literal(Literal::Float(val))
+    }
 }
 
 #[cfg(test)]
