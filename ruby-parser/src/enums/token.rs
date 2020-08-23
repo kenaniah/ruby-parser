@@ -14,9 +14,7 @@ pub enum Token {
     // Literal values
     Literal(Literal),
     // String literals
-    String(String),
     InterpolatedString(Vec<Token>),
-    ExternalCommand(String),
     InterpolatedExternalCommand(Vec<Token>),
     // Punctuation
     /// [
@@ -62,21 +60,22 @@ pub enum Token {
     Segment(String),
 }
 
-impl From<bool> for Token {
-    fn from(val: bool) -> Self {
+impl Token {
+    /// Creates a token that represents a boolean value
+    pub fn boolean(val: bool) -> Self {
         Self::Literal(Literal::Boolean(val))
     }
-}
-
-impl From<isize> for Token {
-    fn from(val: isize) -> Self {
+    /// Creates a token that represents an integer value
+    pub fn integer(val: isize) -> Self {
         Self::Literal(Literal::Integer(val))
     }
-}
-
-impl From<f64> for Token {
-    fn from(val: f64) -> Self {
+    /// Creates a token that represents a float value
+    pub fn float(val: f64) -> Self {
         Self::Literal(Literal::Float(val))
+    }
+    /// Creates a token that represents a literal string
+    pub fn literal_string(val: &str) -> Self {
+        Self::Literal(Literal::String(val.to_owned()))
     }
 }
 

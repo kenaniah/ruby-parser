@@ -98,7 +98,10 @@ mod tests {
     #[test]
     fn test_compound_statement() {
         use_parser!(compound_statement);
-        assert_ok!("2; 5", Token::Block(vec![Token::from(2), Token::from(5)]));
+        assert_ok!(
+            "2; 5",
+            Token::Block(vec![Token::integer(2), Token::integer(5)])
+        );
     }
 
     #[test]

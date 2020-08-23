@@ -23,21 +23,21 @@ pub(crate) use single::single_quoted_string;
 /// *single_quoted_string* | *double_quoted_string* | *quoted_non_expanded_literal_string* | *quoted_expanded_literal_string* | *here_document* | *external_command_execution*
 pub(crate) fn string_literal(i: Input) -> TokenResult {
     alt((
-        map(single_quoted_string, |s| Token::String(s)),
+        map(single_quoted_string, |s| Token::Literal(Literal::String(s))),
         map(double_quoted_string, |s| match s {
-            Interpolatable::String(s) => Token::String(s),
+            Interpolatable::String(s) => Token::Literal(Literal::String(s)),
             Interpolatable::Interpolated(i) => Token::InterpolatedString(i),
         }),
-        map(quoted_non_expanded_literal_string, |s| Token::String(s)),
+        map(quoted_non_expanded_literal_string, |s| Token::Literal(Literal::String(s))),
         map(quoted_expanded_literal_string, |s| match s {
-            Interpolatable::String(s) => Token::String(s),
+            Interpolatable::String(s) => Token::Literal(Literal::String(s)),
             Interpolatable::Interpolated(i) => Token::InterpolatedString(i),
         }),
         here_document,
         map(external_command_execution, |s| match s {
-            Interpolatable::String(s) => Token::ExternalCommand(s),
+            Interpolatable::String(s) => Token::Literal(Literal::ExternalCommand(s)),
             Interpolatable::Interpolated(i) => Token::InterpolatedExternalCommand(i),
         }),
-        map(character_literal, |s| Token::String(s)),
+        map(character_literal, |s| Token::Literal(Literal::String(s))),
     ))(i)
 }

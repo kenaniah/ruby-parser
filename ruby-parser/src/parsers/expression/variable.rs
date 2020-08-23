@@ -75,8 +75,8 @@ mod tests {
         assert_err!("bar\n");
         // Success cases
         assert_ok!("nil", Token::Nil);
-        assert_ok!("true", Token::Literal(Literal::Boolean(true)));
-        assert_ok!("false", Token::Literal(Literal::Boolean(false)));
+        assert_ok!("true", Token::boolean(true));
+        assert_ok!("false", Token::boolean(false));
         assert_ok!("self", Token::Self_);
         assert_ok!("TRUE", Token::ConstantIdentifier("TRUE".to_owned()));
         assert_ok!("False", Token::ConstantIdentifier("False".to_owned()));

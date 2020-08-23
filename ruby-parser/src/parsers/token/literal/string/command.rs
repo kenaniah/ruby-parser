@@ -82,7 +82,7 @@ mod tests {
                 Token::Segment("foo".to_owned()),
                 Token::InstanceVariableIdentifier("@hi".to_owned()),
                 Token::Segment(" [bar] [".to_owned()),
-                Token::Block(vec![Token::String("(hello)".to_owned())]),
+                Token::Block(vec![Token::literal_string("(hello)")]),
                 Token::Segment("]".to_owned()),
             ]
         );

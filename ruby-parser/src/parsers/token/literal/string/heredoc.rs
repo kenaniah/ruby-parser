@@ -62,11 +62,11 @@ fn heredoc_body(i: Input) -> TokenResult {
     )(i)?;
     let token = match i.metadata.heredoc.as_deref().unwrap().quote_type {
         Some(HeredocQuoteType::CommandQuoted) => match contents {
-            Interpolatable::String(v) => Token::ExternalCommand(v),
+            Interpolatable::String(v) => Token::Literal(Literal::ExternalCommand(v)),
             Interpolatable::Interpolated(v) => Token::InterpolatedExternalCommand(v),
         },
         _ => match contents {
-            Interpolatable::String(v) => Token::String(v),
+            Interpolatable::String(v) => Token::Literal(Literal::String(v)),
             Interpolatable::Interpolated(v) => Token::InterpolatedString(v),
         },
     };
@@ -306,13 +306,13 @@ mod tests {
     #[test]
     fn test_here_document() {
         fn s(v: &str) -> Token {
-            Token::String(v.to_owned())
+            Token::Literal(Literal::String(v.to_owned()))
         }
         fn i(v: Vec<Token>) -> Token {
             Token::InterpolatedString(v)
         }
         fn cs(v: &str) -> Token {
-            Token::ExternalCommand(v.to_owned())
+            Token::Literal(Literal::ExternalCommand(v.to_owned()))
         }
         fn ci(v: Vec<Token>) -> Token {
             Token::InterpolatedExternalCommand(v)
@@ -335,7 +335,7 @@ mod tests {
             "<<-foo\nbar#{2.4}\nfoo",
             i(vec![
                 Token::Segment("bar".to_owned()),
-                Token::Block(vec![Token::from(2.4)]),
+                Token::Block(vec![Token::float(2.4)]),
                 Token::Segment("\n".to_owned())
             ])
         );
@@ -343,7 +343,7 @@ mod tests {
             "<<-`foo`\nbar#{2.4}\nfoo",
             ci(vec![
                 Token::Segment("bar".to_owned()),
-                Token::Block(vec![Token::from(2.4)]),
+                Token::Block(vec![Token::float(2.4)]),
                 Token::Segment("\n".to_owned())
             ])
         );
@@ -356,7 +356,7 @@ mod tests {
         assert_ok!(
             "<<~foo\n#{2}  bar\nfoo",
             i(vec![
-                Token::Block(vec![Token::from(2)]),
+                Token::Block(vec![Token::integer(2)]),
                 Token::Segment("  bar\n".to_owned())
             ])
         );
@@ -366,7 +366,7 @@ mod tests {
             "<<~foo\n    bar#{\n2\n} stuff\n\t\n     \n  3\nfoo",
             i(vec![
                 Token::Segment("  bar".to_owned()),
-                Token::Block(vec![Token::from(2)]),
+                Token::Block(vec![Token::integer(2)]),
                 Token::Segment(" stuff\n\n   \n3\n".to_owned())
             ])
         );

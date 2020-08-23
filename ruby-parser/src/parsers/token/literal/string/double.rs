@@ -227,10 +227,7 @@ mod tests {
             "\"#@@VAR#{2; 3.5} \"",
             is(vec![
                 Token::ClassVariableIdentifier("@@VAR".to_owned()),
-                Token::Block(vec![
-                    Token::Literal(Literal::Integer(2)),
-                    Token::Literal(Literal::Float(3.5))
-                ]),
+                Token::Block(vec![Token::integer(2), Token::float(3.5)]),
                 seg(" ")
             ])
         );
@@ -271,7 +268,7 @@ mod tests {
         );
         assert_ok!(
             "#{\"foo#{2bar\"}",
-            Segment::Expr(Token::Block(vec![Token::String("foo#{2bar".to_owned())]))
+            Segment::Expr(Token::Block(vec![Token::literal_string("foo#{2bar")]))
         );
         assert_ok!(
             "#{\"foo#{2}bar\"}",
