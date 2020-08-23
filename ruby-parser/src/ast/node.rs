@@ -45,9 +45,7 @@ impl From<Token> for Node {
             Token::Literal(val) => Self::Literal(val),
             Token::Nil => Self::Literal(Literal::Nil),
             // Interpolations
-            Token::InterpolatedCommand(val) => {
-                Self::Interpolated(Interpolated::Command(val))
-            }
+            Token::InterpolatedCommand(val) => Self::Interpolated(Interpolated::Command(val)),
             Token::InterpolatedString(val) => Self::Interpolated(Interpolated::String(val)),
             Token::InterpolatedSymbol(val) => Self::Interpolated(Interpolated::Symbol(val)),
             // Errors
