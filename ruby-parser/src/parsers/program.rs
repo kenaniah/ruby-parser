@@ -1,8 +1,9 @@
 //! Provides parsers for program text
+use crate::lexer::{CharResult, LexResult, TokenResult};
 use crate::parsers::comment::comment;
 use crate::parsers::statement::statement;
 use crate::parsers::token::token;
-use crate::*;
+use crate::{Input, Token};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, line_ending, one_of};
@@ -31,12 +32,12 @@ pub(crate) fn statement_list(i: Input) -> TokenResult {
 }
 
 /// *separator*+
-pub(crate) fn separator_list(i: Input) -> ParseResult {
+pub(crate) fn separator_list(i: Input) -> LexResult {
     recognize(many1(separator))(i)
 }
 
 /// `;` | *line_terminator*
-pub(crate) fn separator(i: Input) -> ParseResult {
+pub(crate) fn separator(i: Input) -> LexResult {
     map(
         tuple((
             many0(whitespace),
@@ -64,7 +65,7 @@ pub(crate) fn source_character(i: Input) -> CharResult {
 }
 
 /// 0x09 | 0x0b | 0x0c | 0x0d | 0x20 | *line_terminator_escape_sequence*
-pub(crate) fn whitespace(i: Input) -> ParseResult {
+pub(crate) fn whitespace(i: Input) -> LexResult {
     alt((
         recognize(one_of(" \t\x0b\x0c\r")),
         line_terminator_escape_sequence,
@@ -72,12 +73,12 @@ pub(crate) fn whitespace(i: Input) -> ParseResult {
 }
 
 /// `\r`? `\n`
-pub(crate) fn line_terminator(i: Input) -> ParseResult {
+pub(crate) fn line_terminator(i: Input) -> LexResult {
     line_ending(i)
 }
 
 /// `\` *line_terminator*
-pub(crate) fn line_terminator_escape_sequence(i: Input) -> ParseResult {
+pub(crate) fn line_terminator_escape_sequence(i: Input) -> LexResult {
     recognize(tuple((char('\\'), line_terminator)))(i)
 }
 

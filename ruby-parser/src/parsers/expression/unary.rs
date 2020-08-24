@@ -1,4 +1,4 @@
-use crate::ast::{AstResult, Node, UnaryOp, UnaryOpToken};
+use crate::ast::{NodeResult, Node, UnaryOp, UnaryOpToken};
 use crate::parsers::expression::binary::power_expression;
 use crate::parsers::expression::primary_expression;
 use crate::*;
@@ -8,7 +8,7 @@ use nom::combinator::map;
 use nom::sequence::tuple;
 
 /// *power_expression* | `-` *power_expression*
-pub(crate) fn unary_minus_expression(i: Input) -> AstResult {
+pub(crate) fn unary_minus_expression(i: Input) -> NodeResult {
     alt((
         map(tuple((char('-'), power_expression)), |t| {
             Node::UnaryOp(UnaryOp {
@@ -21,7 +21,7 @@ pub(crate) fn unary_minus_expression(i: Input) -> AstResult {
 }
 
 /// *primary_expression* | `~` *unary_expression* | `+` *unary_expression* | `!` *unary_expression*
-pub(crate) fn unary_expression(i: Input) -> AstResult {
+pub(crate) fn unary_expression(i: Input) -> NodeResult {
     alt((
         map(tuple((one_of("~+!"), unary_expression)), |t| {
             Node::UnaryOp(UnaryOp {

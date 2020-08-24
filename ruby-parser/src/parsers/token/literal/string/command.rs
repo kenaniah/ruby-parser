@@ -1,8 +1,9 @@
 use super::double::double_escape_sequence;
 use super::double::interpolated_character_sequence;
 use super::quoted::expanded_delimited_string;
+use crate::lexer::{InterpolatableResult, SegmentResult};
 use crate::parsers::program::source_character;
-use crate::*;
+use crate::{Input, Interpolatable, Segment};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{char, none_of};
@@ -52,6 +53,7 @@ pub(crate) fn quoted_external_command_execution(i: Input) -> InterpolatableResul
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{Interpolatable, Token};
 
     macro_rules! assert_string {
         ($a:expr, $b:expr) => {

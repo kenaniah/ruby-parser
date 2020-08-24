@@ -1,5 +1,6 @@
 use crate::ast::{IdentifierType, Literal};
-use crate::*;
+use crate::lexer::{Expression, StatementList};
+use crate::Input;
 
 /// Defines the tokens that are returned as a result of lexing
 #[derive(Debug, PartialEq)]

@@ -1,4 +1,5 @@
-use crate::*;
+use crate::lexer::{CharResult, StringResult};
+use crate::Input;
 use nom::branch::alt;
 use nom::character::complete::{char, none_of, one_of};
 use nom::combinator::map;
@@ -72,9 +73,7 @@ mod tests {
 
     #[test]
     fn test_single_quoted_string_non_escaped_character_sequence() {
-        use_parser!(
-            single_quoted_string_non_escaped_character_sequence
-        );
+        use_parser!(single_quoted_string_non_escaped_character_sequence);
         // Parse errors
         assert_err!("");
         assert_err!("\\");

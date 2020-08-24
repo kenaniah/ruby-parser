@@ -13,7 +13,7 @@ pub(crate) type CharResult<'a> = Parsed<'a, char>;
 pub(crate) type InterpolatableResult<'a> = Parsed<'a, Interpolatable>;
 
 /// Describes a nom-compatible parsing result type (input and output types match)
-pub(crate) type ParseResult<'a> = Parsed<'a, Input<'a>>;
+pub(crate) type LexResult<'a> = Parsed<'a, Input<'a>>;
 
 /// Describes a segment of something that may be interpolated
 pub(crate) type SegmentResult<'a> = Parsed<'a, Segment>;

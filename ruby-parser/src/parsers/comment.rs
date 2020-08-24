@@ -1,7 +1,8 @@
 //! Provides parsers for comments
 
+use crate::lexer::{CharResult, LexResult, TokenResult};
 use crate::parsers::program::*;
-use crate::*;
+use crate::{Input, Token};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
@@ -16,17 +17,17 @@ pub(crate) fn comment(i: Input) -> TokenResult {
 }
 
 /// `#` *comment_content*?
-pub(crate) fn single_line_comment(i: Input) -> ParseResult {
+pub(crate) fn single_line_comment(i: Input) -> LexResult {
     recognize(tuple((char('#'), opt(comment_content))))(i)
 }
 
 /// *line_content*
-pub(crate) fn comment_content(i: Input) -> ParseResult {
+pub(crate) fn comment_content(i: Input) -> LexResult {
     line_content(i)
 }
 
 /// ( *source_character*+ ) **but not** ( *source_character** *line_terminator* *source_character** )
-pub(crate) fn line_content(i: Input) -> ParseResult {
+pub(crate) fn line_content(i: Input) -> LexResult {
     recognize(many1(_line_content))(i)
 }
 
@@ -35,7 +36,7 @@ fn _line_content(i: Input) -> CharResult {
 }
 
 /// *multi_line_comment_begin_line* *multi_line_comment_line** *multi_line_comment_end_line*
-pub(crate) fn multi_line_comment(i: Input) -> ParseResult {
+pub(crate) fn multi_line_comment(i: Input) -> LexResult {
     recognize(tuple((
         multi_line_comment_begin_line,
         many0(multi_line_comment_line),
@@ -44,7 +45,7 @@ pub(crate) fn multi_line_comment(i: Input) -> ParseResult {
 }
 
 /// [ beginning of a line ] `=begin` *rest_of_begin_end_line*? *line_terminator*
-pub(crate) fn multi_line_comment_begin_line(i: Input) -> ParseResult {
+pub(crate) fn multi_line_comment_begin_line(i: Input) -> LexResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
     }
@@ -53,7 +54,7 @@ pub(crate) fn multi_line_comment_begin_line(i: Input) -> ParseResult {
 }
 
 /// [ beginning of a line ] `=end` *rest_of_begin_end_line*? ( *line_terminator* | [ end of a program ] )
-pub(crate) fn multi_line_comment_end_line(i: Input) -> ParseResult {
+pub(crate) fn multi_line_comment_end_line(i: Input) -> LexResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
     }
@@ -62,17 +63,17 @@ pub(crate) fn multi_line_comment_end_line(i: Input) -> ParseResult {
 }
 
 /// *whitespace*+ *comment_content*
-pub(crate) fn rest_of_begin_end_line(i: Input) -> ParseResult {
+pub(crate) fn rest_of_begin_end_line(i: Input) -> LexResult {
     recognize(tuple((many1(whitespace), comment_content)))(i)
 }
 
 /// *comment_line* **but not** *multi_line_comment_end_line*
-pub(crate) fn multi_line_comment_line(i: Input) -> ParseResult {
+pub(crate) fn multi_line_comment_line(i: Input) -> LexResult {
     preceded(peek(not(multi_line_comment_end_line)), comment_line)(i)
 }
 
 /// *comment_content*? *line_terminator*
-pub(crate) fn comment_line(i: Input) -> ParseResult {
+pub(crate) fn comment_line(i: Input) -> LexResult {
     recognize(tuple((opt(comment_content), line_terminator)))(i)
 }
 

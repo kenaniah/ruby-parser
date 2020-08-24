@@ -1,6 +1,7 @@
 use crate::ast::Literal;
+use crate::lexer::TokenResult;
 use crate::parsers::token::identifier::*;
-use crate::*;
+use crate::{Input, Token};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::combinator::{map, not, peek};

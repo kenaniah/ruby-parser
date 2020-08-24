@@ -1,7 +1,8 @@
-use crate::ast::AstResult;
+use crate::ast::NodeResult;
+use crate::lexer::TokenResult;
 use crate::parsers::program::compound_statement;
 use crate::parsers::token::literal;
-use crate::*;
+use crate::Input;
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::map;
@@ -18,7 +19,7 @@ mod unary;
 mod variable;
 mod yield_;
 
-pub(crate) fn expression(i: Input) -> AstResult {
+pub(crate) fn expression(i: Input) -> NodeResult {
     logical::keyword_logical_expression(i)
 }
 

@@ -1,8 +1,11 @@
 use crate::ast::Literal;
+use crate::lexer::{
+    CharResult, InterpolatableResult, LexResult, SegmentResult, StringResult, TokenResult,
+};
 use crate::parsers::program::*;
 use crate::parsers::token::identifier::*;
 use crate::parsers::token::literal::numeric::{hexadecimal_digit, octal_digit};
-use crate::*;
+use crate::{Input, Interpolatable, Segment};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
@@ -125,7 +128,7 @@ pub(crate) fn multiple_unicode_escape_sequence(i: Input) -> StringResult {
 }
 
 /// *hexadecimal_digit* *hexadecimal_digit* *hexadecimal_digit* *hexadecimal_digit*
-pub(crate) fn unicode_hex_digits(i: Input) -> ParseResult {
+pub(crate) fn unicode_hex_digits(i: Input) -> LexResult {
     recognize(many_m_n(4, 4, hexadecimal_digit))(i)
 }
 

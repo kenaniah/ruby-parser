@@ -1,9 +1,12 @@
 use super::double::{double_escape_sequence, interpolated_character_sequence};
 use crate::ast::Literal;
+use crate::lexer::{LexResult, SegmentResult, TokenResult};
 use crate::parsers::comment::line_content;
 use crate::parsers::program::{line_terminator, source_character, whitespace};
 use crate::parsers::token::identifier::identifier_character;
-use crate::*;
+use crate::{
+    HeredocIndentation, HeredocMetadata, HeredocQuoteType, Input, Interpolatable, Segment, Token,
+};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of};
@@ -30,17 +33,17 @@ fn _here_document(i: Input) -> TokenResult {
 }
 
 /// *heredoc_signifier* *rest_of_line*
-fn heredoc_start_line(i: Input) -> ParseResult {
+fn heredoc_start_line(i: Input) -> LexResult {
     preceded(heredoc_signifier, rest_of_line)(i)
 }
 
 /// `<<` *heredoc_quote_type_specifier*
-fn heredoc_signifier(i: Input) -> ParseResult {
+fn heredoc_signifier(i: Input) -> LexResult {
     preceded(tag("<<"), heredoc_quote_type_specifier)(i)
 }
 
 /// *line_content*? *line_terminator*
-fn rest_of_line(i: Input) -> ParseResult {
+fn rest_of_line(i: Input) -> LexResult {
     terminated(recognize(opt(line_content)), line_terminator)(i)
 }
 
@@ -88,7 +91,7 @@ fn double_quoted_character(i: Input) -> SegmentResult {
 }
 
 /// ( `-` | `~` )? *heredoc_quote_type*
-fn heredoc_quote_type_specifier(i: Input) -> ParseResult {
+fn heredoc_quote_type_specifier(i: Input) -> LexResult {
     preceded(
         set_indentiation(opt(alt((char('-'), char('~'))))),
         heredoc_quote_type,
@@ -96,7 +99,7 @@ fn heredoc_quote_type_specifier(i: Input) -> ParseResult {
 }
 
 /// *non_quoted_delimiter* | *single_quoted_delimiter* | *double_quoted_delimiter* | *command_quoted_delimiter*
-fn heredoc_quote_type(i: Input) -> ParseResult {
+fn heredoc_quote_type(i: Input) -> LexResult {
     let (mut i, res) = alt((
         set_quote_type(non_quoted_delimiter, HeredocQuoteType::Unquoted),
         set_quote_type(single_quoted_delimiter, HeredocQuoteType::SingleQuoted),
@@ -108,22 +111,22 @@ fn heredoc_quote_type(i: Input) -> ParseResult {
 }
 
 /// *non_quoted_delimiter_identifier*
-pub(crate) fn non_quoted_delimiter(i: Input) -> ParseResult {
+pub(crate) fn non_quoted_delimiter(i: Input) -> LexResult {
     non_quoted_delimiter_identifier(i)
 }
 
 /// *identifier_character*+
-pub(crate) fn non_quoted_delimiter_identifier(i: Input) -> ParseResult {
+pub(crate) fn non_quoted_delimiter_identifier(i: Input) -> LexResult {
     recognize(many1(identifier_character))(i)
 }
 
 /// `'` *single_quoted_delimiter_identifier* `'`
-pub(crate) fn single_quoted_delimiter(i: Input) -> ParseResult {
+pub(crate) fn single_quoted_delimiter(i: Input) -> LexResult {
     delimited(char('\''), single_quoted_delimiter_identifier, char('\''))(i)
 }
 
 /// ( ( *source_character* *source_character*? ) **but not** ( `'` | *line_terminator* ) )*
-pub(crate) fn single_quoted_delimiter_identifier(i: Input) -> ParseResult {
+pub(crate) fn single_quoted_delimiter_identifier(i: Input) -> LexResult {
     preceded(
         peek(not(whitespace)),
         recognize(many1(preceded(
@@ -134,12 +137,12 @@ pub(crate) fn single_quoted_delimiter_identifier(i: Input) -> ParseResult {
 }
 
 /// `"` *double_quoted_delimiter_identifier* `"`
-pub(crate) fn double_quoted_delimiter(i: Input) -> ParseResult {
+pub(crate) fn double_quoted_delimiter(i: Input) -> LexResult {
     delimited(char('"'), double_quoted_delimiter_identifier, char('"'))(i)
 }
 
 /// ( ( *source_character* *source_character*? ) **but not** ( `"` | *line_terminator* ) )*
-pub(crate) fn double_quoted_delimiter_identifier(i: Input) -> ParseResult {
+pub(crate) fn double_quoted_delimiter_identifier(i: Input) -> LexResult {
     preceded(
         peek(not(whitespace)),
         recognize(many1(preceded(
@@ -150,12 +153,12 @@ pub(crate) fn double_quoted_delimiter_identifier(i: Input) -> ParseResult {
 }
 
 /// ``` *command_quoted_delimiter_identifier* ```
-pub(crate) fn command_quoted_delimiter(i: Input) -> ParseResult {
+pub(crate) fn command_quoted_delimiter(i: Input) -> LexResult {
     delimited(char('`'), command_quoted_delimiter_identifier, char('`'))(i)
 }
 
 /// ( ( *source_character* *source_character*? ) **but not** ( ``` | *line_terminator* ) )*
-pub(crate) fn command_quoted_delimiter_identifier(i: Input) -> ParseResult {
+pub(crate) fn command_quoted_delimiter_identifier(i: Input) -> LexResult {
     preceded(
         peek(not(whitespace)),
         recognize(many1(preceded(
@@ -166,7 +169,7 @@ pub(crate) fn command_quoted_delimiter_identifier(i: Input) -> ParseResult {
 }
 
 /// *indented_heredoc_end_line* | *non_indented_heredoc_end_line*
-fn heredoc_end_line(i: Input) -> ParseResult {
+fn heredoc_end_line(i: Input) -> LexResult {
     match i.metadata.heredoc.as_ref().unwrap().indentation {
         Some(HeredocIndentation::Unindented) => non_indented_heredoc_end_line(i.clone()),
         _ => indented_heredoc_end_line(i.clone()),
@@ -174,7 +177,7 @@ fn heredoc_end_line(i: Input) -> ParseResult {
 }
 
 /// [ beginning of a line ] *whitespace** *heredoc_quote_type_identifier* *line_terminator*
-fn indented_heredoc_end_line(i: Input) -> ParseResult {
+fn indented_heredoc_end_line(i: Input) -> LexResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
     }
@@ -186,12 +189,12 @@ fn indented_heredoc_end_line(i: Input) -> ParseResult {
 }
 
 // Success if the end of the input has been reached
-fn at_eof(i: Input) -> ParseResult {
+fn at_eof(i: Input) -> LexResult {
     recognize(not(peek(anychar)))(i)
 }
 
 /// [ beginning of a line ] *heredoc_quote_type_identifier* *line_terminator*
-fn non_indented_heredoc_end_line(i: Input) -> ParseResult {
+fn non_indented_heredoc_end_line(i: Input) -> LexResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, crate::ErrorKind::Space)));
     }
@@ -202,7 +205,7 @@ fn non_indented_heredoc_end_line(i: Input) -> ParseResult {
 }
 
 /// *non_quoted_delimiter_identifier* | *single_quoted_delimiter_identifier* | *double_quoted_delimiter_identifier* | *command_quoted_delimiter_identifier*
-fn heredoc_quote_type_identifier(i: Input) -> ParseResult {
+fn heredoc_quote_type_identifier(i: Input) -> LexResult {
     if let Some(identifier) = i.metadata.heredoc.as_ref().unwrap().identifier {
         tag(identifier)(i.clone())
     } else {
@@ -288,6 +291,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::lexer::StringResult;
+    use crate::{HeredocMetadata, Token};
 
     macro_rules! assert_signifier {
         ($input:expr, $ident:expr, $indent:expr, $quote:expr) => {
@@ -377,7 +382,7 @@ mod tests {
     fn test_heredoc_signifier() {
         // This unit test uses a wrapped testing harness that intentionally leaks the
         // heredoc parser's top-level state
-        fn wrapped_heredoc_signifier(i: Input) -> ParseResult {
+        fn wrapped_heredoc_signifier(i: Input) -> LexResult {
             wrap_heredoc(heredoc_signifier)(i)
         }
         use_parser!(wrapped_heredoc_signifier);

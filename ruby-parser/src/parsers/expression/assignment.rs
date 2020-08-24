@@ -1,4 +1,5 @@
-use crate::*;
+use crate::lexer::TokenResult;
+use crate::Input;
 
 /// *single_assignment* | *abbreviated_assignment_expression* | *assignment_with_rescue_modifier*
 pub(crate) fn assignment_expression(i: Input) -> TokenResult {

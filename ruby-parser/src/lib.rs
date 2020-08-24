@@ -20,9 +20,9 @@ extern crate nom;
 mod macros;
 pub mod ast;
 mod enums;
+pub mod lexer;
 mod parsers;
 mod structs;
-mod types;
 
 pub(crate) use enums::{
     heredoc::{HeredocIndentation, HeredocQuoteType},
@@ -32,11 +32,6 @@ pub use enums::{interpolable::Interpolatable, token::Token};
 pub use nom::error::ErrorKind;
 pub(crate) use structs::metadata::HeredocMetadata;
 pub use structs::{metadata::Metadata, tracked_location::TrackedLocation};
-pub(crate) use types::{
-    CharResult, InterpolatableResult, ParseResult, SegmentResult,
-    SegmentVecResult, StringResult, TokenResult, TokenizedResult,
-};
-pub use types::{Expression, StatementList};
 
 /// Describes the parser's input type
 pub type Input<'a> = TrackedLocation<&'a str, Metadata<'a>>;
@@ -45,11 +40,11 @@ pub type Input<'a> = TrackedLocation<&'a str, Metadata<'a>>;
 pub(crate) type Parsed<'a, T> = nom::IResult<Input<'a>, T>;
 
 /// Parses a ruby program
-pub fn parse(i: Input) -> TokenResult {
+pub fn parse(i: Input) -> lexer::TokenResult {
     parsers::program::program(i)
 }
 
 /// Tokenizes a ruby program
-pub fn tokenize(i: Input) -> TokenizedResult {
+pub fn tokenize(i: Input) -> lexer::TokenizedResult {
     nom::multi::many0(parsers::program::input_element)(i)
 }

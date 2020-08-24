@@ -1,8 +1,10 @@
 use crate::ast::Literal;
+use crate::lexer::{LexResult, TokenResult};
 use crate::parsers::token::literal::string::double::double_quoted_string;
 use crate::parsers::token::literal::string::quoted::non_expanded_delimited_string;
 use crate::parsers::token::literal::string::single::single_quoted_string;
 use crate::parsers::token::*;
+use crate::{Input, Interpolatable, Token};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
@@ -49,7 +51,7 @@ pub(crate) fn dynamic_symbol(i: Input) -> TokenResult {
 }
 
 /// *identifier* | *operator* | *keyword*
-pub(crate) fn symbol_name(i: Input) -> ParseResult {
+pub(crate) fn symbol_name(i: Input) -> LexResult {
     alt((recognize(identifier), recognize(operator), keyword))(i)
 }
 
@@ -59,7 +61,7 @@ mod tests {
 
     macro_rules! assert_symbol {
         ($a:expr, $b:expr) => {
-            assert_ok!($a, Token::Literal(ast::Literal::Symbol($b.to_owned())))
+            assert_ok!($a, Token::Literal(Literal::Symbol($b.to_owned())))
         };
     }
     macro_rules! assert_interpolated {

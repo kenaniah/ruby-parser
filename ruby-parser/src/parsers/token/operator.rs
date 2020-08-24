@@ -1,4 +1,5 @@
-use crate::*;
+use crate::lexer::{LexResult, TokenResult};
+use crate::{Input, Token};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
@@ -23,7 +24,7 @@ pub(crate) fn operator(i: Input) -> TokenResult {
 }
 
 /// `^` | `&` | `|` | `<=>` | `==` | `===` | `=~` | `>` | `>=` | `<` | `<=` | `<<` | `>>` | `+` | `-` | `*` | `/` | `%` | `**` | `~` | `+@` | `-@` | `[]` | `[]=`
-pub(crate) fn operator_method_name(i: Input) -> ParseResult {
+pub(crate) fn operator_method_name(i: Input) -> LexResult {
     recognize(alt((
         alt((
             tag("<=>"),
@@ -57,12 +58,12 @@ pub(crate) fn operator_method_name(i: Input) -> ParseResult {
 }
 
 /// *assignment_operator_name* `=`
-pub(crate) fn assignment_operator(i: Input) -> ParseResult {
+pub(crate) fn assignment_operator(i: Input) -> LexResult {
     recognize(tuple((assignment_operator_name, char('='))))(i)
 }
 
 /// `&&` | `||` | `^` | `&` | `|` | `<<` | `>>` | `+` | `-` | `%` | `/` | `**`
-pub(crate) fn assignment_operator_name(i: Input) -> ParseResult {
+pub(crate) fn assignment_operator_name(i: Input) -> LexResult {
     alt((
         tag("&&"),
         tag("||"),

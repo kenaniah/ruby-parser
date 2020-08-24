@@ -1,5 +1,6 @@
 use crate::ast::{Literal, LiteralResult};
-use crate::*;
+use crate::lexer::{CharResult, StringResult, TokenResult};
+use crate::{Input, Token};
 use nom::branch::alt;
 use nom::character::complete::{anychar, char, one_of};
 use nom::combinator::{map, opt, value, verify};

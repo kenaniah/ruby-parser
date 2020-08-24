@@ -2,7 +2,8 @@
 Provides support for lexing Ruby's string literal formats.
 !*/
 use crate::ast::Literal;
-use crate::*;
+use crate::lexer::TokenResult;
+use crate::{Input, Interpolatable, Token};
 use nom::branch::alt;
 use nom::combinator::map;
 
