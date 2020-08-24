@@ -15,7 +15,7 @@ pub(crate) fn unary_minus_expression(i: Input) -> AstResult {
                 rhs: Box::new(t.1),
             })
         }),
-        map(power_expression, |t| Node::from(t)),
+        power_expression,
     ))(i)
 }
 
@@ -30,8 +30,4 @@ pub(crate) fn unary_expression(i: Input) -> AstResult {
         }),
         map(primary_expression, |t| Node::from(t)),
     ))(i)
-}
-
-fn stub(i: Input) -> AstResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }

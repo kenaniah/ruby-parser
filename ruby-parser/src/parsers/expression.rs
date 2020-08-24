@@ -17,7 +17,7 @@ mod unary;
 mod variable;
 mod yield_;
 
-pub(crate) fn expression(i: Input) -> TokenResult {
+pub(crate) fn expression(i: Input) -> AstResult {
     logical::keyword_logical_expression(i)
 }
 
