@@ -1,4 +1,3 @@
-use crate::ast::Literal;
 use crate::lexer::{
     CharResult, InterpolatableResult, LexResult, SegmentResult, StringResult, TokenResult,
 };
@@ -193,6 +192,7 @@ fn char_from_radix(i: &str, radix: u32) -> char {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ast::Literal;
     use crate::Token;
 
     macro_rules! assert_result {
