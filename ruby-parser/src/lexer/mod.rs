@@ -1,8 +1,9 @@
 use crate::{Interpolatable, Segment, Token};
 
-pub(crate) mod metadata;
+mod metadata;
 mod tracked_location;
 
+pub use metadata::HeredocMetadata;
 pub use metadata::Metadata;
 pub use tracked_location::TrackedLocation;
 

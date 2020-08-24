@@ -30,7 +30,6 @@ pub(crate) use enums::{
     segment::Segment,
 };
 pub use enums::{interpolable::Interpolatable, token::Token};
-pub(crate) use lexer::metadata::HeredocMetadata;
 pub use nom::error::ErrorKind;
 
 /// Parses a ruby program
