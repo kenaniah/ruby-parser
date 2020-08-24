@@ -1,13 +1,22 @@
+use crate::parsers::expression::binary::power_expression;
 use crate::parsers::expression::primary_expression;
 use crate::*;
 use nom::branch::alt;
-use nom::character::complete::one_of;
+use nom::character::complete::{char, one_of};
 use nom::combinator::map;
 use nom::sequence::tuple;
 
 /// *power_expression* | `-` *power_expression*
 pub(crate) fn unary_minus_expression(i: Input) -> AstResult {
-    stub(i)
+    alt((
+        map(tuple((char('-'), power_expression)), |t| {
+            Node::UnaryOp(UnaryOp {
+                op: UnaryOpToken::from(t.0),
+                rhs: Box::new(t.1),
+            })
+        }),
+        map(power_expression, |t| Node::from(t)),
+    ))(i)
 }
 
 /// *primary_expression* | `~` *unary_expression* | `+` *unary_expression* | `!` *unary_expression*
