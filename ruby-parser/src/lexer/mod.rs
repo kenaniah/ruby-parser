@@ -1,3 +1,5 @@
+//! Provides types / enums / structs for defining parser combinators
+
 mod heredoc;
 mod interpolable;
 mod metadata;
