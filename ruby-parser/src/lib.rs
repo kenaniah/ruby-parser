@@ -25,10 +25,7 @@ mod parsers;
 
 pub use lexer::Input;
 
-pub(crate) use enums::{
-    heredoc::{HeredocIndentation, HeredocQuoteType},
-    segment::Segment,
-};
+pub(crate) use enums::segment::Segment;
 pub use enums::{interpolable::Interpolatable, token::Token};
 pub use nom::error::ErrorKind;
 

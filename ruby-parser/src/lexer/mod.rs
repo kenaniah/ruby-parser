@@ -1,9 +1,10 @@
 use crate::{Interpolatable, Segment, Token};
 
+mod heredoc;
 mod metadata;
 mod tracked_location;
 
-pub use metadata::HeredocMetadata;
+pub use heredoc::{HeredocIndentation, HeredocMetadata, HeredocQuoteType};
 pub use metadata::Metadata;
 pub use tracked_location::TrackedLocation;
 
