@@ -1,27 +1,13 @@
-use crate::ast::{Literal, Node};
-use crate::{Interpolatable, Metadata, Segment, Token, TrackedLocation};
-use nom::IResult;
-
-/// Intermediate type used to build the result types for lexing combinators
-type Parsed<'a, T> = IResult<Input<'a>, T>;
+use crate::{Input, Interpolatable, Parsed, Segment, Token};
 
 /// Describes a list of tokens that make up an expression
 pub type Expression = Vec<Token>;
 
-/// Describes the parser's input type
-pub type Input<'a> = TrackedLocation<&'a str, Metadata<'a>>;
-
 /// Describes a list of statements
 pub type StatementList = Vec<Token>;
 
-// Describes a parsed AST node
-pub(crate) type AstResult<'a> = Parsed<'a, Node>;
-
 /// Describes a parsed character
 pub(crate) type CharResult<'a> = Parsed<'a, char>;
-
-/// Describes a parsed literal
-pub(crate) type LiteralResult<'a> = Parsed<'a, Literal>;
 
 /// Describes an interpolated result
 pub(crate) type InterpolatableResult<'a> = Parsed<'a, Interpolatable>;

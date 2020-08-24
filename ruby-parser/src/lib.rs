@@ -34,10 +34,16 @@ pub use nom::error::ErrorKind;
 pub(crate) use structs::metadata::HeredocMetadata;
 pub use structs::{metadata::Metadata, tracked_location::TrackedLocation};
 pub(crate) use types::{
-    AstResult, CharResult, InterpolatableResult, LiteralResult, ParseResult, SegmentResult,
+    CharResult, InterpolatableResult, ParseResult, SegmentResult,
     SegmentVecResult, StringResult, TokenResult, TokenizedResult,
 };
-pub use types::{Expression, Input, StatementList};
+pub use types::{Expression, StatementList};
+
+/// Describes the parser's input type
+pub type Input<'a> = TrackedLocation<&'a str, Metadata<'a>>;
+
+/// Intermediate type used to build the result types for lexing combinators
+pub(crate) type Parsed<'a, T> = nom::IResult<Input<'a>, T>;
 
 /// Parses a ruby program
 pub fn parse(i: Input) -> TokenResult {
