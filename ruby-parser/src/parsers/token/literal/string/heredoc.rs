@@ -1,4 +1,5 @@
 use super::double::{double_escape_sequence, interpolated_character_sequence};
+use crate::ast::Literal;
 use crate::parsers::comment::line_content;
 use crate::parsers::program::{line_terminator, source_character, whitespace};
 use crate::parsers::token::identifier::identifier_character;

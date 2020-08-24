@@ -1,3 +1,4 @@
+use crate::ast::Literal;
 use crate::parsers::program::*;
 use crate::parsers::token::identifier::*;
 use crate::parsers::token::literal::numeric::{hexadecimal_digit, octal_digit};

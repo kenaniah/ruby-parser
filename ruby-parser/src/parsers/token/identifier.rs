@@ -177,7 +177,7 @@ mod tests {
 
     #[test]
     fn test_identifier() {
-        use IdentifierType::*;
+        use crate::ast::IdentifierType::*;
         use_parser!(identifier);
         // Parse errors
         assert_err!("=");

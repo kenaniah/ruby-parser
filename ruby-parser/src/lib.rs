@@ -24,7 +24,6 @@ mod parsers;
 mod structs;
 mod types;
 
-pub use ast::*;
 pub(crate) use enums::{
     heredoc::{HeredocIndentation, HeredocQuoteType},
     segment::Segment,

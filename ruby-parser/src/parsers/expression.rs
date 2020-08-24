@@ -1,3 +1,4 @@
+use crate::ast::AstResult;
 use crate::parsers::program::compound_statement;
 use crate::parsers::token::literal;
 use crate::*;

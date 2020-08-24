@@ -1,4 +1,4 @@
-use crate::ast::Literal;
+use crate::ast::{Literal, LiteralResult};
 use crate::*;
 use nom::branch::alt;
 use nom::character::complete::{anychar, char, one_of};
@@ -19,6 +19,7 @@ tuple of the remaining input and a `Token::Integer` or `Token::Float` value when
 
 ```
 use ruby_parser::*;
+use ruby_parser::ast::Literal;
 
 let input = "12_345";
 let (remaining, token) = parse(input.into()).unwrap();

@@ -1,3 +1,4 @@
+use crate::ast::Literal;
 use crate::parsers::token::literal::string::double::double_quoted_string;
 use crate::parsers::token::literal::string::quoted::non_expanded_delimited_string;
 use crate::parsers::token::literal::string::single::single_quoted_string;
@@ -58,7 +59,7 @@ mod tests {
 
     macro_rules! assert_symbol {
         ($a:expr, $b:expr) => {
-            assert_ok!($a, Token::Literal(Literal::Symbol($b.to_owned())))
+            assert_ok!($a, Token::Literal(ast::Literal::Symbol($b.to_owned())))
         };
     }
     macro_rules! assert_interpolated {

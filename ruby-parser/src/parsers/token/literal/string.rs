@@ -1,6 +1,7 @@
 /*!
 Provides support for lexing Ruby's string literal formats.
 !*/
+use crate::ast::Literal;
 use crate::*;
 use nom::branch::alt;
 use nom::combinator::map;
@@ -28,7 +29,9 @@ pub(crate) fn string_literal(i: Input) -> TokenResult {
             Interpolatable::String(s) => Token::Literal(Literal::String(s)),
             Interpolatable::Interpolated(i) => Token::InterpolatedString(i),
         }),
-        map(quoted_non_expanded_literal_string, |s| Token::Literal(Literal::String(s))),
+        map(quoted_non_expanded_literal_string, |s| {
+            Token::Literal(Literal::String(s))
+        }),
         map(quoted_expanded_literal_string, |s| match s {
             Interpolatable::String(s) => Token::Literal(Literal::String(s)),
             Interpolatable::Interpolated(i) => Token::InterpolatedString(i),
