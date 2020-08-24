@@ -9,7 +9,7 @@ mod logical;
 mod node;
 mod unary_op;
 
-use crate::Parsed;
+use crate::lexer::Parsed;
 
 pub use binary_op::*;
 pub use expr::*;

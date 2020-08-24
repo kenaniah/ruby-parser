@@ -1,9 +1,9 @@
 use super::double::double_escape_sequence;
 use super::double::interpolated_character_sequence;
 use crate::lexer::{
-    CharResult, InterpolatableResult, SegmentResult, SegmentVecResult, StringResult,
+    CharResult, InterpolatableResult, Metadata, SegmentResult, SegmentVecResult, StringResult,
 };
-use crate::{Input, Interpolatable, Metadata, Segment};
+use crate::{Input, Interpolatable, Segment};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of};

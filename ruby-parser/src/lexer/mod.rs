@@ -1,4 +1,16 @@
-use crate::{Input, Interpolatable, Parsed, Segment, Token};
+use crate::{Interpolatable, Segment, Token};
+
+pub(crate) mod metadata;
+mod tracked_location;
+
+pub use metadata::Metadata;
+pub use tracked_location::TrackedLocation;
+
+/// Describes the parser's input type
+pub type Input<'a> = TrackedLocation<&'a str, Metadata<'a>>;
+
+/// Intermediate type used to build the result types for lexing combinators
+pub(crate) type Parsed<'a, T> = nom::IResult<Input<'a>, T>;
 
 /// Describes a list of tokens that make up an expression
 pub type Expression = Vec<Token>;

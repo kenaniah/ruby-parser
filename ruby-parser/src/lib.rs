@@ -22,22 +22,16 @@ pub mod ast;
 mod enums;
 pub mod lexer;
 mod parsers;
-mod structs;
+
+pub use lexer::Input;
 
 pub(crate) use enums::{
     heredoc::{HeredocIndentation, HeredocQuoteType},
     segment::Segment,
 };
 pub use enums::{interpolable::Interpolatable, token::Token};
+pub(crate) use lexer::metadata::HeredocMetadata;
 pub use nom::error::ErrorKind;
-pub(crate) use structs::metadata::HeredocMetadata;
-pub use structs::{metadata::Metadata, tracked_location::TrackedLocation};
-
-/// Describes the parser's input type
-pub type Input<'a> = TrackedLocation<&'a str, Metadata<'a>>;
-
-/// Intermediate type used to build the result types for lexing combinators
-pub(crate) type Parsed<'a, T> = nom::IResult<Input<'a>, T>;
 
 /// Parses a ruby program
 pub fn parse(i: Input) -> lexer::TokenResult {
