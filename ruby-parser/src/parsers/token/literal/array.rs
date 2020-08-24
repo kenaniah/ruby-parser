@@ -1,5 +1,4 @@
-use crate::Input;
-use crate::lexer::{TokenResult, LexResult};
+use crate::lexer::*;
 
 /// *quoted_non_expanded_array_constructor* | *quoted_expanded_array_constructor*
 pub(crate) fn array_literal(i: Input) -> TokenResult {

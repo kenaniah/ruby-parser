@@ -1,7 +1,7 @@
-use crate::ast::{NodeResult, Node, UnaryOp, UnaryOpToken};
+use crate::ast::{Node, NodeResult, UnaryOp, UnaryOpToken};
+use crate::lexer::*;
 use crate::parsers::expression::binary::power_expression;
 use crate::parsers::expression::primary_expression;
-use crate::*;
 use nom::branch::alt;
 use nom::character::complete::{char, one_of};
 use nom::combinator::map;

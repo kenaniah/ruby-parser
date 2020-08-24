@@ -1,5 +1,5 @@
 use crate::ast::NodeResult;
-use crate::*;
+use crate::lexer::*;
 
 /// *relational_expression* | *relational_expression* [ no line terminator here ] ( `<=>` | `===` | `==` | `!=` | `=~` | `!~` ) *relational_expression*
 pub(crate) fn equality_expression(i: Input) -> NodeResult {

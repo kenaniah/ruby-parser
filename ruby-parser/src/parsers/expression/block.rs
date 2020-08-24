@@ -1,5 +1,4 @@
-use crate::lexer::TokenResult;
-use crate::Input;
+use crate::lexer::*;
 
 /// *brace_block* | *do block*
 pub(crate) fn block(i: Input) -> TokenResult {

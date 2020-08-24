@@ -1,5 +1,4 @@
-use crate::Input;
-use crate::lexer::TokenResult;
+use crate::lexer::*;
 
 /// `super` ( [ no line terminator here ] [ no whitespace here ] *argument_with_parenthesis* )? *block*?
 pub(crate) fn super_with_optional_argument(i: Input) -> TokenResult {

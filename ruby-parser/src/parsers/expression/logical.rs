@@ -1,5 +1,5 @@
 use crate::ast::NodeResult;
-use crate::*;
+use crate::lexer::*;
 
 /// *keyword_not_expression* | *keyword_and_expression* | *keyword_or_expression*
 pub(crate) fn keyword_logical_expression(i: Input) -> NodeResult {

@@ -1,5 +1,4 @@
-use crate::lexer::{LexResult, TokenResult};
-use crate::Input;
+use crate::lexer::*;
 
 /// `/` *regular_expression_body* `/` *regular_expression_option** | `%r` *literal_beginning_delimiter* *expanded_literal_string** *literal_ending_delimiter* *regular_expression_option**
 pub(crate) fn regular_expression_literal(i: Input) -> TokenResult {

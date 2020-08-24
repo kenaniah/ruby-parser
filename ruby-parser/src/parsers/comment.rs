@@ -1,8 +1,7 @@
 //! Provides parsers for comments
 
-use crate::lexer::{CharResult, LexResult, TokenResult};
+use crate::lexer::*;
 use crate::parsers::program::*;
-use crate::{Input, Token};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;

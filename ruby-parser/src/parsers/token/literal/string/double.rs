@@ -1,10 +1,7 @@
-use crate::lexer::{
-    CharResult, InterpolatableResult, LexResult, SegmentResult, StringResult, TokenResult,
-};
+use crate::lexer::*;
 use crate::parsers::program::*;
 use crate::parsers::token::identifier::*;
 use crate::parsers::token::literal::numeric::{hexadecimal_digit, octal_digit};
-use crate::{Input, Interpolatable, Segment};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of, one_of};
@@ -193,7 +190,6 @@ fn char_from_radix(i: &str, radix: u32) -> char {
 mod tests {
     use super::*;
     use crate::ast::Literal;
-    use crate::Token;
 
     macro_rules! assert_result {
         ($a:expr, $b:expr) => {

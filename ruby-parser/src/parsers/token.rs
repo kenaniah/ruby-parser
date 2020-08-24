@@ -1,5 +1,4 @@
-use crate::lexer::TokenResult;
-use crate::{Input, Token};
+use crate::lexer::*;
 use nom::branch::alt;
 use nom::combinator::map;
 

@@ -1,4 +1,4 @@
-use crate::{Segment, Token};
+use super::{Segment, Token};
 use std::cmp::min;
 
 /// Defines something that may be interpolated

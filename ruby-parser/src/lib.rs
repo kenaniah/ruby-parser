@@ -19,22 +19,17 @@ extern crate nom;
 #[macro_use]
 mod macros;
 pub mod ast;
-mod enums;
 pub mod lexer;
 mod parsers;
 
-pub use lexer::Input;
-
-pub(crate) use enums::segment::Segment;
-pub use enums::{interpolable::Interpolatable, token::Token};
 pub use nom::error::ErrorKind;
 
 /// Parses a ruby program
-pub fn parse(i: Input) -> lexer::TokenResult {
+pub fn parse(i: lexer::Input) -> lexer::TokenResult {
     parsers::program::program(i)
 }
 
 /// Tokenizes a ruby program
-pub fn tokenize(i: Input) -> lexer::TokenizedResult {
+pub fn tokenize(i: lexer::Input) -> lexer::TokenizedResult {
     nom::multi::many0(parsers::program::input_element)(i)
 }

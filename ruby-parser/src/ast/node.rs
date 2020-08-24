@@ -1,5 +1,5 @@
 use super::*;
-use crate::Token;
+use crate::lexer::Token;
 
 pub enum Node {
     LogicalAnd(LogicalAnd),

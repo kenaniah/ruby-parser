@@ -1,5 +1,4 @@
-use crate::lexer::{CharResult, StringResult};
-use crate::Input;
+use crate::lexer::*;
 use nom::branch::alt;
 use nom::character::complete::{char, none_of, one_of};
 use nom::combinator::map;

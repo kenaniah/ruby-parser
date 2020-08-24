@@ -1,10 +1,9 @@
 use crate::ast::Literal;
-use crate::lexer::{LexResult, TokenResult};
+use crate::lexer::*;
 use crate::parsers::token::literal::string::double::double_quoted_string;
 use crate::parsers::token::literal::string::quoted::non_expanded_delimited_string;
 use crate::parsers::token::literal::string::single::single_quoted_string;
 use crate::parsers::token::*;
-use crate::{Input, Interpolatable, Token};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;

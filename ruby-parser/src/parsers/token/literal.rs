@@ -1,5 +1,4 @@
-use crate::lexer::TokenResult;
-use crate::Input;
+use crate::lexer::*;
 use nom::branch::alt;
 
 pub(crate) mod array;

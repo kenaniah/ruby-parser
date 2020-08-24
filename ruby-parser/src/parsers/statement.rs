@@ -1,6 +1,5 @@
-use crate::lexer::TokenResult;
+use crate::lexer::*;
 use crate::parsers::expression::primary_expression;
-use crate::Input;
 use nom::branch::alt;
 
 /// *expression_statement* | *alias_statement* | *undef_statement* | *if_modifier_statement* | *unless_modifier_statement* | *while_modifier_statement* | *until_modifier_statement* | *rescue_modifier_statement* | *assignment_statement*

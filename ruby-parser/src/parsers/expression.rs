@@ -1,8 +1,7 @@
 use crate::ast::NodeResult;
-use crate::lexer::TokenResult;
+use crate::lexer::*;
 use crate::parsers::program::compound_statement;
 use crate::parsers::token::literal;
-use crate::Input;
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::map;
@@ -68,7 +67,6 @@ pub(crate) fn operator_expression(i: Input) -> TokenResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Token;
 
     #[test]
     fn test_primary_expression() {

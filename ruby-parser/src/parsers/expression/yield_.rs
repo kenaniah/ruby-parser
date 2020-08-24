@@ -1,5 +1,4 @@
-use crate::lexer::TokenResult;
-use crate::Input;
+use crate::lexer::*;
 
 /// *yield_with_parenthesis_and_argument* | *yield_with_parenthesis_without_argument* | `yield`
 pub(crate) fn yield_with_optional_argument(i: Input) -> TokenResult {

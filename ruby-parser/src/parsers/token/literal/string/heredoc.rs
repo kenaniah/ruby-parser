@@ -1,12 +1,9 @@
 use super::double::{double_escape_sequence, interpolated_character_sequence};
 use crate::ast::Literal;
-use crate::lexer::{
-    HeredocIndentation, HeredocMetadata, HeredocQuoteType, LexResult, SegmentResult, TokenResult,
-};
+use crate::lexer::*;
 use crate::parsers::comment::line_content;
 use crate::parsers::program::{line_terminator, source_character, whitespace};
 use crate::parsers::token::identifier::identifier_character;
-use crate::{Input, Interpolatable, Segment, Token};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of};
@@ -291,8 +288,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lexer::{HeredocMetadata, StringResult};
-    use crate::Token;
 
     macro_rules! assert_signifier {
         ($input:expr, $ident:expr, $indent:expr, $quote:expr) => {

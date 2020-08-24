@@ -1,5 +1,4 @@
-use crate::lexer::{LexResult, TokenResult};
-use crate::{Input, Token};
+use crate::lexer::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;

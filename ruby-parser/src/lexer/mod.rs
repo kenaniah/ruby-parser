@@ -1,11 +1,15 @@
-use crate::{Interpolatable, Segment, Token};
-
 mod heredoc;
+mod interpolable;
 mod metadata;
+mod segment;
+mod token;
 mod tracked_location;
 
 pub use heredoc::{HeredocIndentation, HeredocMetadata, HeredocQuoteType};
+pub use interpolable::Interpolatable;
 pub use metadata::Metadata;
+pub use segment::Segment;
+pub use token::Token;
 pub use tracked_location::TrackedLocation;
 
 /// Describes the parser's input type

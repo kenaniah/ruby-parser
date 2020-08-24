@@ -1,6 +1,5 @@
 use crate::ast::{Literal, LiteralResult};
-use crate::lexer::{CharResult, StringResult, TokenResult};
-use crate::{Input, Token};
+use crate::lexer::*;
 use nom::branch::alt;
 use nom::character::complete::{anychar, char, one_of};
 use nom::combinator::{map, opt, value, verify};
@@ -19,7 +18,8 @@ tuple of the remaining input and a `Token::Integer` or `Token::Float` value when
 ## Example
 
 ```
-use ruby_parser::*;
+use ruby_parser::parse;
+use ruby_parser::lexer::Token;
 use ruby_parser::ast::Literal;
 
 let input = "12_345";

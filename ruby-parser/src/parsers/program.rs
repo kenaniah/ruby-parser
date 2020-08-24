@@ -1,9 +1,8 @@
 //! Provides parsers for program text
-use crate::lexer::{CharResult, LexResult, TokenResult};
+use crate::lexer::*;
 use crate::parsers::comment::comment;
 use crate::parsers::statement::statement;
 use crate::parsers::token::token;
-use crate::{Input, Token};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, line_ending, one_of};

@@ -1,7 +1,6 @@
 use super::double::double_escape_sequence;
-use crate::lexer::StringResult;
+use crate::lexer::*;
 use crate::parsers::program::*;
-use crate::Input;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;

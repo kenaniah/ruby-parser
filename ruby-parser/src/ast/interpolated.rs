@@ -1,4 +1,4 @@
-use crate::Token;
+use crate::lexer::Token;
 
 pub enum Interpolated {
     Command(Vec<Token>),

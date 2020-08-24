@@ -1,9 +1,6 @@
 use super::double::double_escape_sequence;
 use super::double::interpolated_character_sequence;
-use crate::lexer::{
-    CharResult, InterpolatableResult, Metadata, SegmentResult, SegmentVecResult, StringResult,
-};
-use crate::{Input, Interpolatable, Segment};
+use crate::lexer::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, none_of};
@@ -241,8 +238,6 @@ fn end_delimiter(meta: &Metadata) -> Option<char> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Interpolatable;
-    use crate::Token;
 
     macro_rules! assert_string {
         ($a:expr, $b:expr) => {
