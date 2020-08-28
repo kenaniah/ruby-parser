@@ -60,7 +60,7 @@ pub(crate) fn grouping_expression(i: Input) -> TokenResult {
 }
 
 /// *assignment_expression* | *defined_without_parenthesis* | *conditional_operator_expression*
-pub(crate) fn operator_expression(i: Input) -> TokenResult {
+pub(crate) fn operator_expression(i: Input) -> NodeResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
 

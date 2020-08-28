@@ -4,6 +4,7 @@ use crate::lexer::Token;
 pub enum Node {
     LogicalAnd(LogicalAnd),
     LogicalOr(LogicalOr),
+    LogicalNot(LogicalNot),
     Literal(Literal),
     Identifier(Identifier),
     Interpolated(Interpolated),
