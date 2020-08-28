@@ -7,6 +7,7 @@ mod segment;
 mod token;
 mod tracked_location;
 
+pub use crate::ast::{Literal, Node};
 pub use heredoc::{HeredocIndentation, HeredocMetadata, HeredocQuoteType};
 pub use interpolable::Interpolatable;
 pub use metadata::Metadata;
@@ -19,6 +20,12 @@ pub type Input<'a> = TrackedLocation<&'a str, Metadata<'a>>;
 
 /// Intermediate type used to build the result types for lexing combinators
 pub(crate) type Parsed<'a, T> = nom::IResult<Input<'a>, T>;
+
+// Describes a parsed AST node
+pub(crate) type NodeResult<'a> = Parsed<'a, Node>;
+
+/// Describes a parsed literal
+pub(crate) type LiteralResult<'a> = Parsed<'a, Literal>;
 
 /// Describes a list of tokens that make up an expression
 pub type Expression = Vec<Token>;

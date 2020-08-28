@@ -1,4 +1,3 @@
-use crate::ast::{Literal, LiteralResult};
 use crate::lexer::*;
 use nom::branch::alt;
 use nom::character::complete::{anychar, char, one_of};

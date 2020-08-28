@@ -19,9 +19,3 @@ pub use literal::*;
 pub use logical::*;
 pub use node::*;
 pub use unary_op::*;
-
-// Describes a parsed AST node
-pub(crate) type NodeResult<'a> = Parsed<'a, Node>;
-
-/// Describes a parsed literal
-pub(crate) type LiteralResult<'a> = Parsed<'a, Literal>;

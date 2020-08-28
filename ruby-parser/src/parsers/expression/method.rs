@@ -1,4 +1,3 @@
-use crate::ast::{NodeResult};
 use crate::lexer::*;
 
 /// *super_with_optional_argument* | *indexing_method_invocation* | *method_only_identifier* | *method_identifier* *block* | *method_identifier* [ no line terminator here ] [ no whitespace here ] *argument_with_parentheses* *block*? | *primary_expression* [ no line terminator here ] `.` *method_name* ( [ no line terminator here ] [ no whitespace here ] *argument_with_parentheses* )? *block*? | *primary_expression* [ no line terminator here ] `::` *method_name* [ no line terminator here ] [ no whitespace here ] *argument_with_parentheses* *block*? | *primary_expression* [ no line terminator here ] `::` *method_name_except_constant* *block*?
