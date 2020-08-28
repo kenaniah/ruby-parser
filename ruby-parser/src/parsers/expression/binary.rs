@@ -1,9 +1,10 @@
 use crate::ast::{BinaryOp, BinaryOpToken, Node, NodeResult};
 use crate::lexer::*;
-use crate::parsers::expression::unary::unary_expression;
+use crate::parsers::expression::unary::{unary_expression, unary_minus_expression};
 use crate::parsers::program::{no_lt, ws};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
+use nom::character::complete::one_of;
 use nom::combinator::map;
 use nom::sequence::tuple;
 
@@ -39,7 +40,30 @@ pub(crate) fn additive_expression(i: Input) -> NodeResult {
 
 /// *unary_minus_expression* | *multiplicative_expression* [ no line terminator here ] ( `*` | `/` | `%` ) *unary_minus_expression*
 pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        map(
+            tuple((
+                multiplicative_expression,
+                no_lt,
+                one_of("*/%"),
+                ws,
+                unary_minus_expression,
+            )),
+            |t| {
+                Node::BinaryOp(BinaryOp {
+                    op: match t.2 {
+                        '*' => BinaryOpToken::Multiply,
+                        '/' => BinaryOpToken::Divide,
+                        '%' => BinaryOpToken::Modulus,
+                        _ => unreachable!(),
+                    },
+                    lhs: Box::new(t.0),
+                    rhs: Box::new(t.4),
+                })
+            },
+        ),
+        unary_minus_expression,
+    ))(i)
 }
 
 /// *unary_expression* | *unary_expression* [ no line terminator here ] `**` *power_expression*
