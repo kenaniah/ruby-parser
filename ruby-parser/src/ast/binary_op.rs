@@ -2,8 +2,8 @@ use super::*;
 
 pub struct BinaryOp {
     pub op: BinaryOpToken,
-    pub lhs: Expr,
-    pub rhs: Expr
+    pub lhs: Box<Node>,
+    pub rhs: Box<Node>
 }
 
 pub enum BinaryOpToken {

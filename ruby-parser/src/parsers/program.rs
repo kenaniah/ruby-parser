@@ -91,6 +91,16 @@ pub(crate) fn end_of_program_marker(i: Input) -> TokenResult {
     Ok((i, Token::EndOfProgram))
 }
 
+/// ( *whitespace* | *line_terminator* )*
+pub(crate) fn ws(i: Input) -> LexResult {
+    recognize(many0(alt((whitespace, line_terminator))))(i)
+}
+
+/// *whitespace**
+pub(crate) fn no_lt(i: Input) -> LexResult {
+    recognize(many0(whitespace))(i)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

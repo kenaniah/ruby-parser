@@ -1,5 +1,11 @@
-use crate::ast::NodeResult;
+use crate::ast::{BinaryOp, BinaryOpToken, Node, NodeResult};
 use crate::lexer::*;
+use crate::parsers::expression::unary::unary_expression;
+use crate::parsers::program::{no_lt, ws};
+use nom::branch::alt;
+use nom::bytes::complete::tag;
+use nom::combinator::map;
+use nom::sequence::tuple;
 
 /// *relational_expression* | *relational_expression* [ no line terminator here ] ( `<=>` | `===` | `==` | `!=` | `=~` | `!~` ) *relational_expression*
 pub(crate) fn equality_expression(i: Input) -> NodeResult {
@@ -38,7 +44,19 @@ pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
 
 /// *unary_expression* | *unary_expression* [ no line terminator here ] `**` *power_expression*
 pub(crate) fn power_expression(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        map(
+            tuple((unary_expression, no_lt, tag("**"), ws, power_expression)),
+            |t| {
+                Node::BinaryOp(BinaryOp {
+                    op: BinaryOpToken::Power,
+                    lhs: Box::new(t.0),
+                    rhs: Box::new(t.4),
+                })
+            },
+        ),
+        unary_expression,
+    ))(i)
 }
 
 fn stub(i: Input) -> NodeResult {
