@@ -25,11 +25,6 @@ mod parsers;
 pub use nom::error::ErrorKind;
 
 /// Parses a ruby program
-pub fn parse(i: lexer::Input) -> lexer::TokenResult {
+pub fn parse(i: lexer::Input) -> lexer::NodeResult {
     parsers::program::program(i)
-}
-
-/// Tokenizes a ruby program
-pub fn tokenize(i: lexer::Input) -> lexer::TokenizedResult {
-    nom::multi::many0(parsers::program::input_element)(i)
 }

@@ -15,14 +15,14 @@ use nom::sequence::{delimited, preceded, terminated};
 // TODO: ensure sequenced heredocs work
 
 /// *heredoc_start_line* *heredoc_body* *heredoc_end_line*
-pub(crate) fn here_document(i: Input) -> TokenResult {
+pub(crate) fn here_document(i: Input) -> NodeResult {
     wrap_heredoc(_here_document)(i)
 }
 
 // When dealing with heredocs, the parser has to make a jump in the input.
 // First, the heredoc is parsed, and parsing continues using the rest of the heredoc's start line.
 // Only then does parsing resume after the heredoc's ending identifier.
-fn _here_document(i: Input) -> TokenResult {
+fn _here_document(i: Input) -> NodeResult {
     let (i, mut line) = heredoc_start_line(i)?;
     let (remaining, token) = terminated(heredoc_body, heredoc_end_line)(i)?;
     line.remaining_input = Some(Box::new(remaining));
@@ -45,7 +45,7 @@ fn rest_of_line(i: Input) -> LexResult {
 }
 
 /// *comment_line** **but not** *heredoc_end_line*
-fn heredoc_body(i: Input) -> TokenResult {
+fn heredoc_body(i: Input) -> NodeResult {
     let heredoc_contents = match i.metadata.heredoc.as_deref().unwrap().quote_type.unwrap() {
         HeredocQuoteType::SingleQuoted => single_quoted_character,
         _ => double_quoted_character,
@@ -63,12 +63,12 @@ fn heredoc_body(i: Input) -> TokenResult {
     )(i)?;
     let token = match i.metadata.heredoc.as_deref().unwrap().quote_type {
         Some(HeredocQuoteType::CommandQuoted) => match contents {
-            Interpolatable::String(v) => Token::Literal(Literal::Command(v)),
-            Interpolatable::Interpolated(v) => Token::InterpolatedCommand(v),
+            Interpolatable::String(v) => Node::Literal(Literal::Command(v)),
+            Interpolatable::Interpolated(v) => Node::Interpolated(Interpolated::Command(v)),
         },
         _ => match contents {
-            Interpolatable::String(v) => Token::Literal(Literal::String(v)),
-            Interpolatable::Interpolated(v) => Token::InterpolatedString(v),
+            Interpolatable::String(v) => Node::Literal(Literal::String(v)),
+            Interpolatable::Interpolated(v) => Node::Interpolated(Interpolated::String(v)),
         },
     };
     Ok((i, token))
@@ -82,7 +82,7 @@ fn double_quoted_character(i: Input) -> SegmentResult {
     alt((
         map(none_of("#\\"), |c| Segment::Char(c)),
         map(double_escape_sequence, |s| Segment::String(s)),
-        map(interpolated_character_sequence, |e| Segment::Expr(e)),
+        map(interpolated_character_sequence, |e| Segment::expr(e)),
         map(char('#'), |c| Segment::Char(c)),
     ))(i)
 }
@@ -306,17 +306,17 @@ mod tests {
 
     #[test]
     fn test_here_document() {
-        fn s(v: &str) -> Token {
-            Token::Literal(Literal::String(v.to_owned()))
+        fn s(v: &str) -> Node {
+            Node::Literal(Literal::String(v.to_owned()))
         }
-        fn i(v: Vec<Token>) -> Token {
-            Token::InterpolatedString(v)
+        fn i(v: Vec<Node>) -> Node {
+            Node::Interpolated(Interpolated::String(v))
         }
-        fn cs(v: &str) -> Token {
-            Token::Literal(Literal::Command(v.to_owned()))
+        fn cs(v: &str) -> Node {
+            Node::Literal(Literal::Command(v.to_owned()))
         }
-        fn ci(v: Vec<Token>) -> Token {
-            Token::InterpolatedCommand(v)
+        fn ci(v: Vec<Node>) -> Node {
+            Node::Interpolated(Interpolated::Command(v))
         }
         use_parser!(here_document);
         // Synax errors
@@ -335,17 +335,17 @@ mod tests {
         assert_ok!(
             "<<-foo\nbar#{2.4}\nfoo",
             i(vec![
-                Token::Segment("bar".to_owned()),
-                Token::Block(vec![Token::float(2.4)]),
-                Token::Segment("\n".to_owned())
+                Node::Segment(Segment::String("bar".to_owned())),
+                Node::Block(vec![Node::float(2.4)]),
+                Node::Segment(Segment::String("\n".to_owned()))
             ])
         );
         assert_ok!(
             "<<-`foo`\nbar#{2.4}\nfoo",
             ci(vec![
-                Token::Segment("bar".to_owned()),
-                Token::Block(vec![Token::float(2.4)]),
-                Token::Segment("\n".to_owned())
+                Node::Segment(Segment::String("bar".to_owned())),
+                Node::Block(vec![Node::float(2.4)]),
+                Node::Segment(Segment::String("\n".to_owned()))
             ])
         );
         // Literal heredocs
@@ -357,8 +357,8 @@ mod tests {
         assert_ok!(
             "<<~foo\n#{2}  bar\nfoo",
             i(vec![
-                Token::Block(vec![Token::integer(2)]),
-                Token::Segment("  bar\n".to_owned())
+                Node::Block(vec![Node::integer(2)]),
+                Node::Segment(Segment::String("  bar\n".to_owned()))
             ])
         );
         // Squiggly heredocs with indented content
@@ -366,9 +366,9 @@ mod tests {
         assert_ok!(
             "<<~foo\n    bar#{\n2\n} stuff\n\t\n     \n  3\nfoo",
             i(vec![
-                Token::Segment("  bar".to_owned()),
-                Token::Block(vec![Token::integer(2)]),
-                Token::Segment(" stuff\n\n   \n3\n".to_owned())
+                Node::Segment(Segment::String("  bar".to_owned())),
+                Node::Block(vec![Node::integer(2)]),
+                Node::Segment(Segment::String(" stuff\n\n   \n3\n".to_owned()))
             ])
         );
     }

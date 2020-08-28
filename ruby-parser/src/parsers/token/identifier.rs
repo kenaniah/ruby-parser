@@ -7,7 +7,7 @@ use nom::multi::many0;
 use nom::sequence::tuple;
 
 /// *local_variable_identifier* | *global_variable_identifier* | *class_variable_identifier* | *instance_variable_identifier* | *constant_identifier* | *method_only_identifier* | *assignment_like_method_identifier*
-pub(crate) fn identifier(i: Input) -> TokenResult {
+pub(crate) fn identifier(i: Input) -> NodeResult {
     // Reordered to use the longest production
     alt((
         method_only_identifier,
@@ -21,57 +21,57 @@ pub(crate) fn identifier(i: Input) -> TokenResult {
 }
 
 /// ( *lowercase_character* | `_` ) *identifier_character**
-pub(crate) fn local_variable_identifier(i: Input) -> TokenResult {
+pub(crate) fn local_variable_identifier(i: Input) -> NodeResult {
     map(
         recognize(tuple((
             alt((lowercase_character, char('_'))),
             many0(identifier_character),
         ))),
-        |s| Token::LocalVariableIdentifier((*s).to_owned()),
+        |s| Node::ident(*s, IdentifierType::LocalVariable),
     )(i)
 }
 
 /// `$` *identifier_start_character* *identifier_character**
-pub(crate) fn global_variable_identifier(i: Input) -> TokenResult {
+pub(crate) fn global_variable_identifier(i: Input) -> NodeResult {
     map(
         recognize(tuple((
             char('$'),
             identifier_start_character,
             many0(identifier_character),
         ))),
-        |s| Token::GlobalVariableIdentifier((*s).to_owned()),
+        |s| Node::ident(*s, IdentifierType::GlobalVariable),
     )(i)
 }
 
 /// `@@` *identifier_start_character* *identifier_character**
-pub(crate) fn class_variable_identifier(i: Input) -> TokenResult {
+pub(crate) fn class_variable_identifier(i: Input) -> NodeResult {
     map(
         recognize(tuple((
             tag("@@"),
             identifier_start_character,
             many0(identifier_character),
         ))),
-        |s| Token::ClassVariableIdentifier((*s).to_owned()),
+        |s| Node::ident(*s, IdentifierType::ClassVariable),
     )(i)
 }
 
 /// `@` *identifier_start_character* *identifier_character**
-pub(crate) fn instance_variable_identifier(i: Input) -> TokenResult {
+pub(crate) fn instance_variable_identifier(i: Input) -> NodeResult {
     map(
         recognize(tuple((
             char('@'),
             identifier_start_character,
             many0(identifier_character),
         ))),
-        |s| Token::InstanceVariableIdentifier((*s).to_owned()),
+        |s| Node::ident(*s, IdentifierType::InstanceVariable),
     )(i)
 }
 
 /// *uppercase_character* *identifier_character**
-pub(crate) fn constant_identifier(i: Input) -> TokenResult {
+pub(crate) fn constant_identifier(i: Input) -> NodeResult {
     map(
         recognize(tuple((uppercase_character, many0(identifier_character)))),
-        |s| Token::ConstantIdentifier((*s).to_owned()),
+        |s| Node::ident(*s, IdentifierType::Constant),
     )(i)
 }
 
@@ -90,24 +90,24 @@ fn lowercase_character(i: Input) -> CharResult {
 }
 
 /// ( *constant_identifier* | *local_variable_identifier* ) ( `!` | `?` )
-pub(crate) fn method_only_identifier(i: Input) -> TokenResult {
+pub(crate) fn method_only_identifier(i: Input) -> NodeResult {
     map(
         recognize(tuple((
             alt((constant_identifier, local_variable_identifier)),
             one_of("!?"),
         ))),
-        |s| Token::MethodIdentifier((*s).to_owned()),
+        |s| Node::ident(*s, IdentifierType::Method),
     )(i)
 }
 
 /// ( *constant_identifier* | *local_variable_identifier* ) `=`
-pub(crate) fn assignment_like_method_identifier(i: Input) -> TokenResult {
+pub(crate) fn assignment_like_method_identifier(i: Input) -> NodeResult {
     map(
         recognize(tuple((
             alt((constant_identifier, local_variable_identifier)),
             char('='),
         ))),
-        |s| Token::AssignmentMethodIdentifier((*s).to_owned()),
+        |s| Node::ident(*s, IdentifierType::AssignmentMethod),
     )(i)
 }
 
@@ -184,17 +184,17 @@ mod tests {
         assert_err!("@");
         assert_err!("var\t");
         // Success cases
-        assert_ok!("_", Token::ident("_", LocalVariable));
-        assert_ok!("local", Token::ident("local", LocalVariable));
-        assert_ok!("local_Var", Token::ident("local_Var", LocalVariable));
-        assert_ok!("ClassName", Token::ident("ClassName", Constant));
-        assert_ok!("FOO", Token::ident("FOO", Constant));
-        assert_ok!("@_", Token::ident("@_", InstanceVariable));
-        assert_ok!("@@prop", Token::ident("@@prop", ClassVariable));
-        assert_ok!("$_foo", Token::ident("$_foo", GlobalVariable));
-        assert_ok!("is_valid?", Token::ident("is_valid?", Method));
-        assert_ok!("bang!", Token::ident("bang!", Method));
-        assert_ok!("var=", Token::ident("var=", AssignmentMethod));
+        assert_ok!("_", Node::ident("_", LocalVariable));
+        assert_ok!("local", Node::ident("local", LocalVariable));
+        assert_ok!("local_Var", Node::ident("local_Var", LocalVariable));
+        assert_ok!("ClassName", Node::ident("ClassName", Constant));
+        assert_ok!("FOO", Node::ident("FOO", Constant));
+        assert_ok!("@_", Node::ident("@_", InstanceVariable));
+        assert_ok!("@@prop", Node::ident("@@prop", ClassVariable));
+        assert_ok!("$_foo", Node::ident("$_foo", GlobalVariable));
+        assert_ok!("is_valid?", Node::ident("is_valid?", Method));
+        assert_ok!("bang!", Node::ident("bang!", Method));
+        assert_ok!("var=", Node::ident("var=", AssignmentMethod));
     }
 
     #[test]

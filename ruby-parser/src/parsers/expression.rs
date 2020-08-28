@@ -1,6 +1,6 @@
 use crate::lexer::*;
 use crate::parsers::program::compound_statement;
-use crate::parsers::token::literal;
+use crate::parsers::token::literal::literal;
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::map;
@@ -22,7 +22,7 @@ pub(crate) fn expression(i: Input) -> NodeResult {
 }
 
 /// *class_definition* | *singleton_class_definition* | *module_definition* | *method_definition* | *singleton_method_definition* | *yield_with_optional_argument* | *if_expression* | *unless_expression* | *case_expression* | *while_expression* | *until_expression* | *for_expression* | *return_without_argument* | *break_without_argument* | *next_without_argument* | *redo_expression* | *retry_expression* | *begin_expression* | *grouping_expression* | *variable_reference* | *scoped_constant_reference* | *array_constructor* | *hash_constructor* | *literal* | *defined_with_parenthesis* | *primary_method_invocation*
-pub(crate) fn primary_expression(i: Input) -> TokenResult {
+pub(crate) fn primary_expression(i: Input) -> NodeResult {
     alt((
         //class_definition,
         //singleton_class_definition,
@@ -54,7 +54,7 @@ pub(crate) fn primary_expression(i: Input) -> TokenResult {
 }
 
 /// `(` *compound_statement* `)`
-pub(crate) fn grouping_expression(i: Input) -> TokenResult {
+pub(crate) fn grouping_expression(i: Input) -> NodeResult {
     map(tuple((char('('), compound_statement, char(')'))), |t| t.1)(i)
 }
 
@@ -77,21 +77,21 @@ mod tests {
         assert_err!("('");
         assert_err!("((foo)");
         // Success cases
-        assert_ok!("nil", Token::Nil);
-        assert_ok!("42", Token::integer(42));
-        assert_ok!("24.2", Token::float(24.2));
-        assert_ok!("meh", Token::LocalVariableIdentifier("meh".to_owned()));
-        assert_ok!("-23e4", Token::float(-230000.0));
-        assert_ok!("'hello world'", Token::literal_string("hello world"));
-        assert_ok!("()", Token::Block(vec![]));
+        assert_ok!("nil", Node::Nil);
+        assert_ok!("42", Node::integer(42));
+        assert_ok!("24.2", Node::float(24.2));
+        assert_ok!("meh", Node::ident("meh", IdentifierType::LocalVariable));
+        assert_ok!("-23e4", Node::float(-230000.0));
+        assert_ok!("'hello world'", Node::literal_string("hello world"));
+        assert_ok!("()", Node::Block(vec![]));
         assert_ok!(
             "((false))",
-            Token::Block(vec![Token::Block(vec![Token::boolean(false)])])
+            Node::Block(vec![Node::Block(vec![Node::boolean(false)])])
         );
         assert_ok!(
             "(;2\n\t5;;)",
-            Token::Block(vec![Token::integer(2), Token::integer(5)])
+            Node::Block(vec![Node::integer(2), Node::integer(5)])
         );
-        assert_ok!("(;)", Token::Block(vec![]));
+        assert_ok!("(;)", Node::Block(vec![]));
     }
 }

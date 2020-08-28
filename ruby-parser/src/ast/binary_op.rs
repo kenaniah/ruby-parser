@@ -1,11 +1,13 @@
 use super::*;
 
+#[derive(Debug, PartialEq)]
 pub struct BinaryOp {
     pub op: BinaryOpToken,
     pub lhs: Box<Node>,
     pub rhs: Box<Node>
 }
 
+#[derive(Debug, PartialEq)]
 pub enum BinaryOpToken {
     /// <=>
     Compare,

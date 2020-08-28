@@ -15,8 +15,8 @@ using parser combinators.
 #### Expressions / Statements / Groups
 
  * There is no semantic difference between an expression and a statement in this implementation
- * `Token::Block` contains a list of statements (each item is considered to be a statement)
- * `Token::Expression` contains a list of tokens that make up an individual statement
+ * `Node::Block` contains a list of statements (each item is considered to be a statement)
+ * `Node::Expression` contains a list of tokens that make up an individual statement
  * Block and expression tokens may be nested via the use of parenthesis:
    ```ruby
    (2 + (puts "hi"; 4 - 8;;)) * 5
@@ -29,7 +29,7 @@ using parser combinators.
 The `Input` type can be extended to track a boolean field that denotes whether
 the parser's input is complete or partial (such as within IRB's REPL). Combinators
 that may be partially completed (such as open strings, arrays, etc.) can additionally
-return a `Token::IncompleteInput` on the end of their token stream in partial mode
+return a `Node::IncompleteInput` on the end of their token stream in partial mode
 to signal that the token has not been completed by the end of the user's input.
 
 I'm not yet sure if start / end tokens should be used for complex objects, but

@@ -14,7 +14,7 @@ pub(crate) use string::string_literal;
 pub(crate) use symbol::symbol;
 
 /// *numeric_literal* | *string_literal* | *array_literal* | *regular_expression_literal* | *symbol*
-pub(crate) fn literal(i: Input) -> TokenResult {
+pub(crate) fn literal(i: Input) -> NodeResult {
     alt((
         numeric_literal,
         string_literal,

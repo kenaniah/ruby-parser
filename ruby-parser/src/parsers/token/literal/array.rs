@@ -1,7 +1,7 @@
 use crate::lexer::*;
 
 /// *quoted_non_expanded_array_constructor* | *quoted_expanded_array_constructor*
-pub(crate) fn array_literal(i: Input) -> TokenResult {
+pub(crate) fn array_literal(i: Input) -> NodeResult {
     stub(i)
 }
 
@@ -89,6 +89,6 @@ fn stub_p(i: Input) -> LexResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
 
-fn stub(i: Input) -> TokenResult {
+fn stub(i: Input) -> NodeResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }

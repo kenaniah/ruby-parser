@@ -1,16 +1,16 @@
-use super::{Segment, Token};
+use super::{Node, Segment};
 use std::cmp::min;
 
 /// Defines something that may be interpolated
 #[derive(Debug, PartialEq)]
 pub enum Interpolatable {
     String(String),
-    Interpolated(Vec<Token>),
+    Interpolated(Vec<Node>),
 }
 
 impl From<Vec<Segment>> for Interpolatable {
     fn from(item: Vec<Segment>) -> Self {
-        let mut tokens: Vec<Token> = vec![];
+        let mut tokens: Vec<Node> = vec![];
         let mut string = String::new();
         let mut interpolated = false;
         for part in item {
@@ -19,17 +19,17 @@ impl From<Vec<Segment>> for Interpolatable {
                 Segment::String(s) => string.push_str(&s),
                 Segment::Expr(t) => {
                     if !string.is_empty() {
-                        tokens.push(Token::Segment(string.clone()));
+                        tokens.push(Node::Segment(Segment::String(string.clone())));
                         string.clear();
                     }
-                    tokens.push(t);
+                    tokens.push(*t);
                     interpolated = true;
                 }
             }
         }
         if interpolated {
             if !string.is_empty() {
-                tokens.push(Token::Segment(string.clone()));
+                tokens.push(Node::Segment(Segment::String(string.clone())));
             }
             Self::Interpolated(tokens)
         } else {
@@ -44,8 +44,9 @@ impl Interpolatable {
         match self {
             Self::Interpolated(tokens) => Self::Interpolated(Self::unindent_tokens(tokens)),
             Self::String(string) => {
-                let mut tokens = Self::unindent_tokens(vec![Token::Segment(string)]);
-                if let Token::Segment(string) = tokens.remove(0) {
+                let mut tokens =
+                    Self::unindent_tokens(vec![Node::Segment(Segment::String(string))]);
+                if let Node::Segment(Segment::String(string)) = tokens.remove(0) {
                     Self::String(string)
                 } else {
                     unreachable!()
@@ -53,12 +54,12 @@ impl Interpolatable {
             }
         }
     }
-    fn unindent_tokens(mut tokens: Vec<Token>) -> Vec<Token> {
+    fn unindent_tokens(mut tokens: Vec<Node>) -> Vec<Node> {
         let mut after_newline = true;
         let mut indentation = usize::MAX;
         // Determine the indentation level
         for t in &tokens {
-            if let Token::Segment(string) = t {
+            if let Node::Segment(Segment::String(string)) = t {
                 for line in string.lines() {
                     let mut whitespace = 0usize;
                     if after_newline {
@@ -90,7 +91,7 @@ impl Interpolatable {
         after_newline = true;
         let mut whitespace = indentation;
         for t in &mut tokens {
-            if let Token::Segment(ref mut string) = t {
+            if let Node::Segment(Segment::String(ref mut string)) = t {
                 let mut new_string = String::new();
                 for c in string.chars() {
                     match c {

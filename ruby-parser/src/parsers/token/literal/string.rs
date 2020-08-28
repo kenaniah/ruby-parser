@@ -22,25 +22,25 @@ pub(crate) use quoted::quoted_non_expanded_literal_string;
 pub(crate) use single::single_quoted_string;
 
 /// *single_quoted_string* | *double_quoted_string* | *quoted_non_expanded_literal_string* | *quoted_expanded_literal_string* | *here_document* | *external_command_execution*
-pub(crate) fn string_literal(i: Input) -> TokenResult {
+pub(crate) fn string_literal(i: Input) -> NodeResult {
     alt((
-        map(single_quoted_string, |s| Token::Literal(Literal::String(s))),
+        map(single_quoted_string, |s| Node::Literal(Literal::String(s))),
         map(double_quoted_string, |s| match s {
-            Interpolatable::String(s) => Token::Literal(Literal::String(s)),
-            Interpolatable::Interpolated(i) => Token::InterpolatedString(i),
+            Interpolatable::String(s) => Node::Literal(Literal::String(s)),
+            Interpolatable::Interpolated(i) => Node::Interpolated(Interpolated::String(i)),
         }),
         map(quoted_non_expanded_literal_string, |s| {
-            Token::Literal(Literal::String(s))
+            Node::Literal(Literal::String(s))
         }),
         map(quoted_expanded_literal_string, |s| match s {
-            Interpolatable::String(s) => Token::Literal(Literal::String(s)),
-            Interpolatable::Interpolated(i) => Token::InterpolatedString(i),
+            Interpolatable::String(s) => Node::Literal(Literal::String(s)),
+            Interpolatable::Interpolated(i) => Node::Interpolated(Interpolated::String(i)),
         }),
         here_document,
         map(external_command_execution, |s| match s {
-            Interpolatable::String(s) => Token::Literal(Literal::Command(s)),
-            Interpolatable::Interpolated(i) => Token::InterpolatedCommand(i),
+            Interpolatable::String(s) => Node::Literal(Literal::Command(s)),
+            Interpolatable::Interpolated(i) => Node::Interpolated(Interpolated::Command(i)),
         }),
-        map(character_literal, |s| Token::Literal(Literal::String(s))),
+        map(character_literal, |s| Node::Literal(Literal::String(s))),
     ))(i)
 }

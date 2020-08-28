@@ -1,20 +1,20 @@
 use crate::lexer::*;
 
 /// `super` ( [ no line terminator here ] [ no whitespace here ] *argument_with_parenthesis* )? *block*?
-pub(crate) fn super_with_optional_argument(i: Input) -> TokenResult {
+pub(crate) fn super_with_optional_argument(i: Input) -> NodeResult {
     stub(i)
 }
 
 /// `super` *argument_without_parenthesis*
-pub(crate) fn super_with_argument(i: Input) -> TokenResult {
+pub(crate) fn super_with_argument(i: Input) -> NodeResult {
     stub(i)
 }
 
 /// `super` *argument_without_parenthesis* *do_block*
-pub(crate) fn super_with_argument_and_do_block(i: Input) -> TokenResult {
+pub(crate) fn super_with_argument_and_do_block(i: Input) -> NodeResult {
     stub(i)
 }
 
-fn stub(i: Input) -> TokenResult {
+fn stub(i: Input) -> NodeResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }

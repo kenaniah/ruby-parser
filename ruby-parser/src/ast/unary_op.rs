@@ -1,10 +1,12 @@
 use super::*;
 
+#[derive(Debug, PartialEq)]
 pub struct UnaryOp {
     pub op: UnaryOpToken,
     pub rhs: Box<Node>
 }
 
+#[derive(Debug, PartialEq)]
 pub enum UnaryOpToken {
     /// ~
     BitNot,

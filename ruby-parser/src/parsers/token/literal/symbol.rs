@@ -1,9 +1,10 @@
-use crate::ast::Literal;
 use crate::lexer::*;
+use crate::parsers::token::identifier::identifier;
+use crate::parsers::token::keyword::keyword;
 use crate::parsers::token::literal::string::double::double_quoted_string;
 use crate::parsers::token::literal::string::quoted::non_expanded_delimited_string;
 use crate::parsers::token::literal::string::single::single_quoted_string;
-use crate::parsers::token::*;
+use crate::parsers::token::operator::operator;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
@@ -11,39 +12,39 @@ use nom::combinator::{map, recognize};
 use nom::sequence::tuple;
 
 /// *symbol_literal* | *dynamic_symbol*
-pub(crate) fn symbol(i: Input) -> TokenResult {
+pub(crate) fn symbol(i: Input) -> NodeResult {
     alt((symbol_literal, dynamic_symbol))(i)
 }
 
 /// `:` *symbol_name*
-pub(crate) fn symbol_literal(i: Input) -> TokenResult {
+pub(crate) fn symbol_literal(i: Input) -> NodeResult {
     map(recognize(tuple((char(':'), symbol_name))), |s| {
-        Token::Literal(Literal::Symbol((*s).to_owned()))
+        Node::Literal(Literal::Symbol((*s).to_owned()))
     })(i)
 }
 
 /// `:` *single_quoted_string*  | `:` *double_quoted_string* | `%s` *literal_beginning_delimiter* *non_expanded_literal_string** *literal_ending_delimiter*
-pub(crate) fn dynamic_symbol(i: Input) -> TokenResult {
+pub(crate) fn dynamic_symbol(i: Input) -> NodeResult {
     alt((
         map(tuple((char(':'), single_quoted_string)), |mut t| {
             t.1.insert(0, ':');
-            Token::Literal(Literal::Symbol(t.1))
+            Node::Literal(Literal::Symbol(t.1))
         }),
         map(tuple((char(':'), double_quoted_string)), |t| match t.1 {
             Interpolatable::String(mut s) => {
                 s.insert(0, ':');
-                Token::Literal(Literal::Symbol(s))
+                Node::Literal(Literal::Symbol(s))
             }
             Interpolatable::Interpolated(mut vec) => {
-                vec.insert(0, Token::Segment(":".to_owned()));
-                Token::InterpolatedSymbol(vec)
+                vec.insert(0, Node::Segment(Segment::String(":".to_owned())));
+                Node::Interpolated(Interpolated::Symbol(vec))
             }
         }),
         map(
             tuple((tag("%s"), non_expanded_delimited_string)),
             |mut t| {
                 t.1.insert(0, ':');
-                Token::Literal(Literal::Symbol(t.1))
+                Node::Literal(Literal::Symbol(t.1))
             },
         ),
     ))(i)
@@ -60,12 +61,12 @@ mod tests {
 
     macro_rules! assert_symbol {
         ($a:expr, $b:expr) => {
-            assert_ok!($a, Token::Literal(Literal::Symbol($b.to_owned())))
+            assert_ok!($a, Node::Literal(Literal::Symbol($b.to_owned())))
         };
     }
     macro_rules! assert_interpolated {
         ($a:expr, $b:expr) => {
-            assert_ok!($a, Token::InterpolatedSymbol($b))
+            assert_ok!($a, Node::Interpolated(Interpolated::Symbol($b)))
         };
     }
 
@@ -117,9 +118,9 @@ mod tests {
         assert_interpolated!(
             ":\"foo#$bar\"",
             vec![
-                Token::Segment(":".to_owned()),
-                Token::Segment("foo".to_owned()),
-                Token::GlobalVariableIdentifier("$bar".to_owned())
+                Node::Segment(Segment::String(":".to_owned())),
+                Node::Segment(Segment::String("foo".to_owned())),
+                Node::ident("$bar", IdentifierType::GlobalVariable)
             ]
         );
     }

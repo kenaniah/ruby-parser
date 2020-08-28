@@ -24,7 +24,7 @@ pub(crate) fn double_quoted_string_character(i: Input) -> SegmentResult {
     alt((
         map(none_of("\"#\\"), |c| Segment::Char(c)),
         map(double_escape_sequence, |s| Segment::String(s)),
-        map(interpolated_character_sequence, |e| Segment::Expr(e)),
+        map(interpolated_character_sequence, |e| Segment::expr(e)),
         map(char('#'), |c| Segment::Char(c)),
     ))(i)
 }
@@ -172,7 +172,7 @@ pub(crate) fn control_escaped_character(i: Input) -> StringResult {
 }
 
 /// `#` *global_variable_identifier* | `#` *class_variable_identifier* | `#` *instance_variable_identifier* | `#` `{` *compound_statement* `}`
-pub(crate) fn interpolated_character_sequence(i: Input) -> TokenResult {
+pub(crate) fn interpolated_character_sequence(i: Input) -> NodeResult {
     alt((
         preceded(char('#'), global_variable_identifier),
         preceded(char('#'), class_variable_identifier),
@@ -203,10 +203,10 @@ mod tests {
         fn ds(i: &str) -> Interpolatable {
             Interpolatable::String(i.to_owned())
         }
-        fn seg(i: &str) -> Token {
-            Token::Segment(i.to_owned())
+        fn seg(i: &str) -> Node {
+            Node::Segment(Segment::String(i.to_owned()))
         }
-        fn is(i: Vec<Token>) -> Interpolatable {
+        fn is(i: Vec<Node>) -> Interpolatable {
             Interpolatable::Interpolated(i)
         }
         // Parse errors
@@ -220,14 +220,14 @@ mod tests {
             "\"some #thing\\n#$hi\"",
             is(vec![
                 seg("some #thing\n"),
-                Token::GlobalVariableIdentifier("$hi".to_owned())
+                Node::ident("$hi", IdentifierType::GlobalVariable)
             ])
         );
         assert_ok!(
             "\"#@@VAR#{2; 3.5} \"",
             is(vec![
-                Token::ClassVariableIdentifier("@@VAR".to_owned()),
-                Token::Block(vec![Token::integer(2), Token::float(3.5)]),
+                Node::ident("@@VAR", IdentifierType::ClassVariable),
+                Node::Block(vec![Node::integer(2), Node::float(3.5)]),
                 seg(" ")
             ])
         );
@@ -247,36 +247,39 @@ mod tests {
         assert_ok!("#", Segment::Char('#'));
         assert_ok!("\\\"", Segment::String("\"".to_owned()));
         assert_ok!("\\u0000", Segment::String("\0".to_owned()));
-        assert_ok!("#{}", Segment::Expr(Token::Block(vec![])));
+        assert_ok!("#{}", Segment::expr(Node::Block(vec![])));
         assert_ok!(
             "#@@foo",
-            Segment::Expr(Token::ClassVariableIdentifier("@@foo".to_owned()))
+            Segment::expr(Node::ident("@@foo", IdentifierType::ClassVariable))
         );
         assert_ok!(
             "#@inst",
-            Segment::Expr(Token::InstanceVariableIdentifier("@inst".to_owned()))
+            Segment::expr(Node::ident("@inst", IdentifierType::InstanceVariable))
         );
         assert_ok!(
             "#$glob",
-            Segment::Expr(Token::GlobalVariableIdentifier("$glob".to_owned()))
+            Segment::expr(Node::ident("$glob", IdentifierType::GlobalVariable))
         );
         assert_ok!(
             "#{foobar}",
-            Segment::Expr(Token::Block(vec![Token::LocalVariableIdentifier(
-                "foobar".to_owned()
+            Segment::expr(Node::Block(vec![Node::ident(
+                "foobar",
+                IdentifierType::LocalVariable
             )]))
         );
         assert_ok!(
             "#{\"foo#{2bar\"}",
-            Segment::Expr(Token::Block(vec![Token::literal_string("foo#{2bar")]))
+            Segment::expr(Node::Block(vec![Node::literal_string("foo#{2bar")]))
         );
         assert_ok!(
             "#{\"foo#{2}bar\"}",
-            Segment::Expr(Token::Block(vec![Token::InterpolatedString(vec![
-                Token::Segment("foo".to_owned()),
-                Token::Block(vec![Token::Literal(Literal::Integer(2))]),
-                Token::Segment("bar".to_owned())
-            ])]))
+            Segment::expr(Node::Block(vec![Node::Interpolated(Interpolated::String(
+                vec![
+                    Node::Segment(Segment::String("foo".to_owned())),
+                    Node::Block(vec![Node::Literal(Literal::Integer(2))]),
+                    Node::Segment(Segment::String("bar".to_owned()))
+                ]
+            ))]))
         );
     }
 

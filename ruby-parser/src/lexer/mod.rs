@@ -4,15 +4,13 @@ mod heredoc;
 mod interpolable;
 mod metadata;
 mod segment;
-mod token;
 mod tracked_location;
 
-pub use crate::ast::{Literal, Node};
+pub use crate::ast::{Identifier, IdentifierType, Interpolated, Literal, Node};
 pub use heredoc::{HeredocIndentation, HeredocMetadata, HeredocQuoteType};
 pub use interpolable::Interpolatable;
 pub use metadata::Metadata;
 pub use segment::Segment;
-pub use token::Token;
 pub use tracked_location::TrackedLocation;
 
 /// Describes the parser's input type
@@ -26,12 +24,6 @@ pub(crate) type NodeResult<'a> = Parsed<'a, Node>;
 
 /// Describes a parsed literal
 pub(crate) type LiteralResult<'a> = Parsed<'a, Literal>;
-
-/// Describes a list of tokens that make up an expression
-pub type Expression = Vec<Token>;
-
-/// Describes a list of statements
-pub type StatementList = Vec<Token>;
 
 /// Describes a parsed character
 pub(crate) type CharResult<'a> = Parsed<'a, char>;
@@ -50,9 +42,3 @@ pub(crate) type SegmentVecResult<'a> = Parsed<'a, Vec<Segment>>;
 
 /// Describes a parsed string
 pub(crate) type StringResult<'a> = Parsed<'a, String>;
-
-/// Describes a single parsed token
-pub(crate) type TokenResult<'a> = Parsed<'a, Token>;
-
-/// Describes a list of parsed tokens
-pub(crate) type TokenizedResult<'a> = Parsed<'a, Vec<Token>>;

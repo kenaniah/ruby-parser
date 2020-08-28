@@ -1,7 +1,8 @@
-use crate::lexer::Token;
+use super::*;
 
+#[derive(Debug, PartialEq)]
 pub enum Interpolated {
-    Command(Vec<Token>),
-    String(Vec<Token>),
-    Symbol(Vec<Token>),
+    Command(Vec<Node>),
+    String(Vec<Node>),
+    Symbol(Vec<Node>),
 }

@@ -1,7 +1,7 @@
 use crate::lexer::*;
 
 /// `/` *regular_expression_body* `/` *regular_expression_option** | `%r` *literal_beginning_delimiter* *expanded_literal_string** *literal_ending_delimiter* *regular_expression_option**
-pub(crate) fn regular_expression_literal(i: Input) -> TokenResult {
+pub(crate) fn regular_expression_literal(i: Input) -> NodeResult {
     stub(i)
 }
 
@@ -39,6 +39,6 @@ fn stub_p(i: Input) -> LexResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
 
-fn stub(i: Input) -> TokenResult {
+fn stub(i: Input) -> NodeResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }

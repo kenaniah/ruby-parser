@@ -37,7 +37,7 @@ pub(crate) fn backquoted_external_command_execution_character(i: Input) -> Segme
             Segment::Char(c)
         }),
         map(double_escape_sequence, |s| Segment::String(s)),
-        map(interpolated_character_sequence, |e| Segment::Expr(e)),
+        map(interpolated_character_sequence, |e| Segment::expr(e)),
         map(terminated(char('#'), peek(none_of("$@{"))), |c| {
             Segment::Char(c)
         }),
@@ -79,11 +79,11 @@ mod tests {
         assert_interpolated!(
             "%x!foo#@hi [bar] [#{%Q((hello))}]!",
             vec![
-                Token::Segment("foo".to_owned()),
-                Token::InstanceVariableIdentifier("@hi".to_owned()),
-                Token::Segment(" [bar] [".to_owned()),
-                Token::Block(vec![Token::literal_string("(hello)")]),
-                Token::Segment("]".to_owned()),
+                Node::Segment(Segment::String("foo".to_owned())),
+                Node::ident("@hi", IdentifierType::InstanceVariable),
+                Node::Segment(Segment::String(" [bar] [".to_owned())),
+                Node::Block(vec![Node::literal_string("(hello)")]),
+                Node::Segment(Segment::String("]".to_owned())),
             ]
         );
     }

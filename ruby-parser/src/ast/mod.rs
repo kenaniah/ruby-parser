@@ -9,8 +9,6 @@ mod logical;
 mod node;
 mod unary_op;
 
-use crate::lexer::Parsed;
-
 pub use binary_op::*;
 pub use expr::*;
 pub use identifier::*;

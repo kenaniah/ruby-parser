@@ -2,7 +2,6 @@
 use crate::lexer::*;
 use crate::parsers::comment::comment;
 use crate::parsers::statement::statement;
-use crate::parsers::token::token;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, line_ending, one_of};
@@ -11,22 +10,22 @@ use nom::multi::{many0, many1, separated_list0};
 use nom::sequence::{terminated, tuple};
 
 /// *compound_statement*
-pub fn program(i: Input) -> TokenResult {
+pub fn program(i: Input) -> NodeResult {
     compound_statement(i)
 }
 
 /// *statement_list*? *separator_list*?
-pub(crate) fn compound_statement(i: Input) -> TokenResult {
+pub(crate) fn compound_statement(i: Input) -> NodeResult {
     map(terminated(opt(statement_list), opt(separator_list)), |cs| {
-        cs.unwrap_or(Token::Block(vec![]))
+        cs.unwrap_or(Node::Block(vec![]))
     })(i)
 }
 
 /// *statement* ( *separator_list* *statement* )*
-pub(crate) fn statement_list(i: Input) -> TokenResult {
+pub(crate) fn statement_list(i: Input) -> NodeResult {
     let (i, _) = opt(separator_list)(i)?;
     map(separated_list0(separator_list, statement), |statements| {
-        Token::Block(statements)
+        Node::Block(statements)
     })(i)
 }
 
@@ -45,17 +44,6 @@ pub(crate) fn separator(i: Input) -> LexResult {
         )),
         |t| t.1,
     )(i)
-}
-
-/// *line_terminator* | *whitespace* | *comment* | *end_of_program_marker* | *token*
-pub(crate) fn input_element(i: Input) -> TokenResult {
-    alt((
-        map(line_terminator, |_| Token::LineTerminator),
-        map(whitespace, |_| Token::Whitespace),
-        token,
-        comment,
-        end_of_program_marker,
-    ))(i)
 }
 
 /// Any UTF-8 scalar value (a Rust `char`)
@@ -82,13 +70,13 @@ pub(crate) fn line_terminator_escape_sequence(i: Input) -> LexResult {
 }
 
 /// [ beginning of a line ] `__END__` ( *line_terminator* | [ end of a program ] )
-pub(crate) fn end_of_program_marker(i: Input) -> TokenResult {
+pub(crate) fn end_of_program_marker(i: Input) -> NodeResult {
     if !i.beginning_of_line() {
         return Err(nom::Err::Error((i, nom::error::ErrorKind::Space)));
     }
     let (i, _) = tag("__END__")(i)?;
     let (i, _) = opt(line_terminator)(i)?;
-    Ok((i, Token::EndOfProgram))
+    Ok((i, Node::EndOfProgram))
 }
 
 /// ( *whitespace* | *line_terminator* )*
@@ -110,7 +98,7 @@ mod tests {
         use_parser!(compound_statement);
         assert_ok!(
             "2; 5",
-            Token::Block(vec![Token::integer(2), Token::integer(5)])
+            Node::Block(vec![Node::integer(2), Node::integer(5)])
         );
     }
 

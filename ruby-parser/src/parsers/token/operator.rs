@@ -6,20 +6,17 @@ use nom::combinator::{map, recognize};
 use nom::sequence::tuple;
 
 /// `!` | `!=` | `!~` | `&&` | `||` | *operator_method_name* | `=` | *assignment_operator*
-pub(crate) fn operator(i: Input) -> TokenResult {
-    map(
-        recognize(alt((
-            assignment_operator,
-            operator_method_name,
-            tag("="),
-            tag("||"),
-            tag("&&"),
-            tag("!~"),
-            tag("!="),
-            tag("!"),
-        ))),
-        |s: Input| Token::Operator((*s).to_owned()),
-    )(i)
+pub(crate) fn operator(i: Input) -> LexResult {
+    recognize(alt((
+        assignment_operator,
+        operator_method_name,
+        tag("="),
+        tag("||"),
+        tag("&&"),
+        tag("!~"),
+        tag("!="),
+        tag("!"),
+    )))(i)
 }
 
 /// `^` | `&` | `|` | `<=>` | `==` | `===` | `=~` | `>` | `>=` | `<` | `<=` | `<<` | `>>` | `+` | `-` | `*` | `/` | `%` | `**` | `~` | `+@` | `-@` | `[]` | `[]=`

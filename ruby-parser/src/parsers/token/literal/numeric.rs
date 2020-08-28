@@ -12,24 +12,24 @@ Provides support for lexing Ruby's Literal literal formats.
 
 This function utilizes a set of [nom](https://docs.rs/nom/6.0.0-alpha1/nom/index.html) parser
 combinators that follow the ISO Ruby spec for lexing numeric literals. This function returns a
-tuple of the remaining input and a `Token::Integer` or `Token::Float` value when successful.
+tuple of the remaining input and a `Node::Integer` or `Node::Float` value when successful.
 
 ## Example
 
 ```
 use ruby_parser::parse;
-use ruby_parser::lexer::Token;
+use ruby_parser::lexer::Node;
 use ruby_parser::ast::Literal;
 
 let input = "12_345";
 let (remaining, token) = parse(input.into()).unwrap();
 assert_eq!("", *remaining);
-assert_eq!(Token::Block(vec![Token::Literal(Literal::Integer(12345))]), token);
+assert_eq!(Node::Block(vec![Node::Literal(Literal::Integer(12345))]), token);
 
 let input = "-12.34e+4 + 12";
 let (remaining, token) = parse(input.into()).unwrap();
 assert_eq!(" + 12", *remaining);
-assert_eq!(Token::Block(vec![Token::Literal(Literal::Float(-123400.0))]), token);
+assert_eq!(Node::Block(vec![Node::Literal(Literal::Float(-123400.0))]), token);
 ```
 
 ## ISO Spec
@@ -37,10 +37,10 @@ assert_eq!(Token::Block(vec![Token::Literal(Literal::Float(-123400.0))]), token)
 
 *signed_number* | *unsigned_number*
 */
-pub(crate) fn numeric_literal(i: Input) -> TokenResult {
+pub(crate) fn numeric_literal(i: Input) -> NodeResult {
     // Ordered to match the largest production first
     let (i, num) = alt((signed_number, unsigned_number))(i)?;
-    let token = Token::Literal(num);
+    let token = Node::Literal(num);
     Ok((i, token))
 }
 
