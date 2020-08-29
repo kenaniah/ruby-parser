@@ -44,4 +44,11 @@ impl Node {
             ty: ty,
         })
     }
+    /// Creates a token that represents a unary operation
+    pub(crate) fn unary_op(op: UnaryOpToken, rhs: Node) -> Self {
+        Self::UnaryOp(UnaryOp {
+            op,
+            rhs: Box::new(rhs),
+        })
+    }
 }

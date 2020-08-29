@@ -18,6 +18,7 @@ mod variable;
 mod yield_;
 
 pub(crate) fn expression(i: Input) -> NodeResult {
+    println!("In expression {}", i);
     logical::keyword_logical_expression(i)
 }
 

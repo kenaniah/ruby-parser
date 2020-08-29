@@ -14,6 +14,7 @@ use nom::sequence::tuple;
 
 /// *keyword_not_expression* | *keyword_and_expression* | *keyword_or_expression*
 pub(crate) fn keyword_logical_expression(i: Input) -> NodeResult {
+    println!("In keyword_logical_expression {}", i);
     alt((
         keyword_not_expression,
         keyword_and_expression,
@@ -23,9 +24,8 @@ pub(crate) fn keyword_logical_expression(i: Input) -> NodeResult {
 
 /// *method_invocation_without_parenthesis* | *operator_expression* | `!` *method_invocation_without_parenthesis* | `not` *keyword_not_expression*
 pub(crate) fn keyword_not_expression(i: Input) -> NodeResult {
+    println!("In keyword_not_expression {}", i);
     alt((
-        method_invocation_without_parenthesis,
-        operator_expression,
         map(
             tuple((char('!'), ws, method_invocation_without_parenthesis)),
             |t| {
@@ -39,11 +39,14 @@ pub(crate) fn keyword_not_expression(i: Input) -> NodeResult {
                 expr: Box::new(t.2),
             })
         }),
+        operator_expression,
+        method_invocation_without_parenthesis,
     ))(i)
 }
 
 /// `!` ( *method_invocation_without_parenthesis* | *unary_expression* )
 pub(crate) fn operator_not_expression(i: Input) -> NodeResult {
+    println!("In operator_not_expression {}", i);
     map(
         tuple((
             char('!'),
@@ -60,6 +63,7 @@ pub(crate) fn operator_not_expression(i: Input) -> NodeResult {
 
 /// *expression* [ no line terminator here ] `and` *keyword_not_expression*
 pub(crate) fn keyword_and_expression(i: Input) -> NodeResult {
+    println!("In keyword_and_expression {}", i);
     map(
         tuple((expression, no_lt, tag("and"), ws, keyword_not_expression)),
         |t| {
@@ -73,6 +77,7 @@ pub(crate) fn keyword_and_expression(i: Input) -> NodeResult {
 
 /// *equality_expression* | *operator_and_expression* [ no line terminator here ] `&&` *equality_expression*
 pub(crate) fn operator_and_expression(i: Input) -> NodeResult {
+    println!("In operator_and_expression {}", i);
     alt((
         map(
             tuple((
@@ -95,6 +100,7 @@ pub(crate) fn operator_and_expression(i: Input) -> NodeResult {
 
 /// *expression* [ no line terminator here ] `or` *keyword_not_expression*
 pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
+    println!("In keyword_or_expression {}", i);
     map(
         tuple((expression, no_lt, tag("or"), ws, keyword_not_expression)),
         |t| {
@@ -108,6 +114,7 @@ pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
 
 /// *operator_and_expression* | *operator_or_expression* [ no line terminator here ] `||` *operator_and_expression*
 pub(crate) fn operator_or_expression(i: Input) -> NodeResult {
+    println!("In operator_or_expression {}", i);
     alt((
         map(
             tuple((
