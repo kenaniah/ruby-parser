@@ -79,9 +79,13 @@ pub(crate) fn end_of_program_marker(i: Input) -> NodeResult {
     Ok((i, Node::EndOfProgram))
 }
 
-/// ( *whitespace* | *line_terminator* )*
+/// ( *whitespace* | *line_terminator* | *comment* )*
 pub(crate) fn ws(i: Input) -> LexResult {
-    recognize(many0(alt((whitespace, line_terminator))))(i)
+    recognize(many0(alt((
+        whitespace,
+        line_terminator,
+        recognize(comment),
+    ))))(i)
 }
 
 /// *whitespace**

@@ -234,10 +234,12 @@ mod tests {
         // Parse errors
         assert_err!("");
         assert_err!("nil ");
+        assert_err!("3\n** 4");
+        assert_err!("3 # comment ** 4");
         // Success cases
         assert_ok!("nil", Node::Nil);
         assert_ok!(
-            "3 ** 4**-5.2",
+            "3 **\n# comment\n4**-5.2",
             Node::binary_op(
                 Node::integer(3),
                 BinaryOpToken::Power,
