@@ -48,27 +48,32 @@ pub(crate) fn equality_expression(i: Input) -> NodeResult {
 
 /// *bitwise_or_expression* | *relational_expression* [ no line terminator here ] ( `>=` | `>` | `<=` | `<` ) *bitwise_or_expression*
 pub(crate) fn relational_expression(i: Input) -> NodeResult {
+    println!("In relational_expression {}", i);
+    map(
+        tuple((bitwise_or_expression, opt(_relational_expression))),
+        _finish_node,
+    )(i)
+}
+
+fn _relational_expression(i: Input) -> NodeResult {
     alt((
         map(
             tuple((
-                relational_expression,
                 no_lt,
                 alt((tag(">="), tag(">"), tag("<="), tag("<"))),
                 ws,
                 bitwise_or_expression,
+                opt(_relational_expression),
             )),
             |t| {
-                Node::BinaryOp(BinaryOp {
-                    op: match *t.2 {
-                        ">=" => Op::GreaterEqual,
-                        ">" => Op::GreaterThan,
-                        "<=" => Op::LessEqual,
-                        "<" => Op::LessThan,
-                        _ => unreachable!(),
-                    },
-                    lhs: Box::new(t.0),
-                    rhs: Box::new(t.4),
-                })
+                let op = match *t.1 {
+                    ">=" => Op::GreaterEqual,
+                    ">" => Op::GreaterThan,
+                    "<=" => Op::LessEqual,
+                    "<" => Op::LessThan,
+                    _ => unreachable!(),
+                };
+                _partial_node(op, t.3, t.4)
             },
         ),
         bitwise_or_expression,
@@ -280,6 +285,31 @@ fn _replace_nested_lhs_placeholder(mut node: Node, value: Node) -> Node {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_relational_expression() {
+        use_parser!(relational_expression);
+        // Parse errors
+        assert_err!("");
+        assert_err!("2 <");
+        // Success cases
+        assert_ok!(
+            "1 >= 2 < 3 + 4 > 5 <= 6",
+            Node::binary_op(
+                Node::binary_op(
+                    Node::binary_op(
+                        Node::binary_op(Node::integer(1), Op::GreaterEqual, Node::integer(2)),
+                        Op::LessThan,
+                        Node::binary_op(Node::integer(3), Op::Add, Node::integer(4))
+                    ),
+                    Op::GreaterThan,
+                    Node::integer(5)
+                ),
+                Op::LessEqual,
+                Node::integer(6)
+            )
+        );
+    }
 
     #[test]
     fn test_bitwise_or_expression() {
