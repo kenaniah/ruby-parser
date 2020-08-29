@@ -94,20 +94,10 @@ mod tests {
                 )
             )
         );
-        // assert_ok!("-23e4", Node::float(-230000.0));
-        // assert_ok!("'hello world'", Node::literal_string("hello world"));
+        assert_ok!("-23e4", Node::float(-230000.0));
         assert_ok!(
             "~(;)",
             Node::unary_op(UnaryOpToken::BitNot, Node::Block(vec![]))
         );
-        // assert_ok!(
-        //     "((false))",
-        //     Node::Block(vec![Node::Block(vec![Node::boolean(false)])])
-        // );
-        // assert_ok!(
-        //     "(;2\n\t5;;)",
-        //     Node::Block(vec![Node::integer(2), Node::integer(5)])
-        // );
-        // assert_ok!("(;)", Node::Block(vec![]));
     }
 }
