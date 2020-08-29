@@ -307,7 +307,7 @@ mod tests {
             )
         );
         assert_ok!(
-            ":hi != hello",
+            ":hi != \n\n hello",
             Node::binary_op(
                 Node::literal_symbol(":hi"),
                 Op::NotEqual,
