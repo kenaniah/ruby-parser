@@ -92,20 +92,35 @@ pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
 /// *operator_and_expression* | *operator_or_expression* [ no line terminator here ] `||` *operator_and_expression*
 pub(crate) fn operator_or_expression(i: Input) -> NodeResult {
     println!("In operator_or_expression {}", i);
+    map(
+        tuple((operator_and_expression, opt(_operator_or_expression))),
+        |(lhs, ast)| match ast {
+            Some(node @ Node::LogicalOr(_)) => _replace_nested_or_placeholder(node, lhs),
+            _ => lhs,
+        },
+    )(i)
+}
+
+fn _operator_or_expression(i: Input) -> NodeResult {
     alt((
         map(
             tuple((
-                operator_or_expression,
                 no_lt,
                 tag("||"),
                 ws,
                 operator_and_expression,
+                opt(_operator_or_expression),
             )),
             |t| {
-                Node::LogicalOr(LogicalOr {
-                    first: Box::new(t.0),
-                    second: Box::new(t.4),
-                })
+                let node = Node::LogicalOr(LogicalOr {
+                    first: Box::new(Node::Placeholder),
+                    second: Box::new(t.3),
+                });
+                if let Some(parent_node) = t.4 {
+                    _replace_nested_or_placeholder(parent_node, node)
+                } else {
+                    node
+                }
             },
         ),
         operator_and_expression,
@@ -125,7 +140,6 @@ pub(crate) fn operator_and_expression(i: Input) -> NodeResult {
 }
 
 fn _operator_and_expression(i: Input) -> NodeResult {
-    println!("In operator_and_expression {}", i);
     alt((
         map(
             tuple((
@@ -151,7 +165,7 @@ fn _operator_and_expression(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// Recursively travels nested BinaryOp nodes and replaces the last lhs with the given value
+/// Recursively travels nested LogicalAnd nodes and replaces the last lhs with the given value
 fn _replace_nested_and_placeholder(mut node: Node, value: Node) -> Node {
     use std::borrow::BorrowMut;
     {
@@ -164,10 +178,53 @@ fn _replace_nested_and_placeholder(mut node: Node, value: Node) -> Node {
     node
 }
 
+/// Recursively travels nested LogicalOr nodes and replaces the last lhs with the given value
+fn _replace_nested_or_placeholder(mut node: Node, value: Node) -> Node {
+    use std::borrow::BorrowMut;
+    {
+        let mut n = &mut node;
+        while let Node::LogicalOr(sub) = n {
+            n = sub.first.borrow_mut();
+        }
+        *n = value;
+    }
+    node
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::ast::BinaryOpKind;
+
+    #[test]
+    fn test_operator_or_expression() {
+        use_parser!(operator_or_expression);
+        // Parse errors
+        assert_err!("");
+        assert_err!("||");
+        // Success cases
+        assert_ok!(
+            "1 || 2 && 3",
+            Node::logical_or(
+                Node::integer(1),
+                Node::logical_and(Node::integer(2), Node::integer(3)),
+            )
+        );
+        assert_ok!(
+            "1 || 2 || 3",
+            Node::logical_or(
+                Node::logical_or(Node::integer(1), Node::integer(2)),
+                Node::integer(3),
+            )
+        );
+        assert_ok!(
+            "1 && 2 || 3",
+            Node::logical_or(
+                Node::logical_and(Node::integer(1), Node::integer(2)),
+                Node::integer(3),
+            )
+        );
+    }
 
     #[test]
     fn test_operator_and_expression() {
