@@ -154,29 +154,31 @@ pub(crate) fn bitwise_shift_expression(i: Input) -> NodeResult {
 
 /// *multiplicative_expression* | *additive_expression* [ no line terminator here ] ( `+` | `-` ) *multiplicative_expression*
 pub(crate) fn additive_expression(i: Input) -> NodeResult {
-    alt((
-        map(
-            tuple((
-                additive_expression,
-                no_lt,
-                one_of("+-"),
-                ws,
-                multiplicative_expression,
-            )),
-            |t| {
-                Node::BinaryOp(BinaryOp {
-                    op: match t.2 {
-                        '+' => BinaryOpKind::Add,
-                        '-' => BinaryOpKind::Subtract,
-                        _ => unreachable!(),
-                    },
-                    lhs: Box::new(t.0),
-                    rhs: Box::new(t.4),
-                })
-            },
-        ),
-        multiplicative_expression,
-    ))(i)
+    println!("In additive_expression {}", i);
+    map(
+        tuple((multiplicative_expression, opt(_additive_expression))),
+        finish_node,
+    )(i)
+}
+
+pub(crate) fn _additive_expression(i: Input) -> NodeResult {
+    map(
+        tuple((
+            no_lt,
+            one_of("+-"),
+            ws,
+            multiplicative_expression,
+            opt(_additive_expression),
+        )),
+        |t| {
+            let op = match t.1 {
+                '+' => BinaryOpKind::Add,
+                '-' => BinaryOpKind::Subtract,
+                _ => unreachable!(),
+            };
+            partial_node(op, t.3, t.4)
+        },
+    )(i)
 }
 
 /// *unary_minus_expression* | *multiplicative_expression* [ no line terminator here ] ( `*` | `/` | `%` ) *unary_minus_expression*
@@ -184,10 +186,7 @@ pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
     println!("In multiplicative_expression {}", i);
     map(
         tuple((unary_minus_expression, opt(_multiplicative_expression))),
-        |t| match t.1 {
-            Some(node @ Node::BinaryOp(_)) => replace_nested_lhs_placeholder(node, t.0),
-            _ => t.0,
-        },
+        finish_node,
     )(i)
 }
 
@@ -201,23 +200,38 @@ fn _multiplicative_expression(i: Input) -> NodeResult {
             opt(_multiplicative_expression),
         )),
         |t| {
-            let new_node = Node::BinaryOp(BinaryOp {
-                op: match t.1 {
-                    '*' => BinaryOpKind::Multiply,
-                    '/' => BinaryOpKind::Divide,
-                    '%' => BinaryOpKind::Modulus,
-                    _ => unreachable!(),
-                },
-                lhs: Box::new(Node::Placeholder),
-                rhs: Box::new(t.3),
-            });
-            if let Some(node) = t.4 {
-                replace_nested_lhs_placeholder(node, new_node)
-            } else {
-                new_node
-            }
+            let op = match t.1 {
+                '*' => BinaryOpKind::Multiply,
+                '/' => BinaryOpKind::Divide,
+                '%' => BinaryOpKind::Modulus,
+                _ => unreachable!(),
+            };
+            partial_node(op, t.3, t.4)
         },
     )(i)
+}
+
+/// Constructs a partial binary op node, using a placeholder for the left hand side
+fn partial_node(op: BinaryOpKind, rhs: Node, rest: Option<Node>) -> Node {
+    let node = Node::BinaryOp(BinaryOp {
+        op,
+        lhs: Box::new(Node::Placeholder),
+        rhs: Box::new(rhs),
+    });
+    if let Some(parent_node) = rest {
+        replace_nested_lhs_placeholder(parent_node, node)
+    } else {
+        node
+    }
+}
+
+/// Completes a partial binary op node (when existing)
+fn finish_node(tuple: (Node, Option<Node>)) -> Node {
+    let (lhs, ast) = tuple;
+    match ast {
+        Some(node @ Node::BinaryOp(_)) => replace_nested_lhs_placeholder(node, lhs),
+        _ => lhs,
+    }
 }
 
 /// Recursively travels nested BinaryOp nodes and replaces the last lhs with the given value
@@ -268,7 +282,7 @@ mod tests {
             Node::binary_op(Node::integer(12), BinaryOpKind::Divide, Node::integer(2))
         );
         assert_ok!(
-            "\"hi\" * 3.0 / 4 % 2",
+            "\"hi\" * 3.0/4 % 2",
             Node::binary_op(
                 Node::binary_op(
                     Node::binary_op(
