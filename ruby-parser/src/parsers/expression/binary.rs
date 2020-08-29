@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOp, BinaryOpKind};
+use crate::ast::{BinaryOp, BinaryOpKind as Op};
 use crate::lexer::*;
 use crate::parsers::expression::unary::{unary_expression, unary_minus_expression};
 use crate::parsers::program::{no_lt, ws};
@@ -29,12 +29,12 @@ pub(crate) fn equality_expression(i: Input) -> NodeResult {
             |t| {
                 Node::BinaryOp(BinaryOp {
                     op: match *t.2 {
-                        "<=>" => BinaryOpKind::Compare,
-                        "===" => BinaryOpKind::CaseEqual,
-                        "==" => BinaryOpKind::Equal,
-                        "!=" => BinaryOpKind::NotEqual,
-                        "=~" => BinaryOpKind::RegexMatch,
-                        "!~" => BinaryOpKind::NotRegexMatch,
+                        "<=>" => Op::Compare,
+                        "===" => Op::CaseEqual,
+                        "==" => Op::Equal,
+                        "!=" => Op::NotEqual,
+                        "=~" => Op::RegexMatch,
+                        "!~" => Op::NotRegexMatch,
                         _ => unreachable!(),
                     },
                     lhs: Box::new(t.0),
@@ -60,10 +60,10 @@ pub(crate) fn relational_expression(i: Input) -> NodeResult {
             |t| {
                 Node::BinaryOp(BinaryOp {
                     op: match *t.2 {
-                        ">=" => BinaryOpKind::GreaterEqual,
-                        ">" => BinaryOpKind::GreaterThan,
-                        "<=" => BinaryOpKind::LessEqual,
-                        "<" => BinaryOpKind::LessThan,
+                        ">=" => Op::GreaterEqual,
+                        ">" => Op::GreaterThan,
+                        "<=" => Op::LessEqual,
+                        "<" => Op::LessThan,
                         _ => unreachable!(),
                     },
                     lhs: Box::new(t.0),
@@ -89,8 +89,8 @@ pub(crate) fn bitwise_or_expression(i: Input) -> NodeResult {
             |t| {
                 Node::BinaryOp(BinaryOp {
                     op: match t.2 {
-                        '|' => BinaryOpKind::BitOr,
-                        '^' => BinaryOpKind::BitXor,
+                        '|' => Op::BitOr,
+                        '^' => Op::BitXor,
                         _ => unreachable!(),
                     },
                     lhs: Box::new(t.0),
@@ -115,7 +115,7 @@ pub(crate) fn bitwise_and_expression(i: Input) -> NodeResult {
             )),
             |t| {
                 Node::BinaryOp(BinaryOp {
-                    op: BinaryOpKind::BitAnd,
+                    op: Op::BitAnd,
                     lhs: Box::new(t.0),
                     rhs: Box::new(t.4),
                 })
@@ -139,8 +139,8 @@ pub(crate) fn bitwise_shift_expression(i: Input) -> NodeResult {
             |t| {
                 Node::BinaryOp(BinaryOp {
                     op: match *t.2 {
-                        "<<" => BinaryOpKind::ShiftLeft,
-                        ">>" => BinaryOpKind::ShiftRight,
+                        "<<" => Op::ShiftLeft,
+                        ">>" => Op::ShiftRight,
                         _ => unreachable!(),
                     },
                     lhs: Box::new(t.0),
@@ -172,8 +172,8 @@ pub(crate) fn _additive_expression(i: Input) -> NodeResult {
         )),
         |t| {
             let op = match t.1 {
-                '+' => BinaryOpKind::Add,
-                '-' => BinaryOpKind::Subtract,
+                '+' => Op::Add,
+                '-' => Op::Subtract,
                 _ => unreachable!(),
             };
             partial_node(op, t.3, t.4)
@@ -201,9 +201,9 @@ fn _multiplicative_expression(i: Input) -> NodeResult {
         )),
         |t| {
             let op = match t.1 {
-                '*' => BinaryOpKind::Multiply,
-                '/' => BinaryOpKind::Divide,
-                '%' => BinaryOpKind::Modulus,
+                '*' => Op::Multiply,
+                '/' => Op::Divide,
+                '%' => Op::Modulus,
                 _ => unreachable!(),
             };
             partial_node(op, t.3, t.4)
@@ -212,7 +212,7 @@ fn _multiplicative_expression(i: Input) -> NodeResult {
 }
 
 /// Constructs a partial binary op node, using a placeholder for the left hand side
-fn partial_node(op: BinaryOpKind, rhs: Node, rest: Option<Node>) -> Node {
+fn partial_node(op: Op, rhs: Node, rest: Option<Node>) -> Node {
     let node = Node::BinaryOp(BinaryOp {
         op,
         lhs: Box::new(Node::Placeholder),
@@ -255,7 +255,7 @@ pub(crate) fn power_expression(i: Input) -> NodeResult {
             tuple((unary_expression, no_lt, tag("**"), ws, power_expression)),
             |t| {
                 Node::BinaryOp(BinaryOp {
-                    op: BinaryOpKind::Power,
+                    op: Op::Power,
                     lhs: Box::new(t.0),
                     rhs: Box::new(t.4),
                 })
@@ -278,17 +278,17 @@ mod tests {
         // Success cases
         assert_ok!(
             "1 + 2",
-            Node::binary_op(Node::integer(1), BinaryOpKind::Add, Node::integer(2))
+            Node::binary_op(Node::integer(1), Op::Add, Node::integer(2))
         );
         assert_ok!(
             "1*2",
-            Node::binary_op(Node::integer(1), BinaryOpKind::Multiply, Node::integer(2))
+            Node::binary_op(Node::integer(1), Op::Multiply, Node::integer(2))
         );
         assert_ok!(
             "1 * 2 + 3",
             Node::binary_op(
-                Node::binary_op(Node::integer(1), BinaryOpKind::Multiply, Node::integer(2)),
-                BinaryOpKind::Add,
+                Node::binary_op(Node::integer(1), Op::Multiply, Node::integer(2)),
+                Op::Add,
                 Node::integer(3)
             )
         );
@@ -297,10 +297,10 @@ mod tests {
             Node::binary_op(
                 Node::binary_op(
                     Node::integer(1),
-                    BinaryOpKind::Add,
-                    Node::binary_op(Node::integer(2), BinaryOpKind::Multiply, Node::integer(3))
+                    Op::Add,
+                    Node::binary_op(Node::integer(2), Op::Multiply, Node::integer(3))
                 ),
-                BinaryOpKind::Subtract,
+                Op::Subtract,
                 Node::integer(4)
             )
         );
@@ -316,21 +316,17 @@ mod tests {
         assert_ok!(":hi", Node::literal_symbol(":hi"));
         assert_ok!(
             "12 / 2",
-            Node::binary_op(Node::integer(12), BinaryOpKind::Divide, Node::integer(2))
+            Node::binary_op(Node::integer(12), Op::Divide, Node::integer(2))
         );
         assert_ok!(
             "\"hi\" * 3.0/4 % 2",
             Node::binary_op(
                 Node::binary_op(
-                    Node::binary_op(
-                        Node::literal_string("hi"),
-                        BinaryOpKind::Multiply,
-                        Node::float(3.0)
-                    ),
-                    BinaryOpKind::Divide,
+                    Node::binary_op(Node::literal_string("hi"), Op::Multiply, Node::float(3.0)),
+                    Op::Divide,
                     Node::integer(4)
                 ),
-                BinaryOpKind::Modulus,
+                Op::Modulus,
                 Node::integer(2)
             )
         );
@@ -350,8 +346,8 @@ mod tests {
             "3 **\n# comment\n4**-5.2",
             Node::binary_op(
                 Node::integer(3),
-                BinaryOpKind::Power,
-                Node::binary_op(Node::integer(4), BinaryOpKind::Power, Node::float(-5.2))
+                Op::Power,
+                Node::binary_op(Node::integer(4), Op::Power, Node::float(-5.2))
             )
         );
     }
