@@ -127,25 +127,30 @@ pub(crate) fn bitwise_and_expression(i: Input) -> NodeResult {
 
 /// *additive_expression* | *bitwise_shift_expression* [ no line terminator here ] ( `<<` | `>>` ) *additive_expression*
 pub(crate) fn bitwise_shift_expression(i: Input) -> NodeResult {
+    println!("In bitwise_shift_expression {}", i);
+    map(
+        tuple((additive_expression, opt(_bitwise_shift_expression))),
+        _finish_node,
+    )(i)
+}
+
+fn _bitwise_shift_expression(i: Input) -> NodeResult {
     alt((
         map(
             tuple((
-                bitwise_shift_expression,
                 no_lt,
                 alt((tag("<<"), tag(">>"))),
                 ws,
                 additive_expression,
+                opt(_bitwise_shift_expression),
             )),
             |t| {
-                Node::BinaryOp(BinaryOp {
-                    op: match *t.2 {
-                        "<<" => Op::ShiftLeft,
-                        ">>" => Op::ShiftRight,
-                        _ => unreachable!(),
-                    },
-                    lhs: Box::new(t.0),
-                    rhs: Box::new(t.4),
-                })
+                let op = match *t.1 {
+                    "<<" => Op::ShiftLeft,
+                    ">>" => Op::ShiftRight,
+                    _ => unreachable!(),
+                };
+                _partial_node(op, t.3, t.4)
             },
         ),
         additive_expression,
@@ -268,6 +273,35 @@ fn _replace_nested_lhs_placeholder(mut node: Node, value: Node) -> Node {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_bitwise_shift_expression() {
+        use_parser!(bitwise_shift_expression);
+        // Parse errors
+        assert_err!("");
+        assert_err!("2 +");
+        // Success cases
+        assert_ok!(
+            "1 << 2",
+            Node::binary_op(Node::integer(1), Op::ShiftLeft, Node::integer(2))
+        );
+        assert_ok!(
+            "1 - 2 >> 3",
+            Node::binary_op(
+                Node::binary_op(Node::integer(1), Op::Subtract, Node::integer(2)),
+                Op::ShiftRight,
+                Node::integer(3)
+            )
+        );
+        assert_ok!(
+            "1 << 2 * -3",
+            Node::binary_op(
+                Node::integer(1),
+                Op::ShiftLeft,
+                Node::binary_op(Node::integer(2), Op::Multiply, Node::integer(-3)),
+            )
+        );
+    }
 
     #[test]
     fn test_additive_expression() {
