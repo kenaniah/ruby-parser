@@ -14,5 +14,5 @@ pub struct LogicalOr {
 
 #[derive(Debug, PartialEq)]
 pub struct LogicalNot {
-    pub expr: Box<Node>
+    pub expr: Box<Node>,
 }

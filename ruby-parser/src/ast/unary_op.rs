@@ -3,7 +3,7 @@ use super::*;
 #[derive(Debug, PartialEq)]
 pub struct UnaryOp {
     pub op: UnaryOpKind,
-    pub rhs: Box<Node>
+    pub rhs: Box<Node>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -15,7 +15,7 @@ pub enum UnaryOpKind {
     /// -
     Negative,
     /// !
-    LogicalNot
+    LogicalNot,
 }
 
 impl From<char> for UnaryOpKind {
@@ -25,7 +25,7 @@ impl From<char> for UnaryOpKind {
             '+' => Self::Positive,
             '-' => Self::Negative,
             '!' => Self::LogicalNot,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
