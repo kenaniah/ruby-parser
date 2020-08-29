@@ -270,6 +270,43 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_additive_expression() {
+        use_parser!(additive_expression);
+        // Parse errors
+        assert_err!("");
+        assert_err!("2 +");
+        // Success cases
+        assert_ok!(
+            "1 + 2",
+            Node::binary_op(Node::integer(1), BinaryOpKind::Add, Node::integer(2))
+        );
+        assert_ok!(
+            "1*2",
+            Node::binary_op(Node::integer(1), BinaryOpKind::Multiply, Node::integer(2))
+        );
+        assert_ok!(
+            "1 * 2 + 3",
+            Node::binary_op(
+                Node::binary_op(Node::integer(1), BinaryOpKind::Multiply, Node::integer(2)),
+                BinaryOpKind::Add,
+                Node::integer(3)
+            )
+        );
+        assert_ok!(
+            "1 + 2 * 3 - 4",
+            Node::binary_op(
+                Node::binary_op(
+                    Node::integer(1),
+                    BinaryOpKind::Add,
+                    Node::binary_op(Node::integer(2), BinaryOpKind::Multiply, Node::integer(3))
+                ),
+                BinaryOpKind::Subtract,
+                Node::integer(4)
+            )
+        );
+    }
+
+    #[test]
     fn test_multiplicative_expression() {
         use_parser!(multiplicative_expression);
         // Parse errors
