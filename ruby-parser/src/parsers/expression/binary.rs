@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOp, BinaryOpToken};
+use crate::ast::{BinaryOp, BinaryOpKind};
 use crate::lexer::*;
 use crate::parsers::expression::unary::{unary_expression, unary_minus_expression};
 use crate::parsers::program::{no_lt, ws};
@@ -29,12 +29,12 @@ pub(crate) fn equality_expression(i: Input) -> NodeResult {
             |t| {
                 Node::BinaryOp(BinaryOp {
                     op: match *t.2 {
-                        "<=>" => BinaryOpToken::Compare,
-                        "===" => BinaryOpToken::CaseEqual,
-                        "==" => BinaryOpToken::Equal,
-                        "!=" => BinaryOpToken::NotEqual,
-                        "=~" => BinaryOpToken::RegexMatch,
-                        "!~" => BinaryOpToken::NotRegexMatch,
+                        "<=>" => BinaryOpKind::Compare,
+                        "===" => BinaryOpKind::CaseEqual,
+                        "==" => BinaryOpKind::Equal,
+                        "!=" => BinaryOpKind::NotEqual,
+                        "=~" => BinaryOpKind::RegexMatch,
+                        "!~" => BinaryOpKind::NotRegexMatch,
                         _ => unreachable!(),
                     },
                     lhs: Box::new(t.0),
@@ -60,10 +60,10 @@ pub(crate) fn relational_expression(i: Input) -> NodeResult {
             |t| {
                 Node::BinaryOp(BinaryOp {
                     op: match *t.2 {
-                        ">=" => BinaryOpToken::GreaterEqual,
-                        ">" => BinaryOpToken::GreaterThan,
-                        "<=" => BinaryOpToken::LessEqual,
-                        "<" => BinaryOpToken::LessThan,
+                        ">=" => BinaryOpKind::GreaterEqual,
+                        ">" => BinaryOpKind::GreaterThan,
+                        "<=" => BinaryOpKind::LessEqual,
+                        "<" => BinaryOpKind::LessThan,
                         _ => unreachable!(),
                     },
                     lhs: Box::new(t.0),
@@ -89,8 +89,8 @@ pub(crate) fn bitwise_or_expression(i: Input) -> NodeResult {
             |t| {
                 Node::BinaryOp(BinaryOp {
                     op: match t.2 {
-                        '|' => BinaryOpToken::BitOr,
-                        '^' => BinaryOpToken::BitXor,
+                        '|' => BinaryOpKind::BitOr,
+                        '^' => BinaryOpKind::BitXor,
                         _ => unreachable!(),
                     },
                     lhs: Box::new(t.0),
@@ -115,7 +115,7 @@ pub(crate) fn bitwise_and_expression(i: Input) -> NodeResult {
             )),
             |t| {
                 Node::BinaryOp(BinaryOp {
-                    op: BinaryOpToken::BitAnd,
+                    op: BinaryOpKind::BitAnd,
                     lhs: Box::new(t.0),
                     rhs: Box::new(t.4),
                 })
@@ -139,8 +139,8 @@ pub(crate) fn bitwise_shift_expression(i: Input) -> NodeResult {
             |t| {
                 Node::BinaryOp(BinaryOp {
                     op: match *t.2 {
-                        "<<" => BinaryOpToken::ShiftLeft,
-                        ">>" => BinaryOpToken::ShiftRight,
+                        "<<" => BinaryOpKind::ShiftLeft,
+                        ">>" => BinaryOpKind::ShiftRight,
                         _ => unreachable!(),
                     },
                     lhs: Box::new(t.0),
@@ -166,8 +166,8 @@ pub(crate) fn additive_expression(i: Input) -> NodeResult {
             |t| {
                 Node::BinaryOp(BinaryOp {
                     op: match t.2 {
-                        '+' => BinaryOpToken::Add,
-                        '-' => BinaryOpToken::Subtract,
+                        '+' => BinaryOpKind::Add,
+                        '-' => BinaryOpKind::Subtract,
                         _ => unreachable!(),
                     },
                     lhs: Box::new(t.0),
@@ -193,9 +193,9 @@ pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
             |t| {
                 Node::BinaryOp(BinaryOp {
                     op: match t.2 {
-                        '*' => BinaryOpToken::Multiply,
-                        '/' => BinaryOpToken::Divide,
-                        '%' => BinaryOpToken::Modulus,
+                        '*' => BinaryOpKind::Multiply,
+                        '/' => BinaryOpKind::Divide,
+                        '%' => BinaryOpKind::Modulus,
                         _ => unreachable!(),
                     },
                     lhs: Box::new(t.0),
@@ -214,7 +214,7 @@ pub(crate) fn power_expression(i: Input) -> NodeResult {
             tuple((unary_expression, no_lt, tag("**"), ws, power_expression)),
             |t| {
                 Node::BinaryOp(BinaryOp {
-                    op: BinaryOpToken::Power,
+                    op: BinaryOpKind::Power,
                     lhs: Box::new(t.0),
                     rhs: Box::new(t.4),
                 })
@@ -242,8 +242,8 @@ mod tests {
             "3 **\n# comment\n4**-5.2",
             Node::binary_op(
                 Node::integer(3),
-                BinaryOpToken::Power,
-                Node::binary_op(Node::integer(4), BinaryOpToken::Power, Node::float(-5.2))
+                BinaryOpKind::Power,
+                Node::binary_op(Node::integer(4), BinaryOpKind::Power, Node::float(-5.2))
             )
         );
     }

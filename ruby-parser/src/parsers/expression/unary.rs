@@ -1,4 +1,4 @@
-use crate::ast::{UnaryOp, UnaryOpToken};
+use crate::ast::{UnaryOp, UnaryOpKind};
 use crate::lexer::*;
 use crate::parsers::expression::binary::power_expression;
 use crate::parsers::expression::primary_expression;
@@ -14,7 +14,7 @@ pub(crate) fn unary_minus_expression(i: Input) -> NodeResult {
         power_expression,
         map(tuple((char('-'), ws, power_expression)), |t| {
             Node::UnaryOp(UnaryOp {
-                op: UnaryOpToken::from(t.0),
+                op: UnaryOpKind::from(t.0),
                 rhs: Box::new(t.2),
             })
         }),
@@ -25,7 +25,10 @@ pub(crate) fn unary_minus_expression(i: Input) -> NodeResult {
 pub(crate) fn unary_expression(i: Input) -> NodeResult {
     alt((
         map(tuple((one_of("~+!"), ws, unary_expression)), |t| {
-            Node::unary_op(UnaryOpToken::from(t.0), t.2)
+            Node::UnaryOp(UnaryOp {
+                op: UnaryOpKind::from(t.0),
+                rhs: Box::new(t.2),
+            })
         }),
         map(primary_expression, |t| Node::from(t)),
     ))(i)
@@ -41,29 +44,29 @@ mod tests {
         // Parse errors
         assert_err!("");
         assert_err!("nil ");
-        assert_err!("---42"); // Handled at a higher level in the grammar
-        assert_err!("- - 42"); // Handled at a higher level in the grammar
+        assert_err!("---42");
+        assert_err!("- - 42");
         // Success cases
         assert_ok!("nil", Node::Nil);
-        assert_ok!("-nil", Node::unary_op(UnaryOpToken::Negative, Node::Nil));
+        assert_ok!("-nil", Node::unary_op(UnaryOpKind::Negative, Node::Nil));
         assert_ok!(
             "-\n\n  nil",
-            Node::unary_op(UnaryOpToken::Negative, Node::Nil)
+            Node::unary_op(UnaryOpKind::Negative, Node::Nil)
         );
         assert_ok!("-42", Node::integer(-42));
         assert_ok!(
             "- 42",
-            Node::unary_op(UnaryOpToken::Negative, Node::integer(42))
+            Node::unary_op(UnaryOpKind::Negative, Node::integer(42))
         );
         assert_ok!(
             "--42",
-            Node::unary_op(UnaryOpToken::Negative, Node::integer(-42))
+            Node::unary_op(UnaryOpKind::Negative, Node::integer(-42))
         );
         // Integration cases
         assert_ok!(
             "!foo",
             Node::unary_op(
-                UnaryOpToken::LogicalNot,
+                UnaryOpKind::LogicalNot,
                 Node::ident("foo", IdentifierType::LocalVariable)
             )
         );
@@ -82,14 +85,14 @@ mod tests {
         assert_ok!("nil", Node::Nil);
         assert_ok!(
             "+42",
-            Node::unary_op(UnaryOpToken::Positive, Node::integer(42))
+            Node::unary_op(UnaryOpKind::Positive, Node::integer(42))
         );
         assert_ok!(
             "!! meh",
             Node::unary_op(
-                UnaryOpToken::LogicalNot,
+                UnaryOpKind::LogicalNot,
                 Node::unary_op(
-                    UnaryOpToken::LogicalNot,
+                    UnaryOpKind::LogicalNot,
                     Node::ident("meh", IdentifierType::LocalVariable)
                 )
             )
@@ -97,7 +100,7 @@ mod tests {
         assert_ok!("-23e4", Node::float(-230000.0));
         assert_ok!(
             "~(;)",
-            Node::unary_op(UnaryOpToken::BitNot, Node::Block(vec![]))
+            Node::unary_op(UnaryOpKind::BitNot, Node::Block(vec![]))
         );
     }
 }

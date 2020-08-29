@@ -2,12 +2,12 @@ use super::*;
 
 #[derive(Debug, PartialEq)]
 pub struct UnaryOp {
-    pub op: UnaryOpToken,
+    pub op: UnaryOpKind,
     pub rhs: Box<Node>
 }
 
 #[derive(Debug, PartialEq)]
-pub enum UnaryOpToken {
+pub enum UnaryOpKind {
     /// ~
     BitNot,
     /// +
@@ -18,7 +18,7 @@ pub enum UnaryOpToken {
     LogicalNot
 }
 
-impl From<char> for UnaryOpToken {
+impl From<char> for UnaryOpKind {
     fn from(c: char) -> Self {
         match c {
             '~' => Self::BitNot,

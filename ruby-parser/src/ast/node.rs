@@ -45,14 +45,14 @@ impl Node {
         })
     }
     /// Creates a token that represents a unary operation
-    pub(crate) fn unary_op(op: UnaryOpToken, rhs: Node) -> Self {
+    pub(crate) fn unary_op(op: UnaryOpKind, rhs: Node) -> Self {
         Self::UnaryOp(UnaryOp {
             op,
             rhs: Box::new(rhs),
         })
     }
     /// Creates a token that represents a binary operation
-    pub(crate) fn binary_op(lhs: Node, op: BinaryOpToken, rhs: Node) -> Self {
+    pub(crate) fn binary_op(lhs: Node, op: BinaryOpKind, rhs: Node) -> Self {
         Self::BinaryOp(BinaryOp {
             op,
             lhs: Box::new(lhs),
