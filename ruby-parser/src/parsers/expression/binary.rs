@@ -77,25 +77,30 @@ pub(crate) fn relational_expression(i: Input) -> NodeResult {
 
 /// *bitwise_and_expression* | *bitwise_or_expression* [ no line terminator here ] ( `|` | `^` ) *bitwise_and_expression*
 pub(crate) fn bitwise_or_expression(i: Input) -> NodeResult {
+    println!("In bitwise_or_expression {}", i);
+    map(
+        tuple((bitwise_and_expression, opt(_bitwise_or_expression))),
+        _finish_node,
+    )(i)
+}
+
+fn _bitwise_or_expression(i: Input) -> NodeResult {
     alt((
         map(
             tuple((
-                bitwise_or_expression,
                 no_lt,
                 one_of("|^"),
                 ws,
                 bitwise_and_expression,
+                opt(_bitwise_or_expression),
             )),
             |t| {
-                Node::BinaryOp(BinaryOp {
-                    op: match t.2 {
-                        '|' => Op::BitOr,
-                        '^' => Op::BitXor,
-                        _ => unreachable!(),
-                    },
-                    lhs: Box::new(t.0),
-                    rhs: Box::new(t.4),
-                })
+                let op = match t.1 {
+                    '|' => Op::BitOr,
+                    '^' => Op::BitXor,
+                    _ => unreachable!(),
+                };
+                _partial_node(op, t.3, t.4)
             },
         ),
         bitwise_and_expression,
@@ -104,22 +109,24 @@ pub(crate) fn bitwise_or_expression(i: Input) -> NodeResult {
 
 /// *bitwise_shift_expression* | *bitwise_and_expression* [ no line terminator here ] `&` *bitwise_shift_expression*
 pub(crate) fn bitwise_and_expression(i: Input) -> NodeResult {
+    println!("In bitwise_and_expression {}", i);
+    map(
+        tuple((bitwise_shift_expression, opt(_bitwise_and_expression))),
+        _finish_node,
+    )(i)
+}
+
+fn _bitwise_and_expression(i: Input) -> NodeResult {
     alt((
         map(
             tuple((
-                bitwise_and_expression,
                 no_lt,
                 char('&'),
                 ws,
                 bitwise_shift_expression,
+                opt(_bitwise_and_expression),
             )),
-            |t| {
-                Node::BinaryOp(BinaryOp {
-                    op: Op::BitAnd,
-                    lhs: Box::new(t.0),
-                    rhs: Box::new(t.4),
-                })
-            },
+            |t| _partial_node(Op::BitAnd, t.3, t.4),
         ),
         bitwise_shift_expression,
     ))(i)
@@ -218,7 +225,7 @@ fn _multiplicative_expression(i: Input) -> NodeResult {
 
 /// *unary_expression* | *unary_expression* [ no line terminator here ] `**` *power_expression*
 pub(crate) fn power_expression(i: Input) -> NodeResult {
-    //println!("In power_expression {}", i);
+    println!("In power_expression {}", i);
     alt((
         map(
             tuple((unary_expression, no_lt, tag("**"), ws, power_expression)),
@@ -275,11 +282,57 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_bitwise_or_expression() {
+        use_parser!(bitwise_or_expression);
+        // Parse errors
+        assert_err!("");
+        assert_err!("2 |");
+        // Success cases
+        assert_ok!(
+            "1 | 2 + 3 ^ 4 | 5",
+            Node::binary_op(
+                Node::binary_op(
+                    Node::binary_op(
+                        Node::integer(1),
+                        Op::BitOr,
+                        Node::binary_op(Node::integer(2), Op::Add, Node::integer(3))
+                    ),
+                    Op::BitXor,
+                    Node::integer(4)
+                ),
+                Op::BitOr,
+                Node::integer(5)
+            )
+        );
+    }
+
+    #[test]
+    fn test_bitwise_and_expression() {
+        use_parser!(bitwise_and_expression);
+        // Parse errors
+        assert_err!("");
+        assert_err!("2 && 3");
+        // Success cases
+        assert_ok!(
+            "1 & 2",
+            Node::binary_op(Node::integer(1), Op::BitAnd, Node::integer(2))
+        );
+        assert_ok!(
+            "1+2&3",
+            Node::binary_op(
+                Node::binary_op(Node::integer(1), Op::Add, Node::integer(2)),
+                Op::BitAnd,
+                Node::integer(3)
+            )
+        );
+    }
+
+    #[test]
     fn test_bitwise_shift_expression() {
         use_parser!(bitwise_shift_expression);
         // Parse errors
         assert_err!("");
-        assert_err!("2 +");
+        assert_err!("2 << << 4");
         // Success cases
         assert_ok!(
             "1 << 2",
