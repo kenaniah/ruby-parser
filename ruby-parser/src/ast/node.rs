@@ -17,7 +17,7 @@ pub enum Node {
     Nil,
     Self_,
     EndOfProgram,
-    Placeholder
+    Placeholder,
 }
 
 #[allow(dead_code)]
@@ -62,6 +62,20 @@ impl Node {
             op,
             lhs: Box::new(lhs),
             rhs: Box::new(rhs),
+        })
+    }
+    /// Creates a token that represents a logical AND
+    pub(crate) fn logical_and(first: Node, second: Node) -> Node {
+        Self::LogicalAnd(LogicalAnd {
+            first: Box::new(first),
+            second: Box::new(second),
+        })
+    }
+    /// Creates a token that represents a logical OR
+    pub(crate) fn logical_or(first: Node, second: Node) -> Node {
+        Self::LogicalOr(LogicalOr {
+            first: Box::new(first),
+            second: Box::new(second),
         })
     }
 }
