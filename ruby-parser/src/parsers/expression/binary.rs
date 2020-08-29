@@ -5,7 +5,7 @@ use crate::parsers::program::{no_lt, ws};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{char, one_of};
-use nom::combinator::map;
+use nom::combinator::{map, opt};
 use nom::sequence::tuple;
 
 /// *relational_expression* | *relational_expression* [ no line terminator here ] ( `<=>` | `===` | `==` | `!=` | `=~` | `!~` ) *relational_expression*
@@ -182,34 +182,76 @@ pub(crate) fn additive_expression(i: Input) -> NodeResult {
 /// *unary_minus_expression* | *multiplicative_expression* [ no line terminator here ] ( `*` | `/` | `%` ) *unary_minus_expression*
 pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
     // FIXME: left recursion issues
-    alt((
-        map(
-            tuple((
-                multiplicative_expression,
-                no_lt,
-                one_of("*/%"),
-                ws,
-                unary_minus_expression,
-            )),
-            |t| {
-                Node::BinaryOp(BinaryOp {
-                    op: match t.2 {
-                        '*' => BinaryOpKind::Multiply,
-                        '/' => BinaryOpKind::Divide,
-                        '%' => BinaryOpKind::Modulus,
-                        _ => unreachable!(),
-                    },
-                    lhs: Box::new(t.0),
-                    rhs: Box::new(t.4),
-                })
-            },
-        ),
-        unary_minus_expression,
-    ))(i)
+    println!("In multiplicative_expression {}", i);
+    // alt((
+    //     map(
+    //         tuple((
+    //             multiplicative_expression,
+    //             no_lt,
+    //             one_of("*/%"),
+    //             ws,
+    //             unary_minus_expression,
+    //         )),
+    //         |t| {
+    //             Node::BinaryOp(BinaryOp {
+    //                 op: match t.2 {
+    //                     '*' => BinaryOpKind::Multiply,
+    //                     '/' => BinaryOpKind::Divide,
+    //                     '%' => BinaryOpKind::Modulus,
+    //                     _ => unreachable!(),
+    //                 },
+    //                 lhs: Box::new(t.0),
+    //                 rhs: Box::new(t.4),
+    //             })
+    //         },
+    //     ),
+    //     unary_minus_expression,
+    // ))(i)
+    map(
+        tuple((unary_minus_expression, opt(_multiplicative_expression))),
+        |t| match t.1 {
+            Some(Node::BinaryOp(mut op)) => {
+                op.lhs = Box::new(t.0);
+                Node::BinaryOp(op)
+            }
+            _ => t.0,
+        },
+    )(i)
+}
+
+fn _multiplicative_expression(i: Input) -> NodeResult {
+    map(
+        tuple((
+            no_lt,
+            one_of("*/%"),
+            ws,
+            unary_minus_expression,
+            opt(_multiplicative_expression),
+        )),
+        |t| {
+            Node::BinaryOp(BinaryOp {
+                op: match t.1 {
+                    '*' => BinaryOpKind::Multiply,
+                    '/' => BinaryOpKind::Divide,
+                    '%' => BinaryOpKind::Modulus,
+                    _ => unreachable!(),
+                },
+                lhs: Box::new(Node::Placeholder),
+                rhs: Box::new(match t.4 {
+                    Some(Node::BinaryOp(mut op)) => {
+                        op.lhs = Box::new(t.3);
+                        Node::BinaryOp(op)
+                    }
+                    _ => t.3,
+                }),
+            })
+        },
+    )(i)
 }
 
 /// *unary_expression* | *unary_expression* [ no line terminator here ] `**` *power_expression*
 pub(crate) fn power_expression(i: Input) -> NodeResult {
+    println!("In power_expression {}", i);
     alt((
         map(
             tuple((unary_expression, no_lt, tag("**"), ws, power_expression)),
@@ -236,7 +278,7 @@ mod tests {
         assert_err!("");
         assert_err!("nil ");
         // Success cases
-        assert_ok!(":hi", Node::literal_symbol("hi"));
+        assert_ok!(":hi", Node::literal_symbol(":hi"));
         assert_ok!(
             "\"hi\" * 3.0 / 4 % 2",
             Node::binary_op(

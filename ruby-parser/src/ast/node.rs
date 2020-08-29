@@ -17,6 +17,7 @@ pub enum Node {
     Nil,
     Self_,
     EndOfProgram,
+    Placeholder
 }
 
 #[allow(dead_code)]
