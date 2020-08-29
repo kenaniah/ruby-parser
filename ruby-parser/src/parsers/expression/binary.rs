@@ -223,3 +223,26 @@ pub(crate) fn power_expression(i: Input) -> NodeResult {
         unary_expression,
     ))(i)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_power_expression() {
+        use_parser!(power_expression);
+        // Parse errors
+        assert_err!("");
+        assert_err!("nil ");
+        // Success cases
+        assert_ok!("nil", Node::Nil);
+        assert_ok!(
+            "3 ** 4**-5.2",
+            Node::binary_op(
+                Node::integer(3),
+                BinaryOpToken::Power,
+                Node::binary_op(Node::integer(4), BinaryOpToken::Power, Node::float(-5.2))
+            )
+        );
+    }
+}

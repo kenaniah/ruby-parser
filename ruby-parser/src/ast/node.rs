@@ -51,4 +51,12 @@ impl Node {
             rhs: Box::new(rhs),
         })
     }
+    /// Creates a token that represents a binary operation
+    pub(crate) fn binary_op(lhs: Node, op: BinaryOpToken, rhs: Node) -> Self {
+        Self::BinaryOp(BinaryOp {
+            op,
+            lhs: Box::new(lhs),
+            rhs: Box::new(rhs),
+        })
+    }
 }
