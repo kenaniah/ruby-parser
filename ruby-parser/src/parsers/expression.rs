@@ -63,11 +63,25 @@ pub(crate) fn grouping_expression(i: Input) -> NodeResult {
 
 /// *assignment_expression* | *defined_without_parenthesis* | *conditional_operator_expression*
 pub(crate) fn operator_expression(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        assignment::assignment_expression,
+        defined_without_parenthesis,
+        conditional_operator_expression,
+    ))(i)
 }
 
 /// *range_constructor* | *range_constructor* [ no line terminator here ] `?` *operator_expression* [ no line terminator here ] `:` *operator_expression*
 pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// `defined?` `(` *expression* `)`
+pub(crate) fn defined_with_parenthesis(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// `defined?` *operator_expression*
+pub(crate) fn defined_without_parenthesis(i: Input) -> NodeResult {
     stub(i)
 }
 
