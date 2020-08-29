@@ -80,7 +80,7 @@ mod tests {
             "%x!foo#@hi [bar] [#{%Q((hello))}]!",
             vec![
                 Node::Segment(Segment::String("foo".to_owned())),
-                Node::ident("@hi", IdentifierType::InstanceVariable),
+                Node::ident("@hi", IdentifierKind::InstanceVariable),
                 Node::Segment(Segment::String(" [bar] [".to_owned())),
                 Node::Block(vec![Node::literal_string("(hello)")]),
                 Node::Segment(Segment::String("]".to_owned())),

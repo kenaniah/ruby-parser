@@ -67,7 +67,7 @@ mod tests {
             "!foo",
             Node::unary_op(
                 UnaryOpKind::LogicalNot,
-                Node::ident("foo", IdentifierType::LocalVariable)
+                Node::ident("foo", IdentifierKind::LocalVariable)
             )
         );
     }
@@ -93,7 +93,7 @@ mod tests {
                 UnaryOpKind::LogicalNot,
                 Node::unary_op(
                     UnaryOpKind::LogicalNot,
-                    Node::ident("meh", IdentifierType::LocalVariable)
+                    Node::ident("meh", IdentifierKind::LocalVariable)
                 )
             )
         );

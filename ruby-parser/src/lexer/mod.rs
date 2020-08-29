@@ -6,7 +6,7 @@ mod metadata;
 mod segment;
 mod tracked_location;
 
-pub use crate::ast::{Identifier, IdentifierType, Interpolated, Literal, Node};
+pub use crate::ast::{Identifier, IdentifierKind, Interpolated, Literal, Node};
 pub use heredoc::{HeredocIndentation, HeredocMetadata, HeredocQuoteType};
 pub use interpolable::Interpolatable;
 pub use metadata::Metadata;

@@ -120,7 +120,7 @@ mod tests {
             vec![
                 Node::Segment(Segment::String(":".to_owned())),
                 Node::Segment(Segment::String("foo".to_owned())),
-                Node::ident("$bar", IdentifierType::GlobalVariable)
+                Node::ident("$bar", IdentifierKind::GlobalVariable)
             ]
         );
     }

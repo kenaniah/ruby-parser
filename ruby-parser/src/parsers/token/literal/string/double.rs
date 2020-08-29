@@ -220,13 +220,13 @@ mod tests {
             "\"some #thing\\n#$hi\"",
             is(vec![
                 seg("some #thing\n"),
-                Node::ident("$hi", IdentifierType::GlobalVariable)
+                Node::ident("$hi", IdentifierKind::GlobalVariable)
             ])
         );
         assert_ok!(
             "\"#@@VAR#{2; 3.5} \"",
             is(vec![
-                Node::ident("@@VAR", IdentifierType::ClassVariable),
+                Node::ident("@@VAR", IdentifierKind::ClassVariable),
                 Node::Block(vec![Node::integer(2), Node::float(3.5)]),
                 seg(" ")
             ])
@@ -250,21 +250,21 @@ mod tests {
         assert_ok!("#{}", Segment::expr(Node::Block(vec![])));
         assert_ok!(
             "#@@foo",
-            Segment::expr(Node::ident("@@foo", IdentifierType::ClassVariable))
+            Segment::expr(Node::ident("@@foo", IdentifierKind::ClassVariable))
         );
         assert_ok!(
             "#@inst",
-            Segment::expr(Node::ident("@inst", IdentifierType::InstanceVariable))
+            Segment::expr(Node::ident("@inst", IdentifierKind::InstanceVariable))
         );
         assert_ok!(
             "#$glob",
-            Segment::expr(Node::ident("$glob", IdentifierType::GlobalVariable))
+            Segment::expr(Node::ident("$glob", IdentifierKind::GlobalVariable))
         );
         assert_ok!(
             "#{foobar}",
             Segment::expr(Node::Block(vec![Node::ident(
                 "foobar",
-                IdentifierType::LocalVariable
+                IdentifierKind::LocalVariable
             )]))
         );
         assert_ok!(

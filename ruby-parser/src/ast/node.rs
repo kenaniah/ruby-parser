@@ -38,10 +38,10 @@ impl Node {
         Self::Literal(Literal::String(val.to_owned()))
     }
     /// Creates a token that represents an identifier
-    pub(crate) fn ident(name: &str, ty: IdentifierType) -> Self {
+    pub(crate) fn ident(name: &str, kind: IdentifierKind) -> Self {
         Self::Identifier(Identifier {
             name: name.to_owned(),
-            ty: ty,
+            kind,
         })
     }
     /// Creates a token that represents a unary operation

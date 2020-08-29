@@ -27,7 +27,7 @@ pub(crate) fn local_variable_identifier(i: Input) -> NodeResult {
             alt((lowercase_character, char('_'))),
             many0(identifier_character),
         ))),
-        |s| Node::ident(*s, IdentifierType::LocalVariable),
+        |s| Node::ident(*s, IdentifierKind::LocalVariable),
     )(i)
 }
 
@@ -39,7 +39,7 @@ pub(crate) fn global_variable_identifier(i: Input) -> NodeResult {
             identifier_start_character,
             many0(identifier_character),
         ))),
-        |s| Node::ident(*s, IdentifierType::GlobalVariable),
+        |s| Node::ident(*s, IdentifierKind::GlobalVariable),
     )(i)
 }
 
@@ -51,7 +51,7 @@ pub(crate) fn class_variable_identifier(i: Input) -> NodeResult {
             identifier_start_character,
             many0(identifier_character),
         ))),
-        |s| Node::ident(*s, IdentifierType::ClassVariable),
+        |s| Node::ident(*s, IdentifierKind::ClassVariable),
     )(i)
 }
 
@@ -63,7 +63,7 @@ pub(crate) fn instance_variable_identifier(i: Input) -> NodeResult {
             identifier_start_character,
             many0(identifier_character),
         ))),
-        |s| Node::ident(*s, IdentifierType::InstanceVariable),
+        |s| Node::ident(*s, IdentifierKind::InstanceVariable),
     )(i)
 }
 
@@ -71,7 +71,7 @@ pub(crate) fn instance_variable_identifier(i: Input) -> NodeResult {
 pub(crate) fn constant_identifier(i: Input) -> NodeResult {
     map(
         recognize(tuple((uppercase_character, many0(identifier_character)))),
-        |s| Node::ident(*s, IdentifierType::Constant),
+        |s| Node::ident(*s, IdentifierKind::Constant),
     )(i)
 }
 
@@ -96,7 +96,7 @@ pub(crate) fn method_only_identifier(i: Input) -> NodeResult {
             alt((constant_identifier, local_variable_identifier)),
             one_of("!?"),
         ))),
-        |s| Node::ident(*s, IdentifierType::Method),
+        |s| Node::ident(*s, IdentifierKind::Method),
     )(i)
 }
 
@@ -107,7 +107,7 @@ pub(crate) fn assignment_like_method_identifier(i: Input) -> NodeResult {
             alt((constant_identifier, local_variable_identifier)),
             char('='),
         ))),
-        |s| Node::ident(*s, IdentifierType::AssignmentMethod),
+        |s| Node::ident(*s, IdentifierKind::AssignmentMethod),
     )(i)
 }
 
@@ -177,7 +177,7 @@ mod tests {
 
     #[test]
     fn test_identifier() {
-        use crate::ast::IdentifierType::*;
+        use crate::ast::IdentifierKind::*;
         use_parser!(identifier);
         // Parse errors
         assert_err!("=");

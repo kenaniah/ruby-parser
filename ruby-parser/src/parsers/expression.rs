@@ -81,7 +81,7 @@ mod tests {
         assert_ok!("nil", Node::Nil);
         assert_ok!("42", Node::integer(42));
         assert_ok!("24.2", Node::float(24.2));
-        assert_ok!("meh", Node::ident("meh", IdentifierType::LocalVariable));
+        assert_ok!("meh", Node::ident("meh", IdentifierKind::LocalVariable));
         assert_ok!("-23e4", Node::float(-230000.0));
         assert_ok!("'hello world'", Node::literal_string("hello world"));
         assert_ok!("()", Node::Block(vec![]));

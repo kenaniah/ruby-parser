@@ -1,11 +1,11 @@
 #[derive(Debug, PartialEq)]
 pub struct Identifier {
     pub name: String,
-    pub ty: IdentifierType,
+    pub kind: IdentifierKind,
 }
 
 #[derive(Debug, PartialEq)]
-pub enum IdentifierType {
+pub enum IdentifierKind {
     LocalVariable,
     GlobalVariable,
     ClassVariable,

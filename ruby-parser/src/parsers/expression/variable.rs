@@ -1,4 +1,4 @@
-use crate::ast::{IdentifierType, Literal};
+use crate::ast::{IdentifierKind, Literal};
 use crate::lexer::*;
 use crate::parsers::token::identifier::*;
 use nom::branch::alt;
@@ -79,12 +79,12 @@ mod tests {
         assert_ok!("true", Node::boolean(true));
         assert_ok!("false", Node::boolean(false));
         assert_ok!("self", Node::Self_);
-        assert_ok!("TRUE", Node::ident("TRUE", IdentifierType::Constant));
-        assert_ok!("False", Node::ident("False", IdentifierType::Constant));
-        assert_ok!("nil_", Node::ident("nil_", IdentifierType::LocalVariable));
+        assert_ok!("TRUE", Node::ident("TRUE", IdentifierKind::Constant));
+        assert_ok!("False", Node::ident("False", IdentifierKind::Constant));
+        assert_ok!("nil_", Node::ident("nil_", IdentifierKind::LocalVariable));
         assert_ok!(
             "$true",
-            Node::ident("$true", IdentifierType::GlobalVariable)
+            Node::ident("$true", IdentifierKind::GlobalVariable)
         );
     }
 }
