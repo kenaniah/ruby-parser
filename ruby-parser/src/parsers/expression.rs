@@ -63,6 +63,15 @@ pub(crate) fn grouping_expression(i: Input) -> NodeResult {
 
 /// *assignment_expression* | *defined_without_parenthesis* | *conditional_operator_expression*
 pub(crate) fn operator_expression(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// *range_constructor* | *range_constructor* [ no line terminator here ] `?` *operator_expression* [ no line terminator here ] `:` *operator_expression*
+pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
+    stub(i)
+}
+
+fn stub(i: Input) -> NodeResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
 
