@@ -10,10 +10,17 @@ use nom::sequence::tuple;
 
 /// *relational_expression* | *relational_expression* [ no line terminator here ] ( `<=>` | `===` | `==` | `!=` | `=~` | `!~` ) *relational_expression*
 pub(crate) fn equality_expression(i: Input) -> NodeResult {
+    println!("In equality_expression {}", i);
+    map(
+        tuple((relational_expression, opt(_equality_expression))),
+        _finish_node,
+    )(i)
+}
+
+fn _equality_expression(i: Input) -> NodeResult {
     alt((
         map(
             tuple((
-                relational_expression,
                 no_lt,
                 alt((
                     tag("<=>"),
@@ -25,21 +32,19 @@ pub(crate) fn equality_expression(i: Input) -> NodeResult {
                 )),
                 ws,
                 relational_expression,
+                opt(_equality_expression),
             )),
             |t| {
-                Node::BinaryOp(BinaryOp {
-                    op: match *t.2 {
-                        "<=>" => Op::Compare,
-                        "===" => Op::CaseEqual,
-                        "==" => Op::Equal,
-                        "!=" => Op::NotEqual,
-                        "=~" => Op::RegexMatch,
-                        "!~" => Op::NotRegexMatch,
-                        _ => unreachable!(),
-                    },
-                    lhs: Box::new(t.0),
-                    rhs: Box::new(t.4),
-                })
+                let op = match *t.1 {
+                    "<=>" => Op::Compare,
+                    "===" => Op::CaseEqual,
+                    "==" => Op::Equal,
+                    "!=" => Op::NotEqual,
+                    "=~" => Op::RegexMatch,
+                    "!~" => Op::NotRegexMatch,
+                    _ => unreachable!(),
+                };
+                _partial_node(op, t.3, t.4)
             },
         ),
         relational_expression,
@@ -285,6 +290,31 @@ fn _replace_nested_lhs_placeholder(mut node: Node, value: Node) -> Node {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_equality_expression() {
+        use_parser!(equality_expression);
+        // Parse errors
+        assert_err!("");
+        assert_err!("(1 == 2)");
+        // Success cases
+        assert_ok!(
+            "1 === 2 + 3",
+            Node::binary_op(
+                Node::integer(1),
+                Op::CaseEqual,
+                Node::binary_op(Node::integer(2), Op::Add, Node::integer(3)),
+            )
+        );
+        assert_ok!(
+            ":hi != hello",
+            Node::binary_op(
+                Node::literal_symbol(":hi"),
+                Op::NotEqual,
+                Node::ident("hello", IdentifierKind::LocalVariable)
+            )
+        );
+    }
 
     #[test]
     fn test_relational_expression() {
