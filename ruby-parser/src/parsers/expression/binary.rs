@@ -186,13 +186,16 @@ pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
     map(
         tuple((unary_minus_expression, opt(_multiplicative_expression))),
         |t| match t.1 {
-            Some(Node::BinaryOp(mut op)) => {
+            Some(mut node @ Node::BinaryOp(_)) => {
                 println!("LHS is {:?}", t.0);
-                // let sub: &mut Node = op.lhs.borrow_mut();
-                // if let Node::BinaryOp(mut sub_op) = sub {
-                //     sub_op.lhs = Box::new(t.0);
-                // }
-                Node::BinaryOp(op)
+                {
+                    let mut n = &mut node;
+                    while let Node::BinaryOp(sub) = n {
+                        n = sub.lhs.borrow_mut();
+                    }
+                    *n = t.0;
+                }
+                node
             }
             _ => t.0,
         },
@@ -210,40 +213,28 @@ fn _multiplicative_expression(i: Input) -> NodeResult {
             opt(_multiplicative_expression),
         )),
         |t| {
-            //println!("Op is currently: {:?}", op);
-            let res = if let Some(mut node) = t.4 {
+            let new_node = Node::BinaryOp(BinaryOp {
+                op: match t.1 {
+                    '*' => BinaryOpKind::Multiply,
+                    '/' => BinaryOpKind::Divide,
+                    '%' => BinaryOpKind::Modulus,
+                    _ => unreachable!(),
+                },
+                lhs: Box::new(Node::Placeholder),
+                rhs: Box::new(t.3),
+            });
+            if let Some(mut node) = t.4 {
                 {
-                    println!("Stff node: {:?}", node);
                     let mut n = &mut node;
                     while let Node::BinaryOp(sub) = n {
                         n = sub.lhs.borrow_mut();
                     }
-                    *n = Node::BinaryOp(BinaryOp {
-                        op: match t.1 {
-                            '*' => BinaryOpKind::Multiply,
-                            '/' => BinaryOpKind::Divide,
-                            '%' => BinaryOpKind::Modulus,
-                            _ => unreachable!(),
-                        },
-                        lhs: Box::new(Node::Placeholder),
-                        rhs: Box::new(t.3),
-                    });
+                    *n = new_node;
                 }
-                println!("Node is: {:?}", node);
                 node
             } else {
-                Node::BinaryOp(BinaryOp {
-                    op: match t.1 {
-                        '*' => BinaryOpKind::Multiply,
-                        '/' => BinaryOpKind::Divide,
-                        '%' => BinaryOpKind::Modulus,
-                        _ => unreachable!(),
-                    },
-                    lhs: Box::new(Node::Placeholder),
-                    rhs: Box::new(t.3),
-                })
-            };
-            res
+                new_node
+            }
         },
     )(i)
 }
