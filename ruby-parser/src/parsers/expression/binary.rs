@@ -181,6 +181,7 @@ pub(crate) fn additive_expression(i: Input) -> NodeResult {
 
 /// *unary_minus_expression* | *multiplicative_expression* [ no line terminator here ] ( `*` | `/` | `%` ) *unary_minus_expression*
 pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
+    // FIXME: left recursion issues
     alt((
         map(
             tuple((
@@ -227,6 +228,28 @@ pub(crate) fn power_expression(i: Input) -> NodeResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_multiplicative_expression() {
+        use_parser!(multiplicative_expression);
+        // Parse errors
+        assert_err!("");
+        assert_err!("nil ");
+        // Success cases
+        assert_ok!(":hi", Node::literal_symbol("hi"));
+        assert_ok!(
+            "\"hi\" * 3.0 / 4 % 2",
+            Node::binary_op(
+                Node::literal_string("hi"),
+                BinaryOpKind::Multiply,
+                Node::binary_op(
+                    Node::float(3.0),
+                    BinaryOpKind::Divide,
+                    Node::binary_op(Node::integer(4), BinaryOpKind::Modulus, Node::integer(2))
+                )
+            )
+        );
+    }
 
     #[test]
     fn test_power_expression() {

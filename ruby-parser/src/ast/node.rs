@@ -37,6 +37,10 @@ impl Node {
     pub(crate) fn literal_string(val: &str) -> Self {
         Self::Literal(Literal::String(val.to_owned()))
     }
+    /// Creates a token that represents a float value
+    pub(crate) fn literal_symbol(val: &str) -> Self {
+        Self::Literal(Literal::Symbol(val.to_owned()))
+    }
     /// Creates a token that represents an identifier
     pub(crate) fn ident(name: &str, kind: IdentifierKind) -> Self {
         Self::Identifier(Identifier {

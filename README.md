@@ -39,7 +39,6 @@ they may be helpful when dealing with partial inputs.
 
  * https://ruby-doc.org/core-2.7.0/doc/syntax/literals_rdoc.html
    * Rational / Complex numeric literals (r, i, ri)
-   * Here Documents (<<, <<-, <<~, UNQUOTED, 'QUOTE', "DBL QUOTE", `CMD QUOTE`)
    * Arrays
    * Hashes
    * Ranges
