@@ -181,37 +181,17 @@ pub(crate) fn additive_expression(i: Input) -> NodeResult {
 
 /// *unary_minus_expression* | *multiplicative_expression* [ no line terminator here ] ( `*` | `/` | `%` ) *unary_minus_expression*
 pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
-    // FIXME: left recursion issues
+    use std::borrow::BorrowMut;
     println!("In multiplicative_expression {}", i);
-    // alt((
-    //     map(
-    //         tuple((
-    //             multiplicative_expression,
-    //             no_lt,
-    //             one_of("*/%"),
-    //             ws,
-    //             unary_minus_expression,
-    //         )),
-    //         |t| {
-    //             Node::BinaryOp(BinaryOp {
-    //                 op: match t.2 {
-    //                     '*' => BinaryOpKind::Multiply,
-    //                     '/' => BinaryOpKind::Divide,
-    //                     '%' => BinaryOpKind::Modulus,
-    //                     _ => unreachable!(),
-    //                 },
-    //                 lhs: Box::new(t.0),
-    //                 rhs: Box::new(t.4),
-    //             })
-    //         },
-    //     ),
-    //     unary_minus_expression,
-    // ))(i)
     map(
         tuple((unary_minus_expression, opt(_multiplicative_expression))),
         |t| match t.1 {
             Some(Node::BinaryOp(mut op)) => {
-                op.lhs = Box::new(t.0);
+                println!("LHS is {:?}", t.0);
+                // let sub: &mut Node = op.lhs.borrow_mut();
+                // if let Node::BinaryOp(mut sub_op) = sub {
+                //     sub_op.lhs = Box::new(t.0);
+                // }
                 Node::BinaryOp(op)
             }
             _ => t.0,
@@ -220,6 +200,7 @@ pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
 }
 
 fn _multiplicative_expression(i: Input) -> NodeResult {
+    use std::borrow::BorrowMut;
     map(
         tuple((
             no_lt,
@@ -229,29 +210,47 @@ fn _multiplicative_expression(i: Input) -> NodeResult {
             opt(_multiplicative_expression),
         )),
         |t| {
-            Node::BinaryOp(BinaryOp {
-                op: match t.1 {
-                    '*' => BinaryOpKind::Multiply,
-                    '/' => BinaryOpKind::Divide,
-                    '%' => BinaryOpKind::Modulus,
-                    _ => unreachable!(),
-                },
-                lhs: Box::new(Node::Placeholder),
-                rhs: Box::new(match t.4 {
-                    Some(Node::BinaryOp(mut op)) => {
-                        op.lhs = Box::new(t.3);
-                        Node::BinaryOp(op)
+            //println!("Op is currently: {:?}", op);
+            let res = if let Some(mut node) = t.4 {
+                {
+                    println!("Stff node: {:?}", node);
+                    let mut n = &mut node;
+                    while let Node::BinaryOp(sub) = n {
+                        n = sub.lhs.borrow_mut();
                     }
-                    _ => t.3,
-                }),
-            })
+                    *n = Node::BinaryOp(BinaryOp {
+                        op: match t.1 {
+                            '*' => BinaryOpKind::Multiply,
+                            '/' => BinaryOpKind::Divide,
+                            '%' => BinaryOpKind::Modulus,
+                            _ => unreachable!(),
+                        },
+                        lhs: Box::new(Node::Placeholder),
+                        rhs: Box::new(t.3),
+                    });
+                }
+                println!("Node is: {:?}", node);
+                node
+            } else {
+                Node::BinaryOp(BinaryOp {
+                    op: match t.1 {
+                        '*' => BinaryOpKind::Multiply,
+                        '/' => BinaryOpKind::Divide,
+                        '%' => BinaryOpKind::Modulus,
+                        _ => unreachable!(),
+                    },
+                    lhs: Box::new(Node::Placeholder),
+                    rhs: Box::new(t.3),
+                })
+            };
+            res
         },
     )(i)
 }
 
 /// *unary_expression* | *unary_expression* [ no line terminator here ] `**` *power_expression*
 pub(crate) fn power_expression(i: Input) -> NodeResult {
-    println!("In power_expression {}", i);
+    //println!("In power_expression {}", i);
     alt((
         map(
             tuple((unary_expression, no_lt, tag("**"), ws, power_expression)),
@@ -282,13 +281,17 @@ mod tests {
         assert_ok!(
             "\"hi\" * 3.0 / 4 % 2",
             Node::binary_op(
-                Node::literal_string("hi"),
-                BinaryOpKind::Multiply,
                 Node::binary_op(
-                    Node::float(3.0),
+                    Node::binary_op(
+                        Node::literal_string("hi"),
+                        BinaryOpKind::Multiply,
+                        Node::float(3.0)
+                    ),
                     BinaryOpKind::Divide,
-                    Node::binary_op(Node::integer(4), BinaryOpKind::Modulus, Node::integer(2))
-                )
+                    Node::integer(4)
+                ),
+                BinaryOpKind::Modulus,
+                Node::integer(2)
             )
         );
     }
