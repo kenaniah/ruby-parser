@@ -157,11 +157,11 @@ pub(crate) fn additive_expression(i: Input) -> NodeResult {
     println!("In additive_expression {}", i);
     map(
         tuple((multiplicative_expression, opt(_additive_expression))),
-        finish_node,
+        _finish_node,
     )(i)
 }
 
-pub(crate) fn _additive_expression(i: Input) -> NodeResult {
+fn _additive_expression(i: Input) -> NodeResult {
     map(
         tuple((
             no_lt,
@@ -176,7 +176,7 @@ pub(crate) fn _additive_expression(i: Input) -> NodeResult {
                 '-' => Op::Subtract,
                 _ => unreachable!(),
             };
-            partial_node(op, t.3, t.4)
+            _partial_node(op, t.3, t.4)
         },
     )(i)
 }
@@ -186,7 +186,7 @@ pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
     println!("In multiplicative_expression {}", i);
     map(
         tuple((unary_minus_expression, opt(_multiplicative_expression))),
-        finish_node,
+        _finish_node,
     )(i)
 }
 
@@ -206,45 +206,9 @@ fn _multiplicative_expression(i: Input) -> NodeResult {
                 '%' => Op::Modulus,
                 _ => unreachable!(),
             };
-            partial_node(op, t.3, t.4)
+            _partial_node(op, t.3, t.4)
         },
     )(i)
-}
-
-/// Constructs a partial binary op node, using a placeholder for the left hand side
-fn partial_node(op: Op, rhs: Node, rest: Option<Node>) -> Node {
-    let node = Node::BinaryOp(BinaryOp {
-        op,
-        lhs: Box::new(Node::Placeholder),
-        rhs: Box::new(rhs),
-    });
-    if let Some(parent_node) = rest {
-        replace_nested_lhs_placeholder(parent_node, node)
-    } else {
-        node
-    }
-}
-
-/// Completes a partial binary op node (when existing)
-fn finish_node(tuple: (Node, Option<Node>)) -> Node {
-    let (lhs, ast) = tuple;
-    match ast {
-        Some(node @ Node::BinaryOp(_)) => replace_nested_lhs_placeholder(node, lhs),
-        _ => lhs,
-    }
-}
-
-/// Recursively travels nested BinaryOp nodes and replaces the last lhs with the given value
-fn replace_nested_lhs_placeholder(mut node: Node, value: Node) -> Node {
-    use std::borrow::BorrowMut;
-    {
-        let mut n = &mut node;
-        while let Node::BinaryOp(sub) = n {
-            n = sub.lhs.borrow_mut();
-        }
-        *n = value;
-    }
-    node
 }
 
 /// *unary_expression* | *unary_expression* [ no line terminator here ] `**` *power_expression*
@@ -265,6 +229,42 @@ pub(crate) fn power_expression(i: Input) -> NodeResult {
     ))(i)
 }
 
+/// Constructs a partial binary op node, using a placeholder for the left hand side
+fn _partial_node(op: Op, rhs: Node, rest: Option<Node>) -> Node {
+    let node = Node::BinaryOp(BinaryOp {
+        op,
+        lhs: Box::new(Node::Placeholder),
+        rhs: Box::new(rhs),
+    });
+    if let Some(parent_node) = rest {
+        _replace_nested_lhs_placeholder(parent_node, node)
+    } else {
+        node
+    }
+}
+
+/// Completes a partial binary op node (when existing)
+fn _finish_node(tuple: (Node, Option<Node>)) -> Node {
+    let (lhs, ast) = tuple;
+    match ast {
+        Some(node @ Node::BinaryOp(_)) => _replace_nested_lhs_placeholder(node, lhs),
+        _ => lhs,
+    }
+}
+
+/// Recursively travels nested BinaryOp nodes and replaces the last lhs with the given value
+fn _replace_nested_lhs_placeholder(mut node: Node, value: Node) -> Node {
+    use std::borrow::BorrowMut;
+    {
+        let mut n = &mut node;
+        while let Node::BinaryOp(sub) = n {
+            n = sub.lhs.borrow_mut();
+        }
+        *n = value;
+    }
+    node
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -277,8 +277,16 @@ mod tests {
         assert_err!("2 +");
         // Success cases
         assert_ok!(
-            "1 + 2",
+            "1+ 2",
             Node::binary_op(Node::integer(1), Op::Add, Node::integer(2))
+        );
+        assert_ok!(
+            "1 - 2 -3",
+            Node::binary_op(
+                Node::binary_op(Node::integer(1), Op::Subtract, Node::integer(2)),
+                Op::Subtract,
+                Node::integer(3)
+            )
         );
         assert_ok!(
             "1*2",
