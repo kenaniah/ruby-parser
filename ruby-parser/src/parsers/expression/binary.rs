@@ -181,29 +181,17 @@ pub(crate) fn additive_expression(i: Input) -> NodeResult {
 
 /// *unary_minus_expression* | *multiplicative_expression* [ no line terminator here ] ( `*` | `/` | `%` ) *unary_minus_expression*
 pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
-    use std::borrow::BorrowMut;
     println!("In multiplicative_expression {}", i);
     map(
         tuple((unary_minus_expression, opt(_multiplicative_expression))),
         |t| match t.1 {
-            Some(mut node @ Node::BinaryOp(_)) => {
-                println!("LHS is {:?}", t.0);
-                {
-                    let mut n = &mut node;
-                    while let Node::BinaryOp(sub) = n {
-                        n = sub.lhs.borrow_mut();
-                    }
-                    *n = t.0;
-                }
-                node
-            }
+            Some(node @ Node::BinaryOp(_)) => replace_nested_lhs_placeholder(node, t.0),
             _ => t.0,
         },
     )(i)
 }
 
 fn _multiplicative_expression(i: Input) -> NodeResult {
-    use std::borrow::BorrowMut;
     map(
         tuple((
             no_lt,
@@ -223,20 +211,26 @@ fn _multiplicative_expression(i: Input) -> NodeResult {
                 lhs: Box::new(Node::Placeholder),
                 rhs: Box::new(t.3),
             });
-            if let Some(mut node) = t.4 {
-                {
-                    let mut n = &mut node;
-                    while let Node::BinaryOp(sub) = n {
-                        n = sub.lhs.borrow_mut();
-                    }
-                    *n = new_node;
-                }
-                node
+            if let Some(node) = t.4 {
+                replace_nested_lhs_placeholder(node, new_node)
             } else {
                 new_node
             }
         },
     )(i)
+}
+
+/// Recursively travels nested BinaryOp nodes and replaces the last lhs with the given value
+fn replace_nested_lhs_placeholder(mut node: Node, value: Node) -> Node {
+    use std::borrow::BorrowMut;
+    {
+        let mut n = &mut node;
+        while let Node::BinaryOp(sub) = n {
+            n = sub.lhs.borrow_mut();
+        }
+        *n = value;
+    }
+    node
 }
 
 /// *unary_expression* | *unary_expression* [ no line terminator here ] `**` *power_expression*
