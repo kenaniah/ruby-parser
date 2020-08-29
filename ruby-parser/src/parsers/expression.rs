@@ -12,6 +12,7 @@ mod binary;
 mod block;
 mod logical;
 mod method;
+mod object;
 mod super_;
 mod unary;
 mod variable;
