@@ -264,6 +264,10 @@ mod tests {
         // Success cases
         assert_ok!(":hi", Node::literal_symbol(":hi"));
         assert_ok!(
+            "12 / 2",
+            Node::binary_op(Node::integer(12), BinaryOpKind::Divide, Node::integer(2))
+        );
+        assert_ok!(
             "\"hi\" * 3.0 / 4 % 2",
             Node::binary_op(
                 Node::binary_op(
