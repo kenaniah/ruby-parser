@@ -94,10 +94,7 @@ pub(crate) fn operator_or_expression(i: Input) -> NodeResult {
     println!("In operator_or_expression {}", i);
     map(
         tuple((operator_and_expression, opt(_operator_or_expression))),
-        |(lhs, ast)| match ast {
-            Some(node @ Node::LogicalOr(_)) => _replace_nested_or_placeholder(node, lhs),
-            _ => lhs,
-        },
+        |(node, ast)| update_placeholder!(Node::LogicalOr, first, node, ast),
     )(i)
 }
 

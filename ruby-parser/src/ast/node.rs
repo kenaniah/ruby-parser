@@ -3,6 +3,7 @@ use crate::lexer::*;
 
 #[derive(Debug, PartialEq)]
 pub enum Node {
+    Conditional(Conditional),
     LogicalAnd(LogicalAnd),
     LogicalOr(LogicalOr),
     LogicalNot(LogicalNot),

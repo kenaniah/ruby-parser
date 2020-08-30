@@ -1,9 +1,10 @@
 use crate::lexer::*;
-use crate::parsers::program::compound_statement;
+use crate::parsers::expression::object::range_constructor;
+use crate::parsers::program::{compound_statement, no_lt, ws};
 use crate::parsers::token::literal::literal;
 use nom::branch::alt;
 use nom::character::complete::char;
-use nom::combinator::map;
+use nom::combinator::{map, opt};
 use nom::sequence::tuple;
 
 mod argument;
@@ -72,7 +73,30 @@ pub(crate) fn operator_expression(i: Input) -> NodeResult {
 
 /// *range_constructor* | *range_constructor* [ no line terminator here ] `?` *operator_expression* [ no line terminator here ] `:` *operator_expression*
 pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
-    stub(i)
+    println!("In conditional_operator_expression {}", i);
+    map(
+        tuple((range_constructor, opt(_conditional_operator_expression))),
+        |(node, ast)| update_placeholder!(Node::Conditional, cond, node, ast),
+    )(i)
+}
+
+fn _conditional_operator_expression(i: Input) -> NodeResult {
+    alt((
+        map(
+            tuple((
+                no_lt,
+                char('?'),
+                ws,
+                operator_expression,
+                no_lt,
+                char(':'),
+                operator_expression,
+                opt(_conditional_operator_expression),
+            )),
+            |t| Node::Nil,
+        ),
+        range_constructor,
+    ))(i)
 }
 
 /// `defined?` `(` *expression* `)`

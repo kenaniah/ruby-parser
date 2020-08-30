@@ -1,3 +1,23 @@
+/// Allows placeholding nodes to be updated when working with left-recursive parsers
+#[macro_export]
+macro_rules! update_placeholder {
+    ($variant:path, $prop:ident, $value:expr, $node:expr) => {
+        if let Some(mut parent_node) = $node {
+            use std::borrow::BorrowMut;
+            {
+                let mut n = &mut parent_node;
+                while let $variant(sub) = n {
+                    n = sub.$prop.borrow_mut();
+                }
+                *n = $value;
+            }
+            parent_node
+        }else{
+            $value
+        }
+    };
+}
+
 /// Defines the functions used by the `assert_ok!`, `assert_partial!`, and `assert_err!` macros
 #[macro_export]
 macro_rules! use_parser {
