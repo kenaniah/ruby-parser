@@ -80,4 +80,12 @@ impl Node {
             second: Box::new(second),
         })
     }
+    /// Creates a token that reprents a range
+    pub(crate) fn range(from: Node, to: Node, exclusive: bool) -> Node {
+        Self::Ranged(Ranged {
+            from: Box::new(from),
+            to: Box::new(to),
+            exclusive,
+        })
+    }
 }

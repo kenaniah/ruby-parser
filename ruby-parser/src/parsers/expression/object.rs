@@ -71,3 +71,26 @@ pub(crate) fn range_operator(i: Input) -> LexResult {
 fn stub(i: Input) -> NodeResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_range_constructor() {
+        use_parser!(range_constructor);
+        // Parse errors
+        assert_err!("");
+        assert_err!("1 ");
+        // Success cases
+        assert_ok!("2", Node::integer(2));
+        assert_ok!(
+            "2 ..  5",
+            Node::range(Node::integer(2), Node::integer(5), false)
+        );
+        assert_ok!(
+            "2.0...4.0",
+            Node::range(Node::float(2.0), Node::float(4.0), true)
+        );
+    }
+}
