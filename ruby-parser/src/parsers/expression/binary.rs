@@ -252,39 +252,19 @@ pub(crate) fn power_expression(i: Input) -> NodeResult {
 }
 
 /// Constructs a partial binary op node, using a placeholder for the left hand side
-fn _partial_node(op: Op, rhs: Node, rest: Option<Node>) -> Node {
+fn _partial_node(op: Op, rhs: Node, ast: Option<Node>) -> Node {
     let node = Node::BinaryOp(BinaryOp {
         op,
         lhs: Box::new(Node::Placeholder),
         rhs: Box::new(rhs),
     });
-    if let Some(parent_node) = rest {
-        _replace_nested_lhs_placeholder(parent_node, node)
-    } else {
-        node
-    }
+    update_placeholder!(Node::BinaryOp, lhs, node, ast)
 }
 
 /// Completes a partial binary op node (when existing)
 fn _finish_node(tuple: (Node, Option<Node>)) -> Node {
-    let (lhs, ast) = tuple;
-    match ast {
-        Some(node @ Node::BinaryOp(_)) => _replace_nested_lhs_placeholder(node, lhs),
-        _ => lhs,
-    }
-}
-
-/// Recursively travels nested BinaryOp nodes and replaces the last lhs with the given value
-fn _replace_nested_lhs_placeholder(mut node: Node, value: Node) -> Node {
-    use std::borrow::BorrowMut;
-    {
-        let mut n = &mut node;
-        while let Node::BinaryOp(sub) = n {
-            n = sub.lhs.borrow_mut();
-        }
-        *n = value;
-    }
-    node
+    let (node, ast) = tuple;
+    update_placeholder!(Node::BinaryOp, lhs, node, ast)
 }
 
 #[cfg(test)]

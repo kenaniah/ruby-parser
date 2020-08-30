@@ -1,4 +1,4 @@
-/// Allows placeholding nodes to be updated when working with left-recursive parsers
+/// Allows placeholding nodes to be updated when working around left-recursive parsers
 #[macro_export]
 macro_rules! update_placeholder {
     ($variant:path, $prop:ident, $value:expr, $node:expr) => {
