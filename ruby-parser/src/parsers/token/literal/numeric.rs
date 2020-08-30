@@ -22,14 +22,13 @@ use ruby_parser::lexer::Node;
 use ruby_parser::ast::Literal;
 
 let input = "12_345";
-let (remaining, token) = parse(input.into()).unwrap();
+let (remaining, ast) = parse(input.into()).unwrap();
 assert_eq!("", *remaining);
-assert_eq!(Node::Block(vec![Node::Literal(Literal::Integer(12345))]), token);
+assert_eq!(Node::Block(vec![Node::Literal(Literal::Integer(12345))]), ast);
 
-let input = "-12.34e+4 + 12";
-let (remaining, token) = parse(input.into()).unwrap();
-assert_eq!(" + 12", *remaining);
-assert_eq!(Node::Block(vec![Node::Literal(Literal::Float(-123400.0))]), token);
+let input = "-12.34e+4";
+let (remaining, ast) = parse(input.into()).unwrap();
+assert_eq!(Node::Block(vec![Node::Literal(Literal::Float(-123400.0))]), ast);
 ```
 
 ## ISO Spec

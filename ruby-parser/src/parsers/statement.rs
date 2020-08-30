@@ -18,9 +18,7 @@ pub(crate) fn statement(i: Input) -> NodeResult {
 }
 
 pub(crate) fn expression_statement(i: Input) -> NodeResult {
-    //println!("Called with", i);
     expression(i)
-    //primary_expression(i)
 }
 
 pub(crate) fn alias_statement(i: Input) -> NodeResult {
