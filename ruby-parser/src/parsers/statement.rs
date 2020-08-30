@@ -1,5 +1,5 @@
 use crate::lexer::*;
-use crate::parsers::expression::primary_expression;
+use crate::parsers::expression::expression;
 use nom::branch::alt;
 
 /// *expression_statement* | *alias_statement* | *undef_statement* | *if_modifier_statement* | *unless_modifier_statement* | *while_modifier_statement* | *until_modifier_statement* | *rescue_modifier_statement* | *assignment_statement*
@@ -19,8 +19,8 @@ pub(crate) fn statement(i: Input) -> NodeResult {
 
 pub(crate) fn expression_statement(i: Input) -> NodeResult {
     //println!("Called with", i);
-    //expression(i)
-    primary_expression(i) // FIXME: This should be expression(i) when left recursion is solved
+    expression(i)
+    //primary_expression(i)
 }
 
 pub(crate) fn alias_statement(i: Input) -> NodeResult {

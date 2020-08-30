@@ -65,12 +65,27 @@ pub(crate) fn operator_not_expression(i: Input) -> NodeResult {
 pub(crate) fn keyword_and_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_and_expression", i);
     map(
-        tuple((expression, no_lt, tag("and"), ws, keyword_not_expression)),
+        tuple((expression, opt(_keyword_and_expression))),
+        |(node, ast)| update_placeholder!(Node::LogicalAnd, first, node, ast),
+    )(i)
+}
+
+fn _keyword_and_expression(i: Input) -> NodeResult {
+    let i = stack_frame!("keyword_and_expression", i);
+    map(
+        tuple((
+            no_lt,
+            tag("and"),
+            ws,
+            keyword_not_expression,
+            opt(_keyword_and_expression),
+        )),
         |t| {
-            Node::LogicalAnd(LogicalAnd {
-                first: Box::new(t.0),
-                second: Box::new(t.4),
-            })
+            let node = Node::LogicalAnd(LogicalAnd {
+                first: Box::new(Node::Placeholder),
+                second: Box::new(t.3),
+            });
+            update_placeholder!(Node::LogicalAnd, first, node, t.4)
         },
     )(i)
 }
@@ -79,12 +94,26 @@ pub(crate) fn keyword_and_expression(i: Input) -> NodeResult {
 pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_or_expression", i);
     map(
-        tuple((expression, no_lt, tag("or"), ws, keyword_not_expression)),
+        tuple((expression, opt(_keyword_or_expression))),
+        |(node, ast)| update_placeholder!(Node::LogicalOr, first, node, ast),
+    )(i)
+}
+
+fn _keyword_or_expression(i: Input) -> NodeResult {
+    map(
+        tuple((
+            no_lt,
+            tag("or"),
+            ws,
+            keyword_not_expression,
+            opt(_keyword_or_expression),
+        )),
         |t| {
-            Node::LogicalOr(LogicalOr {
-                first: Box::new(t.0),
-                second: Box::new(t.4),
-            })
+            let node = Node::LogicalOr(LogicalOr {
+                first: Box::new(Node::Placeholder),
+                second: Box::new(t.3),
+            });
+            update_placeholder!(Node::LogicalOr, first, node, t.4)
         },
     )(i)
 }

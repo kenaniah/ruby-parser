@@ -270,7 +270,6 @@ mod tests {
         use_parser!(equality_expression);
         // Parse errors
         assert_err!("");
-        assert_err!("(1 == 2)");
         // Success cases
         assert_ok!(
             "1 === 2 + 3",
@@ -287,6 +286,14 @@ mod tests {
                 Op::NotEqual,
                 Node::ident("hello", IdentifierKind::LocalVariable)
             )
+        );
+        assert_ok!(
+            "(1 == 2)",
+            Node::Block(vec![Node::binary_op(
+                Node::integer(1),
+                Op::Equal,
+                Node::integer(2),
+            )])
         );
         assert_remaining!("1?2:3", "?2:3");
     }
