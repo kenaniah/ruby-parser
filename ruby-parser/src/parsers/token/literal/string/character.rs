@@ -5,13 +5,13 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::{map, not, peek, recognize};
-use nom::sequence::{preceded, terminated};
+use nom::sequence::{preceded, tuple};
 
 /// `?` ( *double_escape_sequence* | *source_character* **but not** ( *whitespace* | `\` ) )
 pub(crate) fn character_literal(i: Input) -> StringResult {
     let i = stack_frame!("character_literal", i);
-    terminated(
-        preceded(
+    map(
+        tuple((
             char('?'),
             alt((
                 // An escaped newline should not be treated as a line continuation in this context
@@ -22,9 +22,12 @@ pub(crate) fn character_literal(i: Input) -> StringResult {
                     |c| c.to_string(),
                 ),
             )),
-        ),
-        // Ensure the next character is either EOF or whitespace
-        peek(alt((whitespace, recognize(not(source_character))))),
+            // Ensure the next character is either EOF or whitespace
+            peek(alt((whitespace, recognize(not(source_character))))),
+            // Ensure the next character is not a colon (prevents conflicts w/ ternary)
+            peek(not(tuple((ws, char(':'))))),
+        )),
+        |t| t.1,
     )(i)
 }
 
