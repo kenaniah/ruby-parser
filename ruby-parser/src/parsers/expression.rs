@@ -1,3 +1,4 @@
+use crate::ast::Conditional;
 use crate::lexer::*;
 use crate::parsers::expression::object::range_constructor;
 use crate::parsers::program::{compound_statement, no_lt, ws};
@@ -93,7 +94,14 @@ fn _conditional_operator_expression(i: Input) -> NodeResult {
                 operator_expression,
                 opt(_conditional_operator_expression),
             )),
-            |t| Node::Nil,
+            |t| {
+                let node = Node::Conditional(Conditional {
+                    cond: Box::new(Node::Placeholder),
+                    then: Some(Box::new(t.3)),
+                    otherwise: Some(Box::new(t.6)),
+                });
+                update_placeholder!(Node::Conditional, cond, node, t.7)
+            },
         ),
         range_constructor,
     ))(i)

@@ -3,8 +3,8 @@ use super::*;
 #[derive(Debug, PartialEq)]
 pub struct Conditional {
     pub cond: Box<Node>,
-    pub then: Box<Node>,
-    pub otherwise: Box<Node>,
+    pub then: Option<Box<Node>>,
+    pub otherwise: Option<Box<Node>>,
 }
 
 #[derive(Debug, PartialEq)]
