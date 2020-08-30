@@ -1,5 +1,13 @@
+use crate::ast::Ranged;
 use crate::lexer::*;
+use crate::parsers::expression::logical::operator_or_expression;
 use crate::parsers::expression::operator_expression;
+use crate::parsers::program::{no_lt, ws};
+use nom::branch::alt;
+use nom::bytes::complete::tag;
+use nom::combinator::map;
+use nom::combinator::recognize;
+use nom::sequence::tuple;
 
 /// `[` *indexing_argument_list*? `]`
 pub(crate) fn array_constructor(i: Input) -> NodeResult {
@@ -33,12 +41,31 @@ pub(crate) fn association_value(i: Input) -> NodeResult {
 
 /// *operator_or_expression* | *operator_or_expression* [ no line terminator here ] *range_operator* *operator_or_expression*
 pub(crate) fn range_constructor(i: Input) -> NodeResult {
-    stub(i)
+    println!("In range_constructor {}", i);
+    alt((
+        map(
+            tuple((
+                operator_or_expression,
+                no_lt,
+                range_operator,
+                ws,
+                operator_or_expression,
+            )),
+            |t| {
+                Node::Ranged(Ranged {
+                    from: Box::new(t.0),
+                    to: Box::new(t.4),
+                    exclusive: *t.2 == "...",
+                })
+            },
+        ),
+        operator_or_expression,
+    ))(i)
 }
 
 /// `..` | `...`
-pub(crate) fn range_operator(i: Input) -> NodeResult {
-    stub(i)
+pub(crate) fn range_operator(i: Input) -> LexResult {
+    recognize(alt((tag("..."), tag(".."))))(i)
 }
 
 fn stub(i: Input) -> NodeResult {

@@ -15,6 +15,7 @@ pub enum Node {
     Block(Vec<Node>),
     Segment(Segment),
     Comment(String),
+    Ranged(Ranged),
     Nil,
     Self_,
     EndOfProgram,
