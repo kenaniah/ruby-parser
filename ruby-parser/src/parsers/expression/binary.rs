@@ -236,19 +236,19 @@ fn _multiplicative_expression(i: Input) -> NodeResult {
 /// *unary_expression* | *unary_expression* [ no line terminator here ] `**` *power_expression*
 pub(crate) fn power_expression(i: Input) -> NodeResult {
     let i = stack_frame!("power_expression", i);
-    alt((
-        map(
-            tuple((unary_expression, no_lt, tag("**"), ws, power_expression)),
-            |t| {
-                Node::BinaryOp(BinaryOp {
-                    op: Op::Power,
-                    lhs: Box::new(t.0),
-                    rhs: Box::new(t.4),
-                })
-            },
-        ),
-        unary_expression,
-    ))(i)
+    let (i, lhs) = unary_expression(i)?;
+    if let Ok((j, t)) = tuple((no_lt, tag("**"), ws, power_expression))(i.clone()) {
+        Ok((
+            j,
+            Node::BinaryOp(BinaryOp {
+                op: Op::Power,
+                lhs: Box::new(lhs),
+                rhs: Box::new(t.3),
+            }),
+        ))
+    } else {
+        Ok((i, lhs))
+    }
 }
 
 /// Constructs a partial binary op node, using a placeholder for the left hand side
