@@ -12,7 +12,7 @@ macro_rules! update_placeholder {
                 *n = $value;
             }
             parent_node
-        }else{
+        } else {
             $value
         }
     };

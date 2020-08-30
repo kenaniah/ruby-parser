@@ -113,11 +113,7 @@ fn _operator_or_expression(i: Input) -> NodeResult {
                     first: Box::new(Node::Placeholder),
                     second: Box::new(t.3),
                 });
-                if let Some(parent_node) = t.4 {
-                    _replace_nested_or_placeholder(parent_node, node)
-                } else {
-                    node
-                }
+                update_placeholder!(Node::LogicalOr, first, node, t.4)
             },
         ),
         operator_and_expression,
@@ -129,10 +125,7 @@ pub(crate) fn operator_and_expression(i: Input) -> NodeResult {
     println!("In operator_and_expression {}", i);
     map(
         tuple((equality_expression, opt(_operator_and_expression))),
-        |(lhs, ast)| match ast {
-            Some(node @ Node::LogicalAnd(_)) => _replace_nested_and_placeholder(node, lhs),
-            _ => lhs,
-        },
+        |(node, ast)| update_placeholder!(Node::LogicalAnd, first, node, ast),
     )(i)
 }
 
@@ -151,41 +144,11 @@ fn _operator_and_expression(i: Input) -> NodeResult {
                     first: Box::new(Node::Placeholder),
                     second: Box::new(t.3),
                 });
-                if let Some(parent_node) = t.4 {
-                    _replace_nested_and_placeholder(parent_node, node)
-                } else {
-                    node
-                }
+                update_placeholder!(Node::LogicalAnd, first, node, t.4)
             },
         ),
         equality_expression,
     ))(i)
-}
-
-/// Recursively travels nested LogicalAnd nodes and replaces the last lhs with the given value
-fn _replace_nested_and_placeholder(mut node: Node, value: Node) -> Node {
-    use std::borrow::BorrowMut;
-    {
-        let mut n = &mut node;
-        while let Node::LogicalAnd(sub) = n {
-            n = sub.first.borrow_mut();
-        }
-        *n = value;
-    }
-    node
-}
-
-/// Recursively travels nested LogicalOr nodes and replaces the last lhs with the given value
-fn _replace_nested_or_placeholder(mut node: Node, value: Node) -> Node {
-    use std::borrow::BorrowMut;
-    {
-        let mut n = &mut node;
-        while let Node::LogicalOr(sub) = n {
-            n = sub.first.borrow_mut();
-        }
-        *n = value;
-    }
-    node
 }
 
 #[cfg(test)]
