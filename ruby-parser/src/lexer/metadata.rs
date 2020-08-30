@@ -19,6 +19,6 @@ mod test {
 
     #[test]
     fn test_metadata_size() {
-        assert_eq!(32, std::mem::size_of::<Metadata>());
+        assert_eq!(40, std::mem::size_of::<Metadata>());
     }
 }

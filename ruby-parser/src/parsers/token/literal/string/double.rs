@@ -47,6 +47,7 @@ pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
 
 /// `\` *double_escaped_character*
 pub(crate) fn simple_escape_sequence(i: Input) -> CharResult {
+    let i = stack_frame!("simple_escape_sequence", i);
     map(tuple((char('\\'), double_escaped_character)), |t| {
         match t.1 {
             '\\' => '\\',
@@ -76,6 +77,7 @@ pub(crate) fn non_escaped_sequence(i: Input) -> CharResult {
 
 /// *source_character* **but not** ( [ any escaping character ] | *line_terminator* )
 pub(crate) fn non_escaped_double_quoted_string_char(i: Input) -> CharResult {
+    let i = stack_frame!("non_escaped_double_quoted_string_char", i);
     peek(not(one_of("\\ntrfvaebsxucCM01234567")))(i.clone())?;
     peek(not(line_terminator))(i.clone())?;
     anychar(i)
