@@ -13,7 +13,7 @@ pub(crate) fn equality_expression(i: Input) -> NodeResult {
     println!("In equality_expression {}", i);
     map(
         tuple((relational_expression, opt(_equality_expression))),
-        _finish_node,
+        |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
     )(i)
 }
 
@@ -56,7 +56,7 @@ pub(crate) fn relational_expression(i: Input) -> NodeResult {
     println!("In relational_expression {}", i);
     map(
         tuple((bitwise_or_expression, opt(_relational_expression))),
-        _finish_node,
+        |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
     )(i)
 }
 
@@ -90,7 +90,7 @@ pub(crate) fn bitwise_or_expression(i: Input) -> NodeResult {
     println!("In bitwise_or_expression {}", i);
     map(
         tuple((bitwise_and_expression, opt(_bitwise_or_expression))),
-        _finish_node,
+        |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
     )(i)
 }
 
@@ -122,7 +122,7 @@ pub(crate) fn bitwise_and_expression(i: Input) -> NodeResult {
     println!("In bitwise_and_expression {}", i);
     map(
         tuple((bitwise_shift_expression, opt(_bitwise_and_expression))),
-        _finish_node,
+        |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
     )(i)
 }
 
@@ -147,7 +147,7 @@ pub(crate) fn bitwise_shift_expression(i: Input) -> NodeResult {
     println!("In bitwise_shift_expression {}", i);
     map(
         tuple((additive_expression, opt(_bitwise_shift_expression))),
-        _finish_node,
+        |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
     )(i)
 }
 
@@ -179,7 +179,7 @@ pub(crate) fn additive_expression(i: Input) -> NodeResult {
     println!("In additive_expression {}", i);
     map(
         tuple((multiplicative_expression, opt(_additive_expression))),
-        _finish_node,
+        |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
     )(i)
 }
 
@@ -208,7 +208,7 @@ pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
     println!("In multiplicative_expression {}", i);
     map(
         tuple((unary_minus_expression, opt(_multiplicative_expression))),
-        _finish_node,
+        |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
     )(i)
 }
 
@@ -258,12 +258,6 @@ fn _partial_node(op: Op, rhs: Node, ast: Option<Node>) -> Node {
         lhs: Box::new(Node::Placeholder),
         rhs: Box::new(rhs),
     });
-    update_placeholder!(Node::BinaryOp, lhs, node, ast)
-}
-
-/// Completes a partial binary op node (when existing)
-fn _finish_node(tuple: (Node, Option<Node>)) -> Node {
-    let (node, ast) = tuple;
     update_placeholder!(Node::BinaryOp, lhs, node, ast)
 }
 
