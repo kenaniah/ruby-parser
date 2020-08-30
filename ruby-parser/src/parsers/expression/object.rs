@@ -82,6 +82,7 @@ mod tests {
         // Parse errors
         assert_err!("");
         assert_err!("1 ");
+        assert_err!("1....5");
         // Success cases
         assert_ok!("2", Node::integer(2));
         assert_ok!(
