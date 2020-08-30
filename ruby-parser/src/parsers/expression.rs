@@ -82,15 +82,18 @@ pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
 }
 
 fn _conditional_operator_expression(i: Input) -> NodeResult {
+    println!("In _conditional_operator_expression {}", i);
     alt((
         map(
             tuple((
                 no_lt,
                 char('?'),
                 ws,
+                //FIXME: The single-character ("?a") parser is picking up the then clause, causing parse errors
                 operator_expression,
                 no_lt,
                 char(':'),
+                ws,
                 operator_expression,
                 opt(_conditional_operator_expression),
             )),
@@ -98,9 +101,9 @@ fn _conditional_operator_expression(i: Input) -> NodeResult {
                 let node = Node::Conditional(Conditional {
                     cond: Box::new(Node::Placeholder),
                     then: Some(Box::new(t.3)),
-                    otherwise: Some(Box::new(t.6)),
+                    otherwise: Some(Box::new(t.7)),
                 });
-                update_placeholder!(Node::Conditional, cond, node, t.7)
+                update_placeholder!(Node::Conditional, cond, node, t.8)
             },
         ),
         range_constructor,
@@ -124,6 +127,19 @@ fn stub(i: Input) -> NodeResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_conditional_operator_expression() {
+        use_parser!(conditional_operator_expression);
+        // Parse errors
+        // assert_err!("");
+        // assert_err!("?2:3");
+        //assert_err!("1?:3");
+        // Success cases
+        // assert_ok!("\"hi\"", Node::literal_string("hi"));
+        assert_ok!("1?2:3", Node::Nil);
+        //assert_ok!("1?2:3", Node::Nil);
+    }
 
     #[test]
     fn test_primary_expression() {
