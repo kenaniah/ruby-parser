@@ -9,6 +9,7 @@ use nom::sequence::preceded;
 
 /// `?` ( *double_escape_sequence* | *source_character* **but not** ( *whitespace* | `\` ) )
 pub(crate) fn character_literal(i: Input) -> StringResult {
+    println!("In character_literal {}", i);
     preceded(
         char('?'),
         alt((

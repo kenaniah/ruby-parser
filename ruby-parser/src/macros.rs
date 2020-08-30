@@ -76,6 +76,19 @@ macro_rules! use_parser {
             };
         };
 
+        /// Tests that the parser consumes the expected amount of input
+        #[allow(unused_macros)]
+        macro_rules! assert_remaining {
+            ($input:expr, $remaining:expr) => {
+                let res = partial_parser($input.into());
+                if res.is_ok() {
+                    assert_eq!(*$output(partial_parser($input.into()).unwrap().0), $remaining)
+                } else {
+                    panic!("\nExpected parsing to succeed...\n     input: {:?}\n    result: {:?}\n  expected: {:?}", $input, res.unwrap_err(), $remaining)
+                }
+            }
+        }
+
         /// Tests whether the parser's output matches an unsuccessful result
         #[allow(unused_macros)]
         macro_rules! assert_err {

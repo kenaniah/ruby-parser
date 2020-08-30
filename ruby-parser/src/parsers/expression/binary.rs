@@ -288,6 +288,7 @@ mod tests {
                 Node::ident("hello", IdentifierKind::LocalVariable)
             )
         );
+        assert_remaining!("1?2:3", "?2:3");
     }
 
     #[test]
@@ -313,6 +314,7 @@ mod tests {
                 Node::integer(6)
             )
         );
+        assert_remaining!("1?2:3", "?2:3");
     }
 
     #[test]
@@ -338,6 +340,7 @@ mod tests {
                 Node::integer(5)
             )
         );
+        assert_remaining!("1?2:3", "?2:3");
     }
 
     #[test]
@@ -359,6 +362,7 @@ mod tests {
                 Node::integer(3)
             )
         );
+        assert_remaining!("1?2:3", "?2:3");
     }
 
     #[test]
@@ -388,6 +392,7 @@ mod tests {
                 Node::binary_op(Node::integer(2), Op::Multiply, Node::integer(-3)),
             )
         );
+        assert_remaining!("1?2:3", "?2:3");
     }
 
     #[test]
@@ -433,6 +438,7 @@ mod tests {
                 Node::integer(4)
             )
         );
+        assert_remaining!("1?2:3", "?2:3");
     }
 
     #[test]
@@ -459,6 +465,7 @@ mod tests {
                 Node::integer(2)
             )
         );
+        assert_remaining!("1?2:3", "?2:3");
     }
 
     #[test]
@@ -479,5 +486,6 @@ mod tests {
                 Node::binary_op(Node::integer(4), Op::Power, Node::float(-5.2))
             )
         );
+        assert_remaining!("1?2:3", "?2:3");
     }
 }
