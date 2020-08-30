@@ -42,26 +42,32 @@ pub(crate) fn association_value(i: Input) -> NodeResult {
 /// *operator_or_expression* | *operator_or_expression* [ no line terminator here ] *range_operator* *operator_or_expression*
 pub(crate) fn range_constructor(i: Input) -> NodeResult {
     let i = stack_frame!("range_constructor", i);
-    // TODO: factor out common terms to optimize performance
-    alt((
-        map(
-            tuple((
-                operator_or_expression,
-                no_lt,
-                range_operator,
-                ws,
-                operator_or_expression,
-            )),
-            |t| {
-                Node::Ranged(Ranged {
-                    from: Box::new(t.0),
-                    to: Box::new(t.4),
-                    exclusive: *t.2 == "...",
-                })
-            },
-        ),
-        operator_or_expression,
-    ))(i)
+    let (i, lhs) = operator_or_expression(i)?;
+    if let Ok((j, t)) = tuple((no_lt, range_operator, ws, operator_or_expression))(i.clone()) {
+        Ok((
+            j,
+            Node::Ranged(Ranged {
+                from: Box::new(lhs),
+                to: Box::new(t.3),
+                exclusive: *t.1 == "...",
+            }),
+        ))
+    } else {
+        Ok((i, lhs))
+    }
+    //
+    //     |t| {
+    //         Node::Ranged(Ranged {
+    //             from: Box::new(expr),
+    //             to: Box::new(t.3),
+    //             exclusive: *t.1 == "...",
+    //         })
+    //     },
+    // )(i){
+    //
+    // }else{
+    //     node
+    // }
 }
 
 /// `..` | `...`
