@@ -31,6 +31,7 @@ pub(crate) fn double_quoted_string_character(i: Input) -> SegmentResult {
 
 /// *simple_escape_sequence* | *non_escaped_sequence* | *line_terminator_escape_sequence* | *octal_escape_sequence* | *hexadecimal_escape_sequence* | *control_escape_sequence*
 pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
+    let i = stack_frame!("double_escape_sequence", i);
     // Should be evaluated
     alt((
         map(simple_escape_sequence, |c| c.to_string()),

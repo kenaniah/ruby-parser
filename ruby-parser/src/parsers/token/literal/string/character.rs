@@ -4,23 +4,27 @@ use crate::parsers::program::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{map, not, peek};
-use nom::sequence::preceded;
+use nom::combinator::{map, not, peek, recognize};
+use nom::sequence::{preceded, terminated};
 
 /// `?` ( *double_escape_sequence* | *source_character* **but not** ( *whitespace* | `\` ) )
 pub(crate) fn character_literal(i: Input) -> StringResult {
-    println!("In character_literal {}", i);
-    preceded(
-        char('?'),
-        alt((
-            // An escaped newline should not be treated as a line continuation in this context
-            map(tag("\\\n"), |_| "\n".to_owned()),
-            double_escape_sequence,
-            map(
-                preceded(peek(not(alt((whitespace, tag("\\"))))), source_character),
-                |c| c.to_string(),
-            ),
-        )),
+    let i = stack_frame!("character_literal", i);
+    terminated(
+        preceded(
+            char('?'),
+            alt((
+                // An escaped newline should not be treated as a line continuation in this context
+                map(tag("\\\n"), |_| "\n".to_owned()),
+                double_escape_sequence,
+                map(
+                    preceded(peek(not(alt((whitespace, tag("\\"))))), source_character),
+                    |c| c.to_string(),
+                ),
+            )),
+        ),
+        // Ensure the next character is either EOF or whitespace
+        peek(alt((whitespace, recognize(not(source_character))))),
     )(i)
 }
 

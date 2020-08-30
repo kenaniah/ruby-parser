@@ -21,13 +21,13 @@ mod variable;
 mod yield_;
 
 pub(crate) fn expression(i: Input) -> NodeResult {
-    println!("In expression {}", i);
+    let i = stack_frame!("expression", i);
     logical::keyword_logical_expression(i)
 }
 
 /// *class_definition* | *singleton_class_definition* | *module_definition* | *method_definition* | *singleton_method_definition* | *yield_with_optional_argument* | *if_expression* | *unless_expression* | *case_expression* | *while_expression* | *until_expression* | *for_expression* | *return_without_argument* | *break_without_argument* | *next_without_argument* | *redo_expression* | *retry_expression* | *begin_expression* | *grouping_expression* | *variable_reference* | *scoped_constant_reference* | *array_constructor* | *hash_constructor* | *literal* | *defined_with_parenthesis* | *primary_method_invocation*
 pub(crate) fn primary_expression(i: Input) -> NodeResult {
-    println!("In primary_expression {}", i);
+    let i = stack_frame!("primary_expression", i);
     alt((
         //class_definition,
         //singleton_class_definition,
@@ -74,7 +74,7 @@ pub(crate) fn operator_expression(i: Input) -> NodeResult {
 
 /// *range_constructor* | *range_constructor* [ no line terminator here ] `?` *operator_expression* [ no line terminator here ] `:` *operator_expression*
 pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
-    println!("In conditional_operator_expression {}", i);
+    let i = stack_frame!("conditional_operator_expression", i);
     map(
         tuple((range_constructor, opt(_conditional_operator_expression))), // BUG: range constructor is currently too greedy
         |(node, ast)| update_placeholder!(Node::Conditional, cond, node, ast),
@@ -82,14 +82,13 @@ pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
 }
 
 fn _conditional_operator_expression(i: Input) -> NodeResult {
-    println!("In _conditional_operator_expression {}", i);
+    let i = stack_frame!("_conditional_operator_expression", i);
     alt((
         map(
             tuple((
                 no_lt,
                 char('?'),
                 ws,
-                //FIXME: The single-character ("?a") parser is picking up the then clause, causing parse errors
                 operator_expression,
                 no_lt,
                 char(':'),
@@ -132,13 +131,22 @@ mod tests {
     fn test_conditional_operator_expression() {
         use_parser!(conditional_operator_expression);
         // Parse errors
-        // assert_err!("");
-        // assert_err!("?2:3");
-        //assert_err!("1?:3");
+        assert_err!("");
+        assert_err!("?2:3");
+        assert_err!("1?:3");
         // Success cases
-        // assert_ok!("\"hi\"", Node::literal_string("hi"));
-        //assert_ok!("1?2:3", Node::Nil);
-        //assert_ok!("1?2:3", Node::Nil);
+        assert_ok!("\"hi\"", Node::literal_string("hi"));
+        let ok = Node::Conditional(Conditional {
+            cond: Box::new(Node::integer(1)),
+            then: Some(Box::new(Node::integer(2))),
+            otherwise: Some(Box::new(Node::integer(3))),
+        });
+        assert_ok!("1 ? 2 : 3", ok);
+        assert_ok!("1 ? 2: 3", ok);
+        assert_ok!("1?2 : 3", ok); // Still buggy
+        assert_ok!("1 ?2 :3", ok);
+        assert_ok!("1 ? 2:3", ok);
+        assert_ok!("1?2:3", ok);
     }
 
     #[test]

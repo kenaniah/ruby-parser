@@ -9,6 +9,8 @@ pub struct Metadata<'a> {
     pub(crate) quote_delimiter: Option<char>,
     /// Tracks heredoc-specific lexer state
     pub(crate) heredoc: Option<Box<HeredocMetadata<'a>>>,
+    /// Tracks parser stack depth
+    pub(crate) stack_depth: usize
 }
 
 #[cfg(test)]

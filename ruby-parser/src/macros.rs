@@ -1,3 +1,16 @@
+#[macro_export]
+macro_rules! stack_frame {
+    ($name:expr, $input:expr) => {
+        {
+            let mut i = $input.clone();
+            let padding = std::iter::repeat(" ").take(i.metadata.stack_depth).collect::<String>();
+            i.metadata.stack_depth = i.metadata.stack_depth + 1;
+            println!("{}in {}: {}", padding, $name, $input);
+            i
+        }
+    }
+}
+
 /// Allows placeholding nodes to be updated when working around left-recursive parsers
 #[macro_export]
 macro_rules! update_placeholder {
@@ -50,7 +63,7 @@ macro_rules! use_parser {
             ($input:expr, $result:expr) => {
                 let res = parser($input.into());
                 if res.is_ok() {
-                    assert_eq!($output(parser($input.into()).unwrap().1), $result)
+                    assert_eq!($output(res.unwrap().1), $result)
                 } else {
                     panic!("\nExpected parsing to succeed...\n     input: {:?}\n    result: {:?}\n  expected: {:?}", $input, res.unwrap_err(), $result)
                 }
@@ -69,7 +82,7 @@ macro_rules! use_parser {
             ($input:expr, $result:expr) => {
                 let res = partial_parser($input.into());
                 if res.is_ok() {
-                    assert_eq!($output(partial_parser($input.into()).unwrap().1), $result)
+                    assert_eq!($output(res.unwrap().1), $result)
                 } else {
                     panic!("\nExpected parsing to succeed...\n     input: {:?}\n    result: {:?}\n  expected: {:?}", $input, res.unwrap_err(), $result)
                 }
@@ -82,7 +95,7 @@ macro_rules! use_parser {
             ($input:expr, $remaining:expr) => {
                 let res = partial_parser($input.into());
                 if res.is_ok() {
-                    assert_eq!(*$output(partial_parser($input.into()).unwrap().0), $remaining)
+                    assert_eq!(*$output(res.unwrap().0), $remaining)
                 } else {
                     panic!("\nExpected parsing to succeed...\n     input: {:?}\n    result: {:?}\n  expected: {:?}", $input, res.unwrap_err(), $remaining)
                 }

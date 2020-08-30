@@ -10,7 +10,7 @@ use nom::sequence::tuple;
 
 /// *relational_expression* | *relational_expression* [ no line terminator here ] ( `<=>` | `===` | `==` | `!=` | `=~` | `!~` ) *relational_expression*
 pub(crate) fn equality_expression(i: Input) -> NodeResult {
-    println!("In equality_expression {}", i);
+    let i = stack_frame!("equality_expression", i);
     map(
         tuple((relational_expression, opt(_equality_expression))),
         |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
@@ -53,7 +53,7 @@ fn _equality_expression(i: Input) -> NodeResult {
 
 /// *bitwise_or_expression* | *relational_expression* [ no line terminator here ] ( `>=` | `>` | `<=` | `<` ) *bitwise_or_expression*
 pub(crate) fn relational_expression(i: Input) -> NodeResult {
-    println!("In relational_expression {}", i);
+    let i = stack_frame!("relational_expression", i);
     map(
         tuple((bitwise_or_expression, opt(_relational_expression))),
         |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
@@ -87,7 +87,7 @@ fn _relational_expression(i: Input) -> NodeResult {
 
 /// *bitwise_and_expression* | *bitwise_or_expression* [ no line terminator here ] ( `|` | `^` ) *bitwise_and_expression*
 pub(crate) fn bitwise_or_expression(i: Input) -> NodeResult {
-    println!("In bitwise_or_expression {}", i);
+    let i = stack_frame!("bitwise_or_expression", i);
     map(
         tuple((bitwise_and_expression, opt(_bitwise_or_expression))),
         |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
@@ -119,7 +119,7 @@ fn _bitwise_or_expression(i: Input) -> NodeResult {
 
 /// *bitwise_shift_expression* | *bitwise_and_expression* [ no line terminator here ] `&` *bitwise_shift_expression*
 pub(crate) fn bitwise_and_expression(i: Input) -> NodeResult {
-    println!("In bitwise_and_expression {}", i);
+    let i = stack_frame!("bitwise_and_expression", i);
     map(
         tuple((bitwise_shift_expression, opt(_bitwise_and_expression))),
         |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
@@ -144,7 +144,7 @@ fn _bitwise_and_expression(i: Input) -> NodeResult {
 
 /// *additive_expression* | *bitwise_shift_expression* [ no line terminator here ] ( `<<` | `>>` ) *additive_expression*
 pub(crate) fn bitwise_shift_expression(i: Input) -> NodeResult {
-    println!("In bitwise_shift_expression {}", i);
+    let i = stack_frame!("bitwise_shift_expression", i);
     map(
         tuple((additive_expression, opt(_bitwise_shift_expression))),
         |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
@@ -176,7 +176,7 @@ fn _bitwise_shift_expression(i: Input) -> NodeResult {
 
 /// *multiplicative_expression* | *additive_expression* [ no line terminator here ] ( `+` | `-` ) *multiplicative_expression*
 pub(crate) fn additive_expression(i: Input) -> NodeResult {
-    println!("In additive_expression {}", i);
+    let i = stack_frame!("additive_expression", i);
     map(
         tuple((multiplicative_expression, opt(_additive_expression))),
         |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
@@ -205,7 +205,7 @@ fn _additive_expression(i: Input) -> NodeResult {
 
 /// *unary_minus_expression* | *multiplicative_expression* [ no line terminator here ] ( `*` | `/` | `%` ) *unary_minus_expression*
 pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
-    println!("In multiplicative_expression {}", i);
+    let i = stack_frame!("multiplicative_expression", i);
     map(
         tuple((unary_minus_expression, opt(_multiplicative_expression))),
         |(node, ast)| update_placeholder!(Node::BinaryOp, lhs, node, ast),
@@ -235,7 +235,7 @@ fn _multiplicative_expression(i: Input) -> NodeResult {
 
 /// *unary_expression* | *unary_expression* [ no line terminator here ] `**` *power_expression*
 pub(crate) fn power_expression(i: Input) -> NodeResult {
-    println!("In power_expression {}", i);
+    let i = stack_frame!("power_expression", i);
     alt((
         map(
             tuple((unary_expression, no_lt, tag("**"), ws, power_expression)),

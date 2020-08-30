@@ -41,7 +41,7 @@ pub(crate) fn association_value(i: Input) -> NodeResult {
 
 /// *operator_or_expression* | *operator_or_expression* [ no line terminator here ] *range_operator* *operator_or_expression*
 pub(crate) fn range_constructor(i: Input) -> NodeResult {
-    println!("In range_constructor {}", i);
+    let i = stack_frame!("range_constructor", i);
     alt((
         map(
             tuple((

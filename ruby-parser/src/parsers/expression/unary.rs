@@ -10,7 +10,7 @@ use nom::sequence::tuple;
 
 /// *power_expression* | `-` *power_expression*
 pub(crate) fn unary_minus_expression(i: Input) -> NodeResult {
-    //println!("In unary_minus_expression {}", i);
+    let i = stack_frame!("unary_minus_expression", i);
     alt((
         power_expression,
         map(tuple((char('-'), ws, power_expression)), |t| {
@@ -24,7 +24,7 @@ pub(crate) fn unary_minus_expression(i: Input) -> NodeResult {
 
 /// *primary_expression* | `~` *unary_expression* | `+` *unary_expression* | `!` *unary_expression*
 pub(crate) fn unary_expression(i: Input) -> NodeResult {
-    //println!("In unary_expression {}", i);
+    let i = stack_frame!("unary_expression", i);
     alt((
         map(tuple((one_of("~+!"), ws, unary_expression)), |t| {
             Node::UnaryOp(UnaryOp {
