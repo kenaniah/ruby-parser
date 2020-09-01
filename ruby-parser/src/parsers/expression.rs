@@ -145,7 +145,7 @@ mod tests {
         });
         assert_ok!("1 ? 2 : 3", ok);
         assert_ok!("1 ? 2: 3", ok);
-        assert_ok!("1?2 : 3", ok); // Still buggy
+        assert_ok!("1?2 : 3", ok);
         assert_ok!("1 ?2 :3", ok);
         assert_ok!("1 ? 2:3", ok);
         assert_ok!("1?2:3", ok);
