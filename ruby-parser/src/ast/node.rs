@@ -80,6 +80,12 @@ impl Node {
             second: Box::new(second),
         })
     }
+    /// Creates a token that represents a logical NOT
+    pub(crate) fn logical_not(expr: Node) -> Node {
+        Self::LogicalNot(LogicalNot {
+            expr: Box::new(expr),
+        })
+    }
     /// Creates a token that reprents a range
     pub(crate) fn range(from: Node, to: Node, exclusive: bool) -> Node {
         Self::Ranged(Ranged {

@@ -186,6 +186,21 @@ mod tests {
     use crate::ast::BinaryOpKind;
 
     #[test]
+    fn test_keyword_not_expression() {
+        use_parser!(keyword_not_expression);
+        // Parse errors
+        assert_err!("");
+        assert_err!("not");
+        assert_err!("not not");
+        // Success cases
+        assert_ok!("not true", Node::logical_not(Node::boolean(true)));
+        assert_ok!(
+            "not not false",
+            Node::logical_not(Node::logical_not(Node::boolean(false)))
+        );
+    }
+
+    #[test]
     fn test_operator_or_expression() {
         use_parser!(operator_or_expression);
         // Parse errors

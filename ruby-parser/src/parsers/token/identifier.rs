@@ -1,8 +1,9 @@
 use crate::lexer::*;
+use crate::parsers::token::keyword::keyword;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, one_of};
-use nom::combinator::{map, recognize, verify};
+use nom::combinator::{map, not, recognize, verify};
 use nom::multi::many0;
 use nom::sequence::tuple;
 
@@ -22,11 +23,19 @@ pub(crate) fn identifier(i: Input) -> NodeResult {
 
 /// ( *lowercase_character* | `_` ) *identifier_character**
 pub(crate) fn local_variable_identifier(i: Input) -> NodeResult {
+    use crate::nom::InputLength;
     map(
-        recognize(tuple((
-            alt((lowercase_character, char('_'))),
-            many0(identifier_character),
-        ))),
+        verify(
+            recognize(tuple((
+                alt((lowercase_character, char('_'))),
+                many0(identifier_character),
+            ))),
+            // Ensure that we didn't match a known keyword
+            |i| match keyword(i.clone()) {
+                Ok((i, _)) => i.input_len() != 0,
+                _ => true,
+            },
+        ),
         |s| Node::ident(*s, IdentifierKind::LocalVariable),
     )(i)
 }
@@ -69,8 +78,16 @@ pub(crate) fn instance_variable_identifier(i: Input) -> NodeResult {
 
 /// *uppercase_character* *identifier_character**
 pub(crate) fn constant_identifier(i: Input) -> NodeResult {
+    use crate::nom::InputLength;
     map(
-        recognize(tuple((uppercase_character, many0(identifier_character)))),
+        verify(
+            recognize(tuple((uppercase_character, many0(identifier_character)))),
+            // Ensure that we didn't match a known keyword
+            |i| match keyword(i.clone()) {
+                Ok((i, _)) => i.input_len() != 0,
+                _ => true,
+            },
+        ),
         |s| Node::ident(*s, IdentifierKind::Constant),
     )(i)
 }
@@ -183,6 +200,12 @@ mod tests {
         assert_err!("=");
         assert_err!("@");
         assert_err!("var\t");
+        assert_err!("not");
+        assert_err!("if");
+        assert_err!("nil");
+        assert_err!("true");
+        assert_err!("BEGIN");
+        assert_err!("END");
         // Success cases
         assert_ok!("_", Node::ident("_", LocalVariable));
         assert_ok!("local", Node::ident("local", LocalVariable));
@@ -195,6 +218,7 @@ mod tests {
         assert_ok!("is_valid?", Node::ident("is_valid?", Method));
         assert_ok!("bang!", Node::ident("bang!", Method));
         assert_ok!("var=", Node::ident("var=", AssignmentMethod));
+        assert_ok!("truely", Node::ident("truely", LocalVariable));
     }
 
     #[test]
