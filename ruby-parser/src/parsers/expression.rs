@@ -149,6 +149,18 @@ mod tests {
         assert_ok!("1 ?2 :3", ok);
         assert_ok!("1 ? 2:3", ok);
         assert_ok!("1?2:3", ok);
+        assert_ok!(
+            "1 ? 2 ? 3 : 4 : 5",
+            Node::Conditional(Conditional {
+                cond: Box::new(Node::integer(1)),
+                then: Some(Box::new(Node::Conditional(Conditional {
+                    cond: Box::new(Node::integer(2)),
+                    then: Some(Box::new(Node::integer(3))),
+                    otherwise: Some(Box::new(Node::integer(4)))
+                }))),
+                otherwise: Some(Box::new(Node::integer(5)))
+            })
+        );
     }
 
     #[test]
