@@ -1,13 +1,14 @@
 #[macro_export]
 macro_rules! stack_frame {
     ($name:expr, $input:expr) => {{
-        let mut i = $input.clone();
-        let padding = std::iter::repeat("  ")
-            .take(i.metadata.stack_depth)
-            .collect::<String>();
-        i.metadata.stack_depth = i.metadata.stack_depth + 1;
-        println!("{}in {}: {}", padding, $name, $input);
-        i
+        // let mut i = $input.clone();
+        // let padding = std::iter::repeat("  ")
+        //     .take(i.metadata.stack_depth)
+        //     .collect::<String>();
+        // i.metadata.stack_depth = i.metadata.stack_depth + 1;
+        // println!("{}in {}: {}", padding, $name, $input);
+        // i
+        $input
     }};
 }
 

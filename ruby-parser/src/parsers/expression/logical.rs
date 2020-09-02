@@ -129,7 +129,7 @@ fn _keyword_and_expression(i: Input) -> NodeResult {
 }
 
 /// *expression* [ no line terminator here ] `or` *keyword_not_expression*
-/// O  -> N O1 | N A1 O1
+/// O  -> N O1 | N A1 O1  # is ordering important here? is this flipped?
 /// O1 -> o N O2
 /// O2 -> A1 O1 | O1 | ϵ
 pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
@@ -140,7 +140,17 @@ pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
             opt(_keyword_and_expression),
             _keyword_or_expression,
         )),
-        |t| Node::Nil,
+        |(node, mid, ast)| {
+            println!("\x1B[1;31m {:?} - {:?} - {:?}\x1B[0m", node, mid, ast);
+            let combined = if let Some(mid) = mid {
+                let mid = update_placeholder!(Node::LogicalAnd, first, node, Some(mid));
+                update_placeholder!(Node::LogicalOr, first, mid, Some(ast))
+            } else {
+                update_placeholder!(Node::LogicalOr, first, node, Some(ast))
+            };
+            println!("{:?}", combined);
+            combined
+        },
     )(i)
 }
 
@@ -238,17 +248,29 @@ mod tests {
     use crate::ast::BinaryOpKind;
 
     #[test]
-    fn test_keyword_not_expression() {
-        use_parser!(keyword_not_expression);
+    fn test_keyword_or_expression() {
+        use_parser!(keyword_or_expression);
         // Parse errors
-        assert_err!("");
-        assert_err!("not");
-        assert_err!("not not");
+        assert_err!("or");
+        assert_err!("1 or");
         // Success cases
-        assert_ok!("not true", Node::logical_not(Node::boolean(true)));
         assert_ok!(
-            "not not false",
-            Node::logical_not(Node::logical_not(Node::boolean(false)))
+            "1 or 2",
+            Node::logical_or(Node::integer(1), Node::integer(2))
+        );
+        assert_ok!(
+            "not 1 or not 2",
+            Node::logical_or(
+                Node::logical_not(Node::integer(1)),
+                Node::logical_not(Node::integer(2))
+            )
+        );
+        assert_ok!(
+            "1 and 2 or 3",
+            Node::logical_or(
+                Node::logical_and(Node::integer(1), Node::integer(2)),
+                Node::integer(3)
+            )
         );
     }
 
@@ -269,6 +291,21 @@ mod tests {
                 Node::logical_not(Node::integer(1)),
                 Node::logical_not(Node::integer(2))
             )
+        );
+    }
+
+    #[test]
+    fn test_keyword_not_expression() {
+        use_parser!(keyword_not_expression);
+        // Parse errors
+        assert_err!("");
+        assert_err!("not");
+        assert_err!("not not");
+        // Success cases
+        assert_ok!("not true", Node::logical_not(Node::boolean(true)));
+        assert_ok!(
+            "not not false",
+            Node::logical_not(Node::logical_not(Node::boolean(false)))
         );
     }
 
