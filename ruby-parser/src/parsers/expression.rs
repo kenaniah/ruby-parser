@@ -20,7 +20,6 @@ mod unary;
 mod variable;
 mod yield_;
 
-// FIXME: logical -> and -> expression is an indirect recursive loop
 pub(crate) fn expression(i: Input) -> NodeResult {
     logical::keyword_logical_expression(i)
 }

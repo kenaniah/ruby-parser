@@ -35,7 +35,6 @@ O2 -> A1 O1 | O1 | ϵ
 use crate::ast::{LogicalAnd, LogicalNot, LogicalOr};
 use crate::lexer::*;
 use crate::parsers::expression::binary::equality_expression;
-use crate::parsers::expression::expression;
 use crate::parsers::expression::method::method_invocation_without_parenthesis;
 use crate::parsers::expression::operator_expression;
 use crate::parsers::expression::unary::unary_expression;
@@ -97,8 +96,7 @@ pub(crate) fn operator_not_expression(i: Input) -> NodeResult {
 
 /// *expression* [ no line terminator here ] `and` *keyword_not_expression*
 /// A  -> N A1 | O A1
-/// A1 -> a N A2
-/// A2 -> A1 | ϵ
+/// A1 -> a N A1 | ϵ
 pub(crate) fn keyword_and_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_and_expression", i);
     map(
@@ -131,8 +129,8 @@ fn _keyword_and_expression(i: Input) -> NodeResult {
 }
 
 /// *expression* [ no line terminator here ] `or` *keyword_not_expression*
-/// O  -> N O1 | N A1 O1    # keyword_or_expression
-/// O1 -> o N O2                                        o = "or"
+/// O  -> N O1 | N A1 O1
+/// O1 -> o N O2
 /// O2 -> A1 O1 | O1 | ϵ
 pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_or_expression", i);
@@ -251,6 +249,26 @@ mod tests {
         assert_ok!(
             "not not false",
             Node::logical_not(Node::logical_not(Node::boolean(false)))
+        );
+    }
+
+    #[test]
+    fn test_keyword_and_expression() {
+        use_parser!(keyword_and_expression);
+        // Parse errors
+        assert_err!("and");
+        assert_err!("1 and");
+        // Success cases
+        assert_ok!(
+            "1 and 2",
+            Node::logical_and(Node::integer(1), Node::integer(2))
+        );
+        assert_ok!(
+            "not 1 and not 2",
+            Node::logical_and(
+                Node::logical_not(Node::integer(1)),
+                Node::logical_not(Node::integer(2))
+            )
         );
     }
 
