@@ -22,13 +22,12 @@ E  -> N | A | O         # keyword_logical_expression
 
 N  -> n N | x | y | z   # keyword_not_expression    n = "not"
 
-A  -> N A1 | O A1       # keyword_and_expression
-A1 -> a N A2                                        a = "and"
-A2 -> A1 | ϵ
+A  -> N A' | O A'       # keyword_and_expression
+A' -> a N A' | ϵ                                    a = "and"
 
-O  -> N O1 | N A1 O1    # keyword_or_expression
-O1 -> o N O2                                        o = "or"
-O2 -> A1 O1 | O1 | ϵ
+O  -> N O' | N A' O'    # keyword_or_expression
+O' -> o N O''                                        o = "or"
+O''-> A' O' | O' | ϵ
 ```
 
 */
@@ -97,11 +96,17 @@ pub(crate) fn operator_not_expression(i: Input) -> NodeResult {
 }
 
 /// *expression* [ no line terminator here ] `and` *keyword_not_expression*
+/// A  -> N A1 | O A1
+/// A1 -> a N A2
+/// A2 -> A1 | ϵ
 pub(crate) fn keyword_and_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_and_expression", i);
     map(
-        tuple((expression, opt(_keyword_and_expression))),
-        |(node, ast)| update_placeholder!(Node::LogicalAnd, first, node, ast),
+        tuple((
+            alt((keyword_not_expression, keyword_or_expression)),
+            _keyword_and_expression,
+        )),
+        |(node, ast)| update_placeholder!(Node::LogicalAnd, first, node, Some(ast)),
     )(i)
 }
 
@@ -126,8 +131,18 @@ fn _keyword_and_expression(i: Input) -> NodeResult {
 }
 
 /// *expression* [ no line terminator here ] `or` *keyword_not_expression*
+/// O  -> N O1 | N A1 O1    # keyword_or_expression
+/// O1 -> o N O2                                        o = "or"
+/// O2 -> A1 O1 | O1 | ϵ
 pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_or_expression", i);
+    // map(
+    //     tuple((
+    //         alt((keyword_not_expression, keyword_or_expression)),
+    //         _keyword_and_expression,
+    //     )),
+    //     |t| Node::Nil,
+    // )(i)
     map(
         tuple((expression, opt(_keyword_or_expression))),
         |(node, ast)| update_placeholder!(Node::LogicalOr, first, node, ast),
