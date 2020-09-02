@@ -11,31 +11,24 @@ had to be substantially refactored in order to preserve operator precedence.
 
 The keyword logical expression grammar...
 ```text
-E -> N | A | O        # keyword_logical_expression
-N -> n N | x | y | z  # keyword_not_expression
-A -> E a N            # keyword_and_expression
-O -> E o N            # keyword_or_expression
+E -> N | A | O          # keyword_logical_expression
+N -> n N | x | y | z    # keyword_not_expression
+A -> E a N              # keyword_and_expression
+O -> E o N              # keyword_or_expression
 ```
 Will be factored into...
 ```text
-E  -> N               # keyword_logical_expression
-    | A
-    | O
-N  -> n N             # keyword_not_expression
-    | x                 # operator_expression (terminal)
-    | y                 # ! method_invocation_without_parenthesis (terminal)
-    | z                 # method_invocation_without_parenthesis (terminal)
-A  -> N A1            # keyword_and_expression
-    | O A1
-O  -> N O1            # keyword_or_expression
-    | N A1 O1
+E  -> N | A | O         # keyword_logical_expression
+
+N  -> n N | x | y | z   # keyword_not_expression
+
+A  -> N A1 | O A1       # keyword_and_expression
 A1 -> a N A2
-A2 -> A1
-    | ϵ
+A2 -> A1 | ϵ
+
+O  -> N O1 | N A1 O1    # keyword_or_expression
 O1 -> o N O2
-O2 -> A1 O1
-    | O1
-    | ϵ
+O2 -> A1 O1 | O1 | ϵ
 ```
 
 */
