@@ -1,3 +1,45 @@
+/*!
+# Logical Operators
+
+## Operator Precedence
+
+## Grammar Transformations
+
+In some cases, grammar had to be transformed in order to remove left recursion. Most notably,
+the keyword logical expressions portion of the grammar suffered from indirect left recursion, which
+had to be substantially refactored in order to preserve operator precedence.
+
+The keyword logical expression grammar...
+```text
+E -> N | A | O        # keyword_logical_expression
+N -> n N | x | y | z  # keyword_not_expression
+A -> E a N            # keyword_and_expression
+O -> E o N            # keyword_or_expression
+```
+Will be factored into...
+```text
+E  -> N               # keyword_logical_expression
+    | A
+    | O
+N  -> n N             # keyword_not_expression
+    | x                 # operator_expression (terminal)
+    | y                 # ! method_invocation_without_parenthesis (terminal)
+    | z                 # method_invocation_without_parenthesis (terminal)
+A  -> N A1            # keyword_and_expression
+    | O A1
+O  -> N O1            # keyword_or_expression
+    | N A1 O1
+A1 -> a N A2
+A2 -> A1
+    | ϵ
+O1 -> o N O2
+O2 -> A1 O1
+    | O1
+    | ϵ
+```
+
+*/
+
 use crate::ast::{LogicalAnd, LogicalNot, LogicalOr};
 use crate::lexer::*;
 use crate::parsers::expression::binary::equality_expression;

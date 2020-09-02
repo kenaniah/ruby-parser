@@ -20,12 +20,9 @@ mod unary;
 mod variable;
 mod yield_;
 
-pub(crate) fn expression(i: Input) -> NodeResult {
-    let i = stack_frame!("expression", i);
-    //logical::keyword_logical_expression(i)
-    // FIXME: logical -> and -> expression is an indirect recursive loop
-    logical::keyword_not_expression(i)
-}
+// FIXME: logical -> and -> expression is an indirect recursive loop
+//pub(crate) use logical::keyword_logical_expression as expression;
+pub(crate) use logical::keyword_not_expression as expression;
 
 /// *class_definition* | *singleton_class_definition* | *module_definition* | *method_definition* | *singleton_method_definition* | *yield_with_optional_argument* | *if_expression* | *unless_expression* | *case_expression* | *while_expression* | *until_expression* | *for_expression* | *return_without_argument* | *break_without_argument* | *next_without_argument* | *redo_expression* | *retry_expression* | *begin_expression* | *grouping_expression* | *variable_reference* | *scoped_constant_reference* | *array_constructor* | *hash_constructor* | *literal* | *defined_with_parenthesis* | *primary_method_invocation*
 pub(crate) fn primary_expression(i: Input) -> NodeResult {
