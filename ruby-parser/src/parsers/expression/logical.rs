@@ -49,9 +49,9 @@ use nom::sequence::tuple;
 pub(crate) fn keyword_logical_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_logical_expression", i);
     alt((
-        keyword_not_expression,
-        keyword_and_expression,
         keyword_or_expression,
+        keyword_and_expression,
+        keyword_not_expression,
     ))(i)
 }
 
@@ -104,7 +104,10 @@ pub(crate) fn keyword_and_expression(i: Input) -> NodeResult {
             alt((keyword_not_expression, keyword_or_expression)),
             _keyword_and_expression,
         )),
-        |(node, ast)| update_placeholder!(Node::LogicalAnd, first, node, Some(ast)),
+        |(node, ast)| {
+            println!("{:?} - {:?}", node, ast);
+            update_placeholder!(Node::LogicalAnd, first, node, Some(ast))
+        },
     )(i)
 }
 
@@ -134,24 +137,23 @@ fn _keyword_and_expression(i: Input) -> NodeResult {
 /// O2 -> A1 O1 | O1 | ϵ
 pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_or_expression", i);
-    map(
-        tuple((
-            keyword_not_expression,
-            opt(_keyword_and_expression),
-            _keyword_or_expression,
-        )),
-        |(node, mid, ast)| {
-            println!("\x1B[1;31m {:?} - {:?} - {:?}\x1B[0m", node, mid, ast);
-            let combined = if let Some(mid) = mid {
+    alt((
+        map(
+            tuple((keyword_not_expression, _keyword_or_expression)),
+            |(node, ast)| update_placeholder!(Node::LogicalOr, first, node, Some(ast)),
+        ),
+        map(
+            tuple((
+                keyword_not_expression,
+                keyword_and_expression,
+                _keyword_or_expression,
+            )),
+            |(node, mid, ast)| {
                 let mid = update_placeholder!(Node::LogicalAnd, first, node, Some(mid));
                 update_placeholder!(Node::LogicalOr, first, mid, Some(ast))
-            } else {
-                update_placeholder!(Node::LogicalOr, first, node, Some(ast))
-            };
-            println!("{:?}", combined);
-            combined
-        },
-    )(i)
+            },
+        ),
+    ))(i)
 }
 
 fn _keyword_or_expression(i: Input) -> NodeResult {
@@ -248,6 +250,36 @@ mod tests {
     use crate::ast::BinaryOpKind;
 
     #[test]
+    fn test_keyword_logical_expression() {
+        use_parser!(keyword_logical_expression);
+        // Parse errors
+        assert_err!("or");
+        assert_err!("and not");
+        // Success cases
+        assert_ok!(
+            "1 or 2 and 3",
+            Node::logical_and(
+                Node::logical_or(Node::integer(1), Node::integer(2)),
+                Node::integer(3)
+            )
+        );
+        assert_ok!(
+            "1 and 2 or 3",
+            Node::logical_or(
+                Node::logical_and(Node::integer(1), Node::integer(2)),
+                Node::integer(3)
+            )
+        );
+        assert_ok!(
+            "1 and 2 and 3",
+            Node::logical_and(
+                Node::logical_and(Node::integer(1), Node::integer(2)),
+                Node::integer(3)
+            )
+        );
+    }
+
+    #[test]
     fn test_keyword_or_expression() {
         use_parser!(keyword_or_expression);
         // Parse errors
@@ -266,9 +298,9 @@ mod tests {
             )
         );
         assert_ok!(
-            "1 and 2 or 3",
+            "1 or 2 or 3",
             Node::logical_or(
-                Node::logical_and(Node::integer(1), Node::integer(2)),
+                Node::logical_or(Node::integer(1), Node::integer(2)),
                 Node::integer(3)
             )
         );
@@ -290,6 +322,13 @@ mod tests {
             Node::logical_and(
                 Node::logical_not(Node::integer(1)),
                 Node::logical_not(Node::integer(2))
+            )
+        );
+        assert_ok!(
+            "1 and 2 and 3",
+            Node::logical_and(
+                Node::logical_and(Node::integer(1), Node::integer(2)),
+                Node::integer(3)
             )
         );
     }
