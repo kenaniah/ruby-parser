@@ -178,7 +178,13 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
 fn __keyword_or_expression(i: Input) -> NodeResult {
     map(
         tuple((opt(_keyword_and_expression), _keyword_or_expression)),
-        |t| Node::Nil,
+        |(node, ast)| {
+            if let Some(node) = node {
+                update_placeholder!(Node::LogicalOr, first, node, Some(ast))
+            } else {
+                ast
+            }
+        },
     )(i)
 }
 
