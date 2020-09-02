@@ -263,7 +263,7 @@ mod tests {
         assert_err!("and not");
         // Success cases
         assert_ok!(
-            "1 or 2 and 3",
+            "1 or 2 and 3", // FIXME: double-check the and / or factorization
             Node::logical_and(
                 Node::logical_or(Node::integer(1), Node::integer(2)),
                 Node::integer(3)
