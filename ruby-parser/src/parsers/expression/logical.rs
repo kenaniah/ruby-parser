@@ -22,12 +22,12 @@ E  -> N | A | O         # keyword_logical_expression
 
 N  -> n N | x | y | z   # keyword_not_expression    n = "not"
 
-A  -> N A' | O A'       # keyword_and_expression
-A' -> a N A' | ϵ                                    a = "and"
+A  -> N A1 | O A1       # keyword_and_expression
+A1 -> a N A1 | ϵ                                    a = "and"
 
-O  -> N O' | N A' O'    # keyword_or_expression
-O' -> o N O''                                        o = "or"
-O''-> A' O' | O' | ϵ
+O  -> N O1 | N A1 O1    # keyword_or_expression
+O1 -> o N O2                                        o = "or"
+O2 -> A1 O1 | O1 | ϵ
 ```
 
 */
@@ -136,16 +136,13 @@ fn _keyword_and_expression(i: Input) -> NodeResult {
 /// O2 -> A1 O1 | O1 | ϵ
 pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_or_expression", i);
-    // map(
-    //     tuple((
-    //         alt((keyword_not_expression, keyword_or_expression)),
-    //         _keyword_and_expression,
-    //     )),
-    //     |t| Node::Nil,
-    // )(i)
     map(
-        tuple((expression, opt(_keyword_or_expression))),
-        |(node, ast)| update_placeholder!(Node::LogicalOr, first, node, ast),
+        tuple((
+            keyword_not_expression,
+            opt(_keyword_and_expression),
+            _keyword_or_expression,
+        )),
+        |t| Node::Nil,
     )(i)
 }
 
@@ -156,7 +153,7 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
             tag("or"),
             ws,
             keyword_not_expression,
-            opt(_keyword_or_expression),
+            opt(__keyword_or_expression),
         )),
         |t| {
             let node = Node::LogicalOr(LogicalOr {
@@ -165,6 +162,13 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
             });
             update_placeholder!(Node::LogicalOr, first, node, t.4)
         },
+    )(i)
+}
+
+fn __keyword_or_expression(i: Input) -> NodeResult {
+    map(
+        tuple((opt(_keyword_and_expression), _keyword_or_expression)),
+        |t| Node::Nil,
     )(i)
 }
 
