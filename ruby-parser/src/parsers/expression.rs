@@ -1,4 +1,4 @@
-use crate::ast::Conditional;
+use crate::ast::{Conditional, ConditionalKind};
 use crate::lexer::*;
 use crate::parsers::expression::object::range_constructor;
 use crate::parsers::program::{compound_statement, no_lt, ws};
@@ -101,6 +101,7 @@ fn _conditional_operator_expression(i: Input) -> NodeResult {
                     cond: Box::new(Node::Placeholder),
                     then: Some(Box::new(t.3)),
                     otherwise: Some(Box::new(t.7)),
+                    kind: ConditionalKind::Ternary,
                 });
                 Node::update_placeholder(node, t.8)
             },
@@ -136,11 +137,12 @@ mod tests {
         assert_err!("1?:3");
         // Success cases
         assert_ok!("\"hi\"", Node::literal_string("hi"));
-        let ok = Node::Conditional(Conditional {
-            cond: Box::new(Node::integer(1)),
-            then: Some(Box::new(Node::integer(2))),
-            otherwise: Some(Box::new(Node::integer(3))),
-        });
+        let ok = Node::conditional(
+            ConditionalKind::Ternary,
+            Node::integer(1),
+            Some(Node::integer(2)),
+            Some(Node::integer(3)),
+        );
         assert_ok!("1 ? 2 : 3", ok);
         assert_ok!("1 ? 2: 3", ok);
         assert_ok!("1?2 : 3", ok);
@@ -149,15 +151,17 @@ mod tests {
         assert_ok!("1?2:3", ok);
         assert_ok!(
             "1 ? 2 ? 3 : 4 : 5",
-            Node::Conditional(Conditional {
-                cond: Box::new(Node::integer(1)),
-                then: Some(Box::new(Node::Conditional(Conditional {
-                    cond: Box::new(Node::integer(2)),
-                    then: Some(Box::new(Node::integer(3))),
-                    otherwise: Some(Box::new(Node::integer(4)))
-                }))),
-                otherwise: Some(Box::new(Node::integer(5)))
-            })
+            Node::conditional(
+                ConditionalKind::Ternary,
+                Node::integer(1),
+                Some(Node::conditional(
+                    ConditionalKind::Ternary,
+                    Node::integer(2),
+                    Some(Node::integer(3)),
+                    Some(Node::integer(4))
+                )),
+                Some(Node::integer(5)),
+            )
         );
     }
 

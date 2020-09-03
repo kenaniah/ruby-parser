@@ -94,6 +94,28 @@ impl Node {
             exclusive,
         })
     }
+    /// Creates a token that represents a conditional statement
+    pub(crate) fn conditional(
+        kind: ConditionalKind,
+        cond: Node,
+        then: Option<Node>,
+        otherwise: Option<Node>,
+    ) -> Node {
+        Self::Conditional(Conditional {
+            kind,
+            cond: Box::new(cond),
+            then: if let Some(node) = then {
+                Some(Box::new(node))
+            } else {
+                None
+            },
+            otherwise: if let Some(node) = otherwise {
+                Some(Box::new(node))
+            } else {
+                None
+            },
+        })
+    }
     /// Allows placeholding nodes to be updated when working around left-recursive parsers
     pub(crate) fn update_placeholder(value: Node, ast: Option<Node>) -> Node {
         if let Some(mut parent_node) = ast {
