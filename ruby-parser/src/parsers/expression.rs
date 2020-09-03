@@ -76,7 +76,7 @@ pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
     let i = stack_frame!("conditional_operator_expression", i);
     map(
         tuple((range_constructor, opt(_conditional_operator_expression))), // BUG: range constructor is currently too greedy
-        |(node, ast)| update_placeholder!(node, ast),
+        |(node, ast)| Node::update_placeholder(node, ast),
     )(i)
 }
 
@@ -101,7 +101,7 @@ fn _conditional_operator_expression(i: Input) -> NodeResult {
                     then: Some(Box::new(t.3)),
                     otherwise: Some(Box::new(t.7)),
                 });
-                update_placeholder!(node, t.8)
+                Node::update_placeholder(node, t.8)
             },
         ),
         range_constructor,

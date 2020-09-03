@@ -94,4 +94,27 @@ impl Node {
             exclusive,
         })
     }
+    /// Allows placeholding nodes to be updated when working around left-recursive parsers
+    pub(crate) fn update_placeholder(value: Node, ast: Option<Node>) -> Node {
+        if let Some(mut parent_node) = ast {
+            use std::borrow::BorrowMut;
+            {
+                let mut n = &mut parent_node;
+                loop {
+                    match n {
+                        Node::Conditional(sub) => n = sub.cond.borrow_mut(),
+                        Node::BinaryOp(sub) => n = sub.lhs.borrow_mut(),
+                        Node::LogicalOr(sub) => n = sub.first.borrow_mut(),
+                        Node::LogicalAnd(sub) => n = sub.first.borrow_mut(),
+                        Node::LogicalNot(sub) => n = sub.expr.borrow_mut(),
+                        _ => break,
+                    }
+                }
+                *n = value;
+            }
+            parent_node
+        } else {
+            value
+        }
+    }
 }

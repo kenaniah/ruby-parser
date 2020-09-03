@@ -1,42 +1,15 @@
 #[macro_export]
 macro_rules! stack_frame {
     ($name:expr, $input:expr) => {{
-        // let mut i = $input.clone();
-        // let padding = std::iter::repeat("  ")
-        //     .take(i.metadata.stack_depth)
-        //     .collect::<String>();
-        // i.metadata.stack_depth = i.metadata.stack_depth + 1;
-        // println!("{}in {}: {}", padding, $name, $input);
-        // i
-        $input
+        let mut i = $input.clone();
+        let padding = std::iter::repeat("  ")
+            .take(i.metadata.stack_depth)
+            .collect::<String>();
+        i.metadata.stack_depth = i.metadata.stack_depth + 1;
+        println!("{}in {}: {}", padding, $name, $input);
+        i
+        //$input
     }};
-}
-
-/// Allows placeholding nodes to be updated when working around left-recursive parsers
-#[macro_export]
-macro_rules! update_placeholder {
-    ($value:expr, $node:expr) => {
-        if let Some(mut parent_node) = $node {
-            use std::borrow::BorrowMut;
-            {
-                let mut n = &mut parent_node;
-                loop {
-                    match n {
-                        Node::Conditional(sub) => n = sub.cond.borrow_mut(),
-                        Node::BinaryOp(sub) => n = sub.lhs.borrow_mut(),
-                        Node::LogicalOr(sub) => n = sub.first.borrow_mut(),
-                        Node::LogicalAnd(sub) => n = sub.first.borrow_mut(),
-                        Node::LogicalNot(sub) => n = sub.expr.borrow_mut(),
-                        _ => break,
-                    }
-                }
-                *n = $value;
-            }
-            parent_node
-        } else {
-            $value
-        }
-    };
 }
 
 /// Defines the functions used by the `assert_ok!`, `assert_partial!`, and `assert_err!` macros
