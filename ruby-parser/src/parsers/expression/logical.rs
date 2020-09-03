@@ -277,8 +277,8 @@ mod tests {
     fn test_keyword_logical_expression() {
         use_parser!(keyword_logical_expression);
         // Parse errors
-        // assert_err!("or");
-        // assert_err!("and not");
+        assert_err!("or");
+        assert_err!("and not");
         // Success cases
         assert_ok!(
             "1 or 2 and 3",
@@ -295,11 +295,23 @@ mod tests {
             )
         );
         assert_ok!(
-            "1 and 2 and not 3 or 4 or 5 and 6 and 7" // "1 and 2 or 3",
-                                                      // Node::logical_or(
-                                                      //     Node::logical_and(Node::integer(1), Node::integer(2)),
-                                                      //     Node::integer(3)
-                                                      // )
+            "1 and 2 and not 3 or 4 or 5 and 6 and 7",
+            Node::logical_and(
+                Node::logical_and(
+                    Node::logical_or(
+                        Node::logical_or(
+                            Node::logical_and(
+                                Node::logical_and(Node::integer(1), Node::integer(2)),
+                                Node::logical_not(Node::integer(3))
+                            ),
+                            Node::integer(4)
+                        ),
+                        Node::integer(5)
+                    ),
+                    Node::integer(6)
+                ),
+                Node::integer(7)
+            )
         );
     }
 

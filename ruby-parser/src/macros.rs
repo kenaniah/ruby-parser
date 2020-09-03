@@ -26,6 +26,7 @@ macro_rules! update_placeholder {
                         Node::BinaryOp(sub) => n = sub.lhs.borrow_mut(),
                         Node::LogicalOr(sub) => n = sub.first.borrow_mut(),
                         Node::LogicalAnd(sub) => n = sub.first.borrow_mut(),
+                        Node::LogicalNot(sub) => n = sub.expr.borrow_mut(),
                         _ => break,
                     }
                 }
