@@ -15,13 +15,19 @@ macro_rules! stack_frame {
 /// Allows placeholding nodes to be updated when working around left-recursive parsers
 #[macro_export]
 macro_rules! update_placeholder {
-    ($variant:path, $prop:ident, $value:expr, $node:expr) => {
+    ($value:expr, $node:expr) => {
         if let Some(mut parent_node) = $node {
             use std::borrow::BorrowMut;
             {
                 let mut n = &mut parent_node;
-                while let $variant(sub) = n {
-                    n = sub.$prop.borrow_mut();
+                loop {
+                    match n {
+                        Node::Conditional(sub) => n = sub.cond.borrow_mut(),
+                        Node::BinaryOp(sub) => n = sub.lhs.borrow_mut(),
+                        Node::LogicalOr(sub) => n = sub.first.borrow_mut(),
+                        Node::LogicalAnd(sub) => n = sub.first.borrow_mut(),
+                        _ => break,
+                    }
                 }
                 *n = $value;
             }

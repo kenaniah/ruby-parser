@@ -103,7 +103,7 @@ pub(crate) fn keyword_and_expression(i: Input) -> NodeResult {
         )),
         |(node, ast)| {
             println!("{:?} - {:?}", node, ast);
-            update_placeholder!(Node::LogicalAnd, first, node, Some(ast))
+            update_placeholder!(node, Some(ast))
         },
     )(i)
 }
@@ -123,7 +123,7 @@ fn _keyword_and_expression(i: Input) -> NodeResult {
                 first: Box::new(Node::Placeholder),
                 second: Box::new(t.3),
             });
-            update_placeholder!(Node::LogicalAnd, first, node, t.4)
+            update_placeholder!(node, t.4)
         },
     )(i)
 }
@@ -137,7 +137,7 @@ pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
             tuple((keyword_not_expression, _keyword_or_expression)),
             |(node, ast)| {
                 println!("1: {:?} - {:?}", node, ast);
-                let res = update_placeholder!(Node::LogicalOr, first, node, Some(ast));
+                let res = update_placeholder!(node, Some(ast));
                 println!("1 -> {:?}", res);
                 res
             },
@@ -150,8 +150,8 @@ pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
             )),
             |(node, mid, ast)| {
                 println!("2: {:?} - {:?} - {:?}", node, mid, ast);
-                let mid = update_placeholder!(Node::LogicalAnd, first, node, Some(mid));
-                let res = update_placeholder!(Node::LogicalOr, first, mid, Some(ast));
+                let mid = update_placeholder!(node, Some(mid));
+                let res = update_placeholder!(mid, Some(ast));
                 println!("2 -> {:?}", res);
                 res
             },
@@ -166,7 +166,7 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
             tuple((_keyword_and_expression, opt(_keyword_or_expression))),
             |(node, ast)| {
                 println!("3: {:?} - {:?}", node, ast);
-                let res = update_placeholder!(Node::LogicalAnd, first, node, ast);
+                let res = update_placeholder!(node, ast);
                 println!("3 -> {:?}", res);
                 res
             },
@@ -185,7 +185,7 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
                     second: Box::new(t.3),
                 });
                 println!("4: {:?} - {:?}", node, t.4);
-                let res = update_placeholder!(Node::LogicalAnd, first, node, t.4);
+                let res = update_placeholder!(node, t.4);
                 println!("4 -> {:?}", res);
                 res
             },
@@ -198,7 +198,7 @@ fn __keyword_or_expression(i: Input) -> NodeResult {
         tuple((opt(_keyword_and_expression), _keyword_or_expression)),
         |(node, ast)| {
             if let Some(node) = node {
-                update_placeholder!(Node::LogicalOr, first, node, Some(ast))
+                update_placeholder!(node, Some(ast))
             } else {
                 ast
             }
@@ -211,7 +211,7 @@ pub(crate) fn operator_or_expression(i: Input) -> NodeResult {
     let i = stack_frame!("operator_or_expression", i);
     map(
         tuple((operator_and_expression, opt(_operator_or_expression))),
-        |(node, ast)| update_placeholder!(Node::LogicalOr, first, node, ast),
+        |(node, ast)| update_placeholder!(node, ast),
     )(i)
 }
 
@@ -230,7 +230,7 @@ fn _operator_or_expression(i: Input) -> NodeResult {
                     first: Box::new(Node::Placeholder),
                     second: Box::new(t.3),
                 });
-                update_placeholder!(Node::LogicalOr, first, node, t.4)
+                update_placeholder!(node, t.4)
             },
         ),
         operator_and_expression,
@@ -242,7 +242,7 @@ pub(crate) fn operator_and_expression(i: Input) -> NodeResult {
     let i = stack_frame!("operator_and_expression", i);
     map(
         tuple((equality_expression, opt(_operator_and_expression))),
-        |(node, ast)| update_placeholder!(Node::LogicalAnd, first, node, ast),
+        |(node, ast)| update_placeholder!(node, ast),
     )(i)
 }
 
@@ -261,7 +261,7 @@ fn _operator_and_expression(i: Input) -> NodeResult {
                     first: Box::new(Node::Placeholder),
                     second: Box::new(t.3),
                 });
-                update_placeholder!(Node::LogicalAnd, first, node, t.4)
+                update_placeholder!(node, t.4)
             },
         ),
         equality_expression,
@@ -287,13 +287,13 @@ mod tests {
                 Node::integer(3)
             )
         );
-        // assert_ok!(
-        //     "1 and 2 or 3",
-        //     Node::logical_or(
-        //         Node::logical_and(Node::integer(1), Node::integer(2)),
-        //         Node::integer(3)
-        //     )
-        // );
+        assert_ok!(
+            "1 and 2 or 3",
+            Node::logical_or(
+                Node::logical_and(Node::integer(1), Node::integer(2)),
+                Node::integer(3)
+            )
+        );
         // assert_ok!(
         //     "1 and 2 and not 3 or 4 or 5 and 6 and 7" // "1 and 2 or 3",
         //                                               // Node::logical_or(
