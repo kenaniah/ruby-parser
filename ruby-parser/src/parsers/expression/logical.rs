@@ -135,12 +135,7 @@ pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
     alt((
         map(
             tuple((keyword_not_expression, _keyword_or_expression)),
-            |(node, ast)| {
-                println!("1: {:?} - {:?}", node, ast);
-                let res = update_placeholder!(node, Some(ast));
-                println!("1 -> {:?}", res);
-                res
-            },
+            |(node, ast)| update_placeholder!(node, Some(ast)),
         ),
         map(
             tuple((
@@ -149,11 +144,8 @@ pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
                 _keyword_or_expression,
             )),
             |(node, mid, ast)| {
-                println!("2: {:?} - {:?} - {:?}", node, mid, ast);
                 let mid = update_placeholder!(node, Some(mid));
-                let res = update_placeholder!(mid, Some(ast));
-                println!("2 -> {:?}", res);
-                res
+                update_placeholder!(mid, Some(ast))
             },
         ),
     ))(i)
@@ -164,12 +156,7 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
     alt((
         map(
             tuple((_keyword_and_expression, opt(_keyword_or_expression))),
-            |(node, ast)| {
-                println!("3: {:?} - {:?}", node, ast);
-                let res = update_placeholder!(node, ast);
-                println!("3 -> {:?}", res);
-                res
-            },
+            |(node, ast)| update_placeholder!(node, ast),
         ),
         map(
             tuple((
@@ -184,10 +171,7 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
                     first: Box::new(Node::Placeholder),
                     second: Box::new(t.3),
                 });
-                println!("4: {:?} - {:?}", node, t.4);
-                let res = update_placeholder!(node, t.4);
-                println!("4 -> {:?}", res);
-                res
+                update_placeholder!(node, t.4)
             },
         ),
     ))(i)
