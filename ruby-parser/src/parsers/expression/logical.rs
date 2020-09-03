@@ -294,13 +294,13 @@ mod tests {
                 Node::integer(3)
             )
         );
-        // assert_ok!(
-        //     "1 and 2 and not 3 or 4 or 5 and 6 and 7" // "1 and 2 or 3",
-        //                                               // Node::logical_or(
-        //                                               //     Node::logical_and(Node::integer(1), Node::integer(2)),
-        //                                               //     Node::integer(3)
-        //                                               // )
-        // );
+        assert_ok!(
+            "1 and 2 and not 3 or 4 or 5 and 6 and 7" // "1 and 2 or 3",
+                                                      // Node::logical_or(
+                                                      //     Node::logical_and(Node::integer(1), Node::integer(2)),
+                                                      //     Node::integer(3)
+                                                      // )
+        );
     }
 
     #[test]
