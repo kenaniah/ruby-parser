@@ -7,7 +7,7 @@
 
 In some cases, grammar had to be transformed in order to remove left recursion. Most notably,
 the keyword logical expressions portion of the grammar suffered from indirect left recursion, which
-had to be substantially refactored in order to preserve operator precedence.
+had to be refactored in order to preserve operator precedence.
 
 The keyword logical expression grammar...
 ```text
@@ -16,7 +16,7 @@ N -> n N | x | y | z    # keyword_not_expression    n = "not"
 A -> E a N              # keyword_and_expression    a = "and"
 O -> E o N              # keyword_or_expression     o = "or"
 ```
-Will be factored into...
+Was transformed into...
 ```text
 E  -> N | A | O         # keyword_logical_expression
 
@@ -132,7 +132,6 @@ fn _keyword_and_expression(i: Input) -> NodeResult {
 /// `O  -> N O1 | N A1 O1`
 pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_or_expression", i);
-
     map(
         tuple((
             keyword_not_expression,
