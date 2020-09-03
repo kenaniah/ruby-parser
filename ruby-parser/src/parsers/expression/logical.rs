@@ -135,7 +135,12 @@ pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
     alt((
         map(
             tuple((keyword_not_expression, _keyword_or_expression)),
-            |(node, ast)| update_placeholder!(Node::LogicalOr, first, node, Some(ast)),
+            |(node, ast)| {
+                println!("1: {:?} - {:?}", node, ast);
+                let res = update_placeholder!(Node::LogicalOr, first, node, Some(ast));
+                println!("1 -> {:?}", res);
+                res
+            },
         ),
         map(
             tuple((
@@ -144,8 +149,11 @@ pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
                 _keyword_or_expression,
             )),
             |(node, mid, ast)| {
+                println!("2: {:?} - {:?} - {:?}", node, mid, ast);
                 let mid = update_placeholder!(Node::LogicalAnd, first, node, Some(mid));
-                update_placeholder!(Node::LogicalOr, first, mid, Some(ast))
+                let res = update_placeholder!(Node::LogicalOr, first, mid, Some(ast));
+                println!("2 -> {:?}", res);
+                res
             },
         ),
     ))(i)
@@ -156,7 +164,12 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
     alt((
         map(
             tuple((_keyword_and_expression, opt(_keyword_or_expression))),
-            |(node, ast)| update_placeholder!(Node::LogicalAnd, first, node, ast),
+            |(node, ast)| {
+                println!("3: {:?} - {:?}", node, ast);
+                let res = update_placeholder!(Node::LogicalAnd, first, node, ast);
+                println!("3 -> {:?}", res);
+                res
+            },
         ),
         map(
             tuple((
@@ -171,7 +184,10 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
                     first: Box::new(Node::Placeholder),
                     second: Box::new(t.3),
                 });
-                update_placeholder!(Node::LogicalOr, first, node, t.4)
+                println!("4: {:?} - {:?}", node, t.4);
+                let res = update_placeholder!(Node::LogicalAnd, first, node, t.4);
+                println!("4 -> {:?}", res);
+                res
             },
         ),
     ))(i)
@@ -261,29 +277,29 @@ mod tests {
     fn test_keyword_logical_expression() {
         use_parser!(keyword_logical_expression);
         // Parse errors
-        assert_err!("or");
-        assert_err!("and not");
+        // assert_err!("or");
+        // assert_err!("and not");
         // Success cases
-        // assert_ok!(
-        //     "1 or 2 and 3", // FIXME: double-check the and / or factorization
-        //     Node::logical_and(
-        //         Node::logical_or(Node::integer(1), Node::integer(2)),
-        //         Node::integer(3)
-        //     )
-        // );
         assert_ok!(
-            "1 and 2 and not 3 or 4 or 5 and 6 and 7" // "1 and 2 or 3",
-                                                      // Node::logical_or(
-                                                      //     Node::logical_and(Node::integer(1), Node::integer(2)),
-                                                      //     Node::integer(3)
-                                                      // )
+            "1 or 2 and 3",
+            Node::logical_and(
+                Node::logical_or(Node::integer(1), Node::integer(2)),
+                Node::integer(3)
+            )
         );
         // assert_ok!(
-        //     "1 and 2 and 3",
-        //     Node::logical_and(
+        //     "1 and 2 or 3",
+        //     Node::logical_or(
         //         Node::logical_and(Node::integer(1), Node::integer(2)),
         //         Node::integer(3)
         //     )
+        // );
+        // assert_ok!(
+        //     "1 and 2 and not 3 or 4 or 5 and 6 and 7" // "1 and 2 or 3",
+        //                                               // Node::logical_or(
+        //                                               //     Node::logical_and(Node::integer(1), Node::integer(2)),
+        //                                               //     Node::integer(3)
+        //                                               // )
         // );
     }
 
