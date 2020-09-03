@@ -5,7 +5,6 @@ use crate::parsers::expression::operator_expression;
 use crate::parsers::program::{no_lt, ws};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::combinator::map;
 use nom::combinator::recognize;
 use nom::sequence::tuple;
 

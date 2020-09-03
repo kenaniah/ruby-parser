@@ -2,7 +2,7 @@ use crate::lexer::*;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{map, recognize};
+use nom::combinator::recognize;
 use nom::sequence::tuple;
 
 /// `!` | `!=` | `!~` | `&&` | `||` | *operator_method_name* | `=` | *assignment_operator*

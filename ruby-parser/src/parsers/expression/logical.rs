@@ -35,7 +35,6 @@ use crate::lexer::*;
 use crate::parsers::expression::binary::equality_expression;
 use crate::parsers::expression::method::method_invocation_without_parenthesis;
 use crate::parsers::expression::operator_expression;
-use crate::parsers::expression::unary::unary_expression;
 use crate::parsers::program::{no_lt, ws};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -73,23 +72,6 @@ pub(crate) fn keyword_not_expression(i: Input) -> NodeResult {
         operator_expression,
         method_invocation_without_parenthesis,
     ))(i)
-}
-
-/// `!` ( *method_invocation_without_parenthesis* | *unary_expression* )
-pub(crate) fn operator_not_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("operator_not_expression", i);
-    map(
-        tuple((
-            char('!'),
-            ws,
-            alt((method_invocation_without_parenthesis, unary_expression)),
-        )),
-        |t| {
-            Node::LogicalNot(LogicalNot {
-                expr: Box::new(t.2),
-            })
-        },
-    )(i)
 }
 
 /// *expression* [ no line terminator here ] `and` *keyword_not_expression*
@@ -173,19 +155,6 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
             },
         ),
     ))(i)
-}
-
-fn __keyword_or_expression(i: Input) -> NodeResult {
-    map(
-        tuple((opt(_keyword_and_expression), _keyword_or_expression)),
-        |(node, ast)| {
-            if let Some(node) = node {
-                update_placeholder!(node, Some(ast))
-            } else {
-                ast
-            }
-        },
-    )(i)
 }
 
 /// *operator_and_expression* | *operator_or_expression* [ no line terminator here ] `||` *operator_and_expression*

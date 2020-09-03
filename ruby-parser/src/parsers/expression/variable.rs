@@ -1,4 +1,4 @@
-use crate::ast::{IdentifierKind, Literal};
+use crate::ast::Literal;
 use crate::lexer::*;
 use crate::parsers::token::identifier::*;
 use nom::branch::alt;

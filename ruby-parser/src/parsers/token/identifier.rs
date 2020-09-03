@@ -3,7 +3,7 @@ use crate::parsers::token::keyword::keyword;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{anychar, char, one_of};
-use nom::combinator::{map, not, recognize, verify};
+use nom::combinator::{map, recognize, verify};
 use nom::multi::many0;
 use nom::sequence::tuple;
 
