@@ -246,22 +246,25 @@ mod tests {
             )
         );
         assert_ok!(
-            "1 and 2 and not 3 or 4 or 5 and 6 and 7",
+            "1 and 2 and not 3 or 4 or 5 and 6 or 7 and 8",
             Node::logical_and(
-                Node::logical_and(
-                    Node::logical_or(
+                Node::logical_or(
+                    Node::logical_and(
                         Node::logical_or(
-                            Node::logical_and(
-                                Node::logical_and(Node::integer(1), Node::integer(2)),
-                                Node::logical_not(Node::integer(3))
+                            Node::logical_or(
+                                Node::logical_and(
+                                    Node::logical_and(Node::integer(1), Node::integer(2)),
+                                    Node::logical_not(Node::integer(3))
+                                ),
+                                Node::integer(4)
                             ),
-                            Node::integer(4)
+                            Node::integer(5)
                         ),
-                        Node::integer(5)
+                        Node::integer(6)
                     ),
-                    Node::integer(6)
+                    Node::integer(7)
                 ),
-                Node::integer(7)
+                Node::integer(8)
             )
         );
     }
