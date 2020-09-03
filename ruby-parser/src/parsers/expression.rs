@@ -12,6 +12,7 @@ mod argument;
 mod assignment;
 mod binary;
 mod block;
+mod conditional;
 mod logical;
 mod method;
 mod object;
@@ -34,7 +35,7 @@ pub(crate) fn primary_expression(i: Input) -> NodeResult {
         //method_definition,
         //singleton_method_definition,
         //yield_with_optional_argument,
-        //if_expression,
+        conditional::if_expression,
         //unless_expression,
         //case_expression,
         //while_expression,
