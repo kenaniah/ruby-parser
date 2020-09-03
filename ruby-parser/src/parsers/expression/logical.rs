@@ -132,23 +132,22 @@ fn _keyword_and_expression(i: Input) -> NodeResult {
 /// `O  -> N O1 | N A1 O1`
 pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_or_expression", i);
-    alt((
-        map(
-            tuple((keyword_not_expression, _keyword_or_expression)),
-            |(node, ast)| update_placeholder!(node, Some(ast)),
-        ),
-        map(
-            tuple((
-                keyword_not_expression,
-                keyword_and_expression,
-                _keyword_or_expression,
-            )),
-            |(node, mid, ast)| {
-                let mid = update_placeholder!(node, Some(mid));
+
+    map(
+        tuple((
+            keyword_not_expression,
+            opt(keyword_and_expression),
+            _keyword_or_expression,
+        )),
+        |(node, mid, ast)| {
+            if mid.is_some() {
+                let mid = update_placeholder!(node, mid);
                 update_placeholder!(mid, Some(ast))
-            },
-        ),
-    ))(i)
+            } else {
+                update_placeholder!(node, Some(ast))
+            }
+        },
+    )(i)
 }
 
 /// `O1 -> A1 O1 | o N O1 | ϵ`
