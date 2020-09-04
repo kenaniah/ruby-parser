@@ -16,6 +16,7 @@ pub enum Node {
     Segment(Segment),
     Comment(String),
     Ranged(Ranged),
+    Defined(Box<Self>),
     Nil,
     Self_,
     EndOfProgram,

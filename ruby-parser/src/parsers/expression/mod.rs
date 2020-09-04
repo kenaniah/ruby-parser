@@ -53,7 +53,7 @@ pub(crate) fn primary_expression(i: Input) -> NodeResult {
         //array_constructor,
         //hash_constructor,
         literal,
-        //defined_with_parenthesis,
+        defined::defined_with_parenthesis,
         //primary_method_invocation,
     ))(i)
 }
