@@ -1,8 +1,26 @@
 use crate::lexer::*;
+use crate::parsers::expression::method::command;
+use crate::parsers::expression::object::association_list;
+use crate::parsers::program::no_lt;
+use nom::branch::alt;
+use nom::character::complete::char;
+use nom::combinator::{opt, recognize};
+use nom::sequence::tuple;
 
 /// *command* | *operator_expression_list* ( [ no line terminator here ] `,` )? | *operator_expression_list* ( [ no line terminator here ] `,` *splatting_argument* ) | *association_list* ( [ no line terminator here ] `,` )? | *splatting_argument*
 pub(crate) fn indexing_argument_list(i: Input) -> NodeResult {
     stub(i)
+    // alt((
+    //     command,
+    //     tuple((operator_expression_list, opt(comma))),
+    //     tuple((operator_expression_list, comma, splatting_argument)),
+    //     tuple((association_list, opt(comma))),
+    //     splatting_argument,
+    // ))(i)
+}
+
+fn comma(i: Input) -> LexResult {
+    recognize(tuple((no_lt, char(','))))(i)
 }
 
 /// `*` *operator_expression*
@@ -11,8 +29,8 @@ pub(crate) fn splatting_argument(i: Input) -> NodeResult {
 }
 
 /// *operator_expression* ( [ no line terminator here ] `,` *operator_expression* )*
-pub(crate) fn operator_expression_list(i: Input) -> NodeResult {
-    stub(i)
+pub(crate) fn operator_expression_list(i: Input) -> NodeListResult {
+    stub_list(i)
 }
 
 /// `()` | `(` *argument_list* `)` | `(` *operator_expression_list* [ no line terminator here ] `,` *chained_command_with_do_block* `)` | `(` *chained_command_with_do_block* `)`
@@ -21,8 +39,8 @@ pub(crate) fn argument_with_parentheses(i: Input) -> NodeResult {
 }
 
 /// *block_argument* | *splatting_argument* ( `,` *block_argument* )? | *operator_expression_list* [ no line terminator here ] `,` *association_list* ( [ no line terminator here ] `,` *splatting_argument* )? ( [ no line terminator here ] `,` *block_argument* )? | ( *operator_expression_list* | *association_list* ) ( [ no line terminator here ] `,` *splatting_argument* )? ( [no line terminator here ] `,` *block_argument* )? | *command*
-pub(crate) fn argument_list(i: Input) -> NodeResult {
-    stub(i)
+pub(crate) fn argument_list(i: Input) -> NodeListResult {
+    stub_list(i)
 }
 
 /// `&` *operator_expression*

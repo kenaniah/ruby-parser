@@ -22,6 +22,9 @@ pub(crate) type Parsed<'a, T> = nom::IResult<Input<'a>, T>;
 // Describes a parsed AST node
 pub(crate) type NodeResult<'a> = Parsed<'a, Node>;
 
+// Describes a vector of parsed nodes
+pub(crate) type NodeListResult<'a> = Parsed<'a, Vec<Node>>;
+
 /// Describes a parsed literal
 pub(crate) type LiteralResult<'a> = Parsed<'a, Literal>;
 
@@ -44,5 +47,9 @@ pub(crate) type SegmentVecResult<'a> = Parsed<'a, Vec<Segment>>;
 pub(crate) type StringResult<'a> = Parsed<'a, String>;
 
 pub(crate) fn stub(i: Input) -> NodeResult {
+    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
+}
+
+pub(crate) fn stub_list(i: Input) -> NodeListResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
