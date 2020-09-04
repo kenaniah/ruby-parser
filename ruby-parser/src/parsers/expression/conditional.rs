@@ -72,6 +72,28 @@ pub(crate) fn elsif_clause(i: Input) -> NodeResult {
     })(i)
 }
 
+/// `unless` *expression* *then_clause* *else_clause*? `end`
+pub(crate) fn unless_expression(i: Input) -> NodeResult {
+    map(
+        tuple((
+            tag("unless"),
+            ws,
+            expression,
+            then_clause,
+            opt(else_clause),
+            tag("end"),
+        )),
+        |t| {
+            Node::Conditional(Conditional {
+                kind: ConditionalKind::Unless,
+                cond: Box::new(t.2),
+                then: Box::new(t.3),
+                otherwise: Box::new(t.4.unwrap_or(Node::empty())),
+            })
+        },
+    )(i)
+}
+
 fn stub(i: Input) -> NodeResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
@@ -140,6 +162,33 @@ mod tests {
                         Node::Block(vec![Node::integer(7)]),
                     ),
                 ),
+            )
+        );
+    }
+
+    #[test]
+    fn test_unless_expression() {
+        use_parser!(unless_expression);
+        // Parse errors
+        assert_err!("if");
+        assert_err!("unless 1 end");
+        // Success cases
+        assert_ok!(
+            "unless 1; 2 end",
+            Node::conditional(
+                ConditionalKind::Unless,
+                Node::integer(1),
+                Node::Block(vec![Node::integer(2)]),
+                Node::empty()
+            )
+        );
+        assert_ok!(
+            "unless 1 then else 3 end",
+            Node::conditional(
+                ConditionalKind::Unless,
+                Node::integer(1),
+                Node::empty(),
+                Node::Block(vec![Node::integer(3)])
             )
         );
     }

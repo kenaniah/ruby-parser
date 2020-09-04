@@ -36,7 +36,7 @@ pub(crate) fn primary_expression(i: Input) -> NodeResult {
         //singleton_method_definition,
         //yield_with_optional_argument,
         conditional::if_expression,
-        //unless_expression,
+        conditional::unless_expression,
         //case_expression,
         //while_expression,
         //until_expression,
