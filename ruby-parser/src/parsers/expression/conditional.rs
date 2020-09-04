@@ -148,10 +148,6 @@ fn _conditional_operator_expression(i: Input) -> NodeResult {
     ))(i)
 }
 
-fn stub(i: Input) -> NodeResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

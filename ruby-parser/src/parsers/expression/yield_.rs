@@ -19,7 +19,3 @@ pub(crate) fn yield_with_parenthesis_without_argument(i: Input) -> NodeResult {
 pub(crate) fn yield_with_argument(i: Input) -> NodeResult {
     stub(i)
 }
-
-fn stub(i: Input) -> NodeResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
-}

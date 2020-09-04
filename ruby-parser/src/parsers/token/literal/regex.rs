@@ -38,7 +38,3 @@ pub(crate) fn regular_expression_option(i: Input) -> LexResult {
 fn stub_p(i: Input) -> LexResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
-
-fn stub(i: Input) -> NodeResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
-}

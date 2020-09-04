@@ -29,7 +29,3 @@ pub(crate) fn argument_list(i: Input) -> NodeResult {
 pub(crate) fn block_argument(i: Input) -> NodeResult {
     stub(i)
 }
-
-fn stub(i: Input) -> NodeResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
-}

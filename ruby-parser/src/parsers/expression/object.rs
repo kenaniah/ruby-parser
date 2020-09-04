@@ -61,10 +61,6 @@ pub(crate) fn range_operator(i: Input) -> LexResult {
     recognize(alt((tag("..."), tag(".."))))(i)
 }
 
-fn stub(i: Input) -> NodeResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

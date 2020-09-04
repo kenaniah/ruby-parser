@@ -29,12 +29,3 @@ pub(crate) fn block_parameter_list(i: Input) -> NodeResult {
 pub(crate) fn block_body(i: Input) -> NodeResult {
     stub(i)
 }
-
-// /// docs
-// pub(crate) fn func(i: Input) -> NodeResult {
-//     stub(i)
-// }
-
-fn stub(i: Input) -> NodeResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
-}

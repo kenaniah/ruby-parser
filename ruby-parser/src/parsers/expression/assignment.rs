@@ -66,7 +66,3 @@ pub(crate) fn assignment_with_rescue_modifier(i: Input) -> NodeResult {
 pub(crate) fn rhs_expression(i: Input) -> NodeResult {
     stub(i)
 }
-
-fn stub(i: Input) -> NodeResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
-}

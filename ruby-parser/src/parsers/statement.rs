@@ -52,7 +52,3 @@ pub(crate) fn rescue_modifier_statement(i: Input) -> NodeResult {
 pub(crate) fn assignment_statement(i: Input) -> NodeResult {
     stub(i)
 }
-
-fn stub(i: Input) -> NodeResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
-}

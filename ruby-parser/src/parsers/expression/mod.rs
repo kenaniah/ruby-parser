@@ -12,6 +12,7 @@ mod assignment;
 mod binary;
 mod block;
 mod conditional;
+mod defined;
 mod logical;
 mod method;
 mod object;
@@ -66,23 +67,9 @@ pub(crate) fn grouping_expression(i: Input) -> NodeResult {
 pub(crate) fn operator_expression(i: Input) -> NodeResult {
     alt((
         assignment::assignment_expression,
-        defined_without_parenthesis,
+        defined::defined_without_parenthesis,
         conditional::conditional_operator_expression,
     ))(i)
-}
-
-/// `defined?` `(` *expression* `)`
-pub(crate) fn defined_with_parenthesis(i: Input) -> NodeResult {
-    stub(i)
-}
-
-/// `defined?` *operator_expression*
-pub(crate) fn defined_without_parenthesis(i: Input) -> NodeResult {
-    stub(i)
-}
-
-fn stub(i: Input) -> NodeResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
 
 #[cfg(test)]

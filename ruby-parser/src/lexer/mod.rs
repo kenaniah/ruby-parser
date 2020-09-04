@@ -42,3 +42,7 @@ pub(crate) type SegmentVecResult<'a> = Parsed<'a, Vec<Segment>>;
 
 /// Describes a parsed string
 pub(crate) type StringResult<'a> = Parsed<'a, String>;
+
+pub(crate) fn stub(i: Input) -> NodeResult {
+    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
+}

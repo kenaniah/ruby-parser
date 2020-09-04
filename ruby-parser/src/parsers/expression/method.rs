@@ -49,7 +49,3 @@ pub(crate) fn chained_method_invocation(i: Input) -> NodeResult {
 pub(crate) fn command_with_do_block(i: Input) -> NodeResult {
     stub(i)
 }
-
-fn stub(i: Input) -> NodeResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
-}
