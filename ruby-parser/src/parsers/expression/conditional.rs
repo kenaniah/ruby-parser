@@ -1,9 +1,10 @@
 use crate::ast::{Conditional, ConditionalKind};
 use crate::lexer::*;
-use crate::parsers::expression::expression;
-use crate::parsers::program::{compound_statement, separator, ws};
+use crate::parsers::expression::{expression, operator_expression, range_constructor};
+use crate::parsers::program::{compound_statement, no_lt, separator, ws};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
+use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
@@ -94,8 +95,42 @@ pub(crate) fn unless_expression(i: Input) -> NodeResult {
     )(i)
 }
 
-fn stub(i: Input) -> NodeResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
+/// *range_constructor* | *range_constructor* [ no line terminator here ] `?` *operator_expression* [ no line terminator here ] `:` *operator_expression*
+pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
+    let i = stack_frame!("conditional_operator_expression", i);
+    map(
+        tuple((range_constructor, opt(_conditional_operator_expression))), // BUG: range constructor is currently too greedy
+        |(node, ast)| Node::update_placeholder(node, ast),
+    )(i)
+}
+
+fn _conditional_operator_expression(i: Input) -> NodeResult {
+    let i = stack_frame!("_conditional_operator_expression", i);
+    alt((
+        map(
+            tuple((
+                no_lt,
+                char('?'),
+                ws,
+                operator_expression,
+                no_lt,
+                char(':'),
+                ws,
+                operator_expression,
+                opt(_conditional_operator_expression),
+            )),
+            |t| {
+                let node = Node::Conditional(Conditional {
+                    cond: Box::new(Node::Placeholder),
+                    then: Box::new(t.3),
+                    otherwise: Box::new(t.7),
+                    kind: ConditionalKind::Ternary,
+                });
+                Node::update_placeholder(node, t.8)
+            },
+        ),
+        range_constructor,
+    ))(i)
 }
 
 #[cfg(test)]
@@ -189,6 +224,43 @@ mod tests {
                 Node::integer(1),
                 Node::empty(),
                 Node::Block(vec![Node::integer(3)])
+            )
+        );
+    }
+
+    #[test]
+    fn test_conditional_operator_expression() {
+        use_parser!(conditional_operator_expression);
+        // Parse errors
+        assert_err!("");
+        assert_err!("?2:3");
+        assert_err!("1?:3");
+        // Success cases
+        assert_ok!("\"hi\"", Node::literal_string("hi"));
+        let ok = Node::conditional(
+            ConditionalKind::Ternary,
+            Node::integer(1),
+            Node::integer(2),
+            Node::integer(3),
+        );
+        assert_ok!("1 ? 2 : 3", ok);
+        assert_ok!("1 ? 2: 3", ok);
+        assert_ok!("1?2 : 3", ok);
+        assert_ok!("1 ?2 :3", ok);
+        assert_ok!("1 ? 2:3", ok);
+        assert_ok!("1?2:3", ok);
+        assert_ok!(
+            "1 ? 2 ? 3 : 4 : 5",
+            Node::conditional(
+                ConditionalKind::Ternary,
+                Node::integer(1),
+                Node::conditional(
+                    ConditionalKind::Ternary,
+                    Node::integer(2),
+                    Node::integer(3),
+                    Node::integer(4)
+                ),
+                Node::integer(5),
             )
         );
     }
