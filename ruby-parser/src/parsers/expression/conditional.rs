@@ -95,6 +95,21 @@ pub(crate) fn unless_expression(i: Input) -> NodeResult {
     )(i)
 }
 
+/// `case` *expression*? *separator_list*? *when_clause*+ *else_clause*? end
+pub(crate) fn case_expression(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// `when` *when_argument* *then_clause*
+pub(crate) fn when_clause(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// *operator_expression_list* ( [ no line terminator here ] `,`  *splatting_argument* )? | *splatting_argument*
+pub(crate) fn when_argument(i: Input) -> NodeResult {
+    stub(i)
+}
+
 /// *range_constructor* | *range_constructor* [ no line terminator here ] `?` *operator_expression* [ no line terminator here ] `:` *operator_expression*
 pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
     let i = stack_frame!("conditional_operator_expression", i);
@@ -131,6 +146,10 @@ fn _conditional_operator_expression(i: Input) -> NodeResult {
         ),
         range_constructor,
     ))(i)
+}
+
+fn stub(i: Input) -> NodeResult {
+    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
 
 #[cfg(test)]
