@@ -24,6 +24,10 @@ pub enum Node {
 
 #[allow(dead_code)]
 impl Node {
+    /// Creates a token that represents an empty block
+    pub(crate) fn empty() -> Self {
+        Self::Block(vec![])
+    }
     /// Creates a token that represents a boolean value
     pub(crate) fn boolean(val: bool) -> Self {
         Self::Literal(Literal::Boolean(val))
@@ -67,27 +71,27 @@ impl Node {
         })
     }
     /// Creates a token that represents a logical AND
-    pub(crate) fn logical_and(first: Node, second: Node) -> Node {
+    pub(crate) fn logical_and(first: Node, second: Node) -> Self {
         Self::LogicalAnd(LogicalAnd {
             first: Box::new(first),
             second: Box::new(second),
         })
     }
     /// Creates a token that represents a logical OR
-    pub(crate) fn logical_or(first: Node, second: Node) -> Node {
+    pub(crate) fn logical_or(first: Node, second: Node) -> Self {
         Self::LogicalOr(LogicalOr {
             first: Box::new(first),
             second: Box::new(second),
         })
     }
     /// Creates a token that represents a logical NOT
-    pub(crate) fn logical_not(expr: Node) -> Node {
+    pub(crate) fn logical_not(expr: Node) -> Self {
         Self::LogicalNot(LogicalNot {
             expr: Box::new(expr),
         })
     }
     /// Creates a token that reprents a range
-    pub(crate) fn range(from: Node, to: Node, exclusive: bool) -> Node {
+    pub(crate) fn range(from: Node, to: Node, exclusive: bool) -> Self {
         Self::Ranged(Ranged {
             from: Box::new(from),
             to: Box::new(to),
@@ -98,22 +102,14 @@ impl Node {
     pub(crate) fn conditional(
         kind: ConditionalKind,
         cond: Node,
-        then: Option<Node>,
-        otherwise: Option<Node>,
+        then: Node,
+        otherwise: Node,
     ) -> Node {
         Self::Conditional(Conditional {
             kind,
             cond: Box::new(cond),
-            then: if let Some(node) = then {
-                Some(Box::new(node))
-            } else {
-                None
-            },
-            otherwise: if let Some(node) = otherwise {
-                Some(Box::new(node))
-            } else {
-                None
-            },
+            then: Box::new(then),
+            otherwise: Box::new(otherwise),
         })
     }
     /// Allows placeholding nodes to be updated when working around left-recursive parsers

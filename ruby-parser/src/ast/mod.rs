@@ -1,6 +1,7 @@
 //! Provides the abstract syntax tree
 
 mod binary_op;
+mod conditional;
 mod expr;
 mod identifier;
 mod interpolated;
@@ -11,6 +12,7 @@ mod object;
 mod unary_op;
 
 pub use binary_op::*;
+pub use conditional::*;
 pub use expr::*;
 pub use identifier::*;
 pub use interpolated::*;

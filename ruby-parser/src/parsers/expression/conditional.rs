@@ -1,3 +1,4 @@
+use crate::ast::{Conditional, ConditionalKind};
 use crate::lexer::*;
 use crate::parsers::expression::expression;
 use crate::parsers::program::{compound_statement, separator, ws};
@@ -6,6 +7,7 @@ use nom::bytes::complete::tag;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
+use std::mem;
 
 /// `if` *expression* *then_clause* *elsif_clause** *else_clause*? `end`
 pub(crate) fn if_expression(i: Input) -> NodeResult {
@@ -19,7 +21,26 @@ pub(crate) fn if_expression(i: Input) -> NodeResult {
             opt(else_clause),
             tag("end"),
         )),
-        |t| Node::Placeholder,
+        |t| {
+            let mut parent_node = Node::Conditional(Conditional {
+                kind: ConditionalKind::If,
+                cond: Box::new(t.2),
+                then: Box::new(t.3),
+                otherwise: Box::new(t.5.unwrap_or(Node::empty())),
+            });
+            let mut n = &mut parent_node;
+            for node in t.4 {
+                let mut temp = Box::new(node);
+                if let Node::Conditional(a) = n {
+                    mem::swap(&mut a.otherwise, &mut temp);
+                    if let Node::Conditional(ref mut b) = &mut *a.otherwise {
+                        mem::swap(&mut b.otherwise, &mut temp);
+                    }
+                    n = &mut a.otherwise;
+                }
+            }
+            parent_node
+        },
     )(i)
 }
 
@@ -42,7 +63,12 @@ pub(crate) fn else_clause(i: Input) -> NodeResult {
 /// `elsif` *expression* *then_clause*
 pub(crate) fn elsif_clause(i: Input) -> NodeResult {
     map(tuple((tag("elsif"), ws, expression, then_clause)), |t| {
-        Node::Placeholder
+        Node::Conditional(Conditional {
+            kind: ConditionalKind::Elsif,
+            cond: Box::new(t.2),
+            then: Box::new(t.3),
+            otherwise: Box::new(Node::empty()),
+        })
     })(i)
 }
 
@@ -61,9 +87,60 @@ mod tests {
         assert_err!("if");
         assert_err!("if 1 end");
         // Success cases
-        assert_ok!("if 1; 2 end", Node::Placeholder);
-        assert_ok!("if 1 then 2; end", Node::Placeholder);
-        assert_ok!("if 1 \n2 else 3\n end", Node::Placeholder);
-        assert_ok!("if 1 \n2 elsif 3 then 4 elsif 5\n6 end", Node::Placeholder);
+        assert_ok!(
+            "if 1; 2 end",
+            Node::conditional(
+                ConditionalKind::If,
+                Node::integer(1),
+                Node::Block(vec![Node::integer(2)]),
+                Node::empty()
+            )
+        );
+        assert_ok!(
+            "if 1; else 2 end",
+            Node::conditional(
+                ConditionalKind::If,
+                Node::integer(1),
+                Node::empty(),
+                Node::Block(vec![Node::integer(2)]),
+            )
+        );
+        assert_ok!(
+            "if 1  and  2 then 3; end",
+            Node::conditional(
+                ConditionalKind::If,
+                Node::logical_and(Node::integer(1), Node::integer(2)),
+                Node::Block(vec![Node::integer(3)]),
+                Node::empty()
+            )
+        );
+        assert_ok!(
+            "if 1 \n2 else 3\n end",
+            Node::conditional(
+                ConditionalKind::If,
+                Node::integer(1),
+                Node::Block(vec![Node::integer(2)]),
+                Node::Block(vec![Node::integer(3)]),
+            )
+        );
+        assert_ok!(
+            "if 1 \n2 elsif 3 then 4 elsif 5\n6 else 7 end",
+            Node::conditional(
+                ConditionalKind::If,
+                Node::integer(1),
+                Node::Block(vec![Node::integer(2)]),
+                Node::conditional(
+                    ConditionalKind::Elsif,
+                    Node::integer(3),
+                    Node::Block(vec![Node::integer(4)]),
+                    Node::conditional(
+                        ConditionalKind::Elsif,
+                        Node::integer(5),
+                        Node::Block(vec![Node::integer(6)]),
+                        Node::Block(vec![Node::integer(7)]),
+                    ),
+                ),
+            )
+        );
     }
 }

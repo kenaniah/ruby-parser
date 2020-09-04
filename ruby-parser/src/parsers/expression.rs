@@ -99,8 +99,8 @@ fn _conditional_operator_expression(i: Input) -> NodeResult {
             |t| {
                 let node = Node::Conditional(Conditional {
                     cond: Box::new(Node::Placeholder),
-                    then: Some(Box::new(t.3)),
-                    otherwise: Some(Box::new(t.7)),
+                    then: Box::new(t.3),
+                    otherwise: Box::new(t.7),
                     kind: ConditionalKind::Ternary,
                 });
                 Node::update_placeholder(node, t.8)
@@ -140,8 +140,8 @@ mod tests {
         let ok = Node::conditional(
             ConditionalKind::Ternary,
             Node::integer(1),
-            Some(Node::integer(2)),
-            Some(Node::integer(3)),
+            Node::integer(2),
+            Node::integer(3),
         );
         assert_ok!("1 ? 2 : 3", ok);
         assert_ok!("1 ? 2: 3", ok);
@@ -154,13 +154,13 @@ mod tests {
             Node::conditional(
                 ConditionalKind::Ternary,
                 Node::integer(1),
-                Some(Node::conditional(
+                Node::conditional(
                     ConditionalKind::Ternary,
                     Node::integer(2),
-                    Some(Node::integer(3)),
-                    Some(Node::integer(4))
-                )),
-                Some(Node::integer(5)),
+                    Node::integer(3),
+                    Node::integer(4)
+                ),
+                Node::integer(5),
             )
         );
     }
