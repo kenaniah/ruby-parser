@@ -1,10 +1,10 @@
 use crate::lexer::*;
 use crate::parsers::expression::object::range_constructor;
-use crate::parsers::program::{compound_statement};
+use crate::parsers::program::compound_statement;
 use crate::parsers::token::literal::literal;
 use nom::branch::alt;
 use nom::character::complete::char;
-use nom::combinator::{map};
+use nom::combinator::map;
 use nom::sequence::tuple;
 
 mod argument;
@@ -67,7 +67,7 @@ pub(crate) fn operator_expression(i: Input) -> NodeResult {
     alt((
         assignment::assignment_expression,
         defined_without_parenthesis,
-        conditional::conditional_operator_expression
+        conditional::conditional_operator_expression,
     ))(i)
 }
 
