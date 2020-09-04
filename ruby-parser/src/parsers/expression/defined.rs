@@ -62,30 +62,30 @@ mod tests {
         assert_err!("defined?");
         assert_err!("defined?()");
         // Success cases
-        assert_ok!("defined? ()", Node::Defined(Box::new(Node::empty())));
+        assert_ok!("defined? ()", Node::defined(Node::empty()));
         assert_ok!(
             "defined? foo",
-            Node::Defined(Box::new(Node::ident("foo", IdentifierKind::LocalVariable)))
+            Node::defined(Node::ident("foo", IdentifierKind::LocalVariable))
         );
         assert_ok!(
             "defined? foo",
-            Node::Defined(Box::new(Node::ident("foo", IdentifierKind::LocalVariable)))
+            Node::defined(Node::ident("foo", IdentifierKind::LocalVariable))
         );
         assert_ok!(
             "defined? 2 + 1",
-            Node::Defined(Box::new(Node::binary_op(
+            Node::defined(Node::binary_op(
                 Node::integer(2),
                 BinaryOpKind::Add,
                 Node::integer(1)
-            )))
+            ))
         );
         assert_ok!(
-            "defined?\n(2 + 1)",
-            Node::Defined(Box::new(Node::Block(vec![Node::binary_op(
+            "defined?\n(2 +\n 1)",
+            Node::defined(Node::Block(vec![Node::binary_op(
                 Node::integer(2),
                 BinaryOpKind::Add,
                 Node::integer(1)
-            )])))
+            )]))
         );
     }
 }

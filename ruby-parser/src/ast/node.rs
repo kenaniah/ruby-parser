@@ -91,6 +91,10 @@ impl Node {
             expr: Box::new(expr),
         })
     }
+    /// Creates a token that reprents a defined? statement
+    pub(crate) fn defined(node: Node) -> Self {
+        Self::Defined(Box::new(node))
+    }
     /// Creates a token that reprents a range
     pub(crate) fn range(from: Node, to: Node, exclusive: bool) -> Self {
         Self::Ranged(Ranged {
