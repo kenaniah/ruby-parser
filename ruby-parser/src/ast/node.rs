@@ -13,6 +13,7 @@ pub enum Node {
     BinaryOp(BinaryOp),
     UnaryOp(UnaryOp),
     Block(Vec<Node>),
+    BlockArg(Box<Self>),
     Segment(Segment),
     Comment(String),
     Ranged(Ranged),
@@ -99,6 +100,10 @@ impl Node {
     /// Creates a token that reprents a splat argument
     pub(crate) fn splat(node: Node) -> Self {
         Self::Splat(Box::new(node))
+    }
+    /// Creates a token that reprents a splat argument
+    pub(crate) fn block_arg(node: Node) -> Self {
+        Self::BlockArg(Box::new(node))
     }
     /// Creates a token that reprents a range
     pub(crate) fn range(from: Node, to: Node, exclusive: bool) -> Self {

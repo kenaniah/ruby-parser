@@ -63,7 +63,9 @@ pub(crate) fn argument_list(i: Input) -> NodeListResult {
 
 /// `&` *operator_expression*
 pub(crate) fn block_argument(i: Input) -> NodeResult {
-    stub(i)
+    map(tuple((char('&'), operator_expression)), |t| {
+        Node::BlockArg(Box::new(t.1))
+    })(i)
 }
 
 #[cfg(test)]
@@ -91,5 +93,13 @@ mod tests {
             "1, 2,\n3",
             vec![Node::integer(1), Node::integer(2), Node::integer(3)]
         );
+    }
+
+    #[test]
+    fn test_block_argument() {
+        use_parser!(splatting_argument);
+        // Parse errors
+        assert_err!("*");
+        assert_ok!("*3", Node::splat(Node::integer(3)));
     }
 }
