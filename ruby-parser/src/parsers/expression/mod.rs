@@ -13,6 +13,7 @@ mod binary;
 mod block;
 mod conditional;
 mod defined;
+mod iteration;
 mod logical;
 mod method;
 mod object;
