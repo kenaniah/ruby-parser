@@ -31,8 +31,8 @@ pub(crate) fn method_invocation_without_parenthesis(i: Input) -> NodeResult {
 }
 
 /// *super_with_argument* | *yield_with_argument* | *method_identifier* *argument_without_parenthesis* | *primary_expression* [ no line terminator here ] ( `.` | `::` ) *method_name* *argument_without_parenthesis*
-pub(crate) fn command(i: Input) -> NodeResult {
-    stub(i)
+pub(crate) fn command(i: Input) -> NodeListResult {
+    stub_list(i)
 }
 
 /// *command_with_do_block* *chained_method_invocation**

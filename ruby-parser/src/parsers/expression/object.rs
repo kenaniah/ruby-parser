@@ -19,8 +19,8 @@ pub(crate) fn hash_constructor(i: Input) -> NodeResult {
 }
 
 /// *association* ( [ no line terminator here ] `,` *association* )*
-pub(crate) fn association_list(i: Input) -> NodeResult {
-    stub(i)
+pub(crate) fn association_list(i: Input) -> NodeListResult {
+    stub_list(i)
 }
 
 /// *association_key* [ no line terminator here ] `=>` *association_value*

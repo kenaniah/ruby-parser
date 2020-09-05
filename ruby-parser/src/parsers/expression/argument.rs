@@ -6,21 +6,25 @@ use crate::parsers::program::no_lt;
 use crate::parsers::program::ws;
 use nom::branch::alt;
 use nom::character::complete::char;
-use nom::combinator::map;
-use nom::combinator::{opt, recognize};
+use nom::combinator::{map, opt, recognize};
 use nom::multi::many0;
-use nom::sequence::tuple;
+use nom::sequence::{terminated, tuple};
 
 /// *command* | *operator_expression_list* ( [ no line terminator here ] `,` )? | *operator_expression_list* ( [ no line terminator here ] `,` *splatting_argument* ) | *association_list* ( [ no line terminator here ] `,` )? | *splatting_argument*
-pub(crate) fn indexing_argument_list(i: Input) -> NodeResult {
-    stub(i)
-    // alt((
-    //     command,
-    //     tuple((operator_expression_list, opt(comma))),
-    //     tuple((operator_expression_list, comma, splatting_argument)),
-    //     tuple((association_list, opt(comma))),
-    //     splatting_argument,
-    // ))(i)
+pub(crate) fn indexing_argument_list(i: Input) -> NodeListResult {
+    alt((
+        command,
+        terminated(operator_expression_list, opt(comma)),
+        map(
+            tuple((operator_expression_list, comma, splatting_argument)),
+            |mut t| {
+                t.0.push(t.2);
+                t.0
+            },
+        ),
+        terminated(association_list, opt(comma)),
+        map(splatting_argument, |v| vec![v]),
+    ))(i)
 }
 
 fn comma(i: Input) -> LexResult {
