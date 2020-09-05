@@ -50,7 +50,7 @@ pub(crate) fn primary_expression(i: Input) -> NodeResult {
         grouping_expression,
         variable::variable_reference,
         //scoped_constant_reference,
-        //array_constructor,
+        object::array_constructor,
         //hash_constructor,
         literal,
         defined::defined_with_parenthesis,

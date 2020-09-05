@@ -1,16 +1,22 @@
 use crate::ast::Ranged;
 use crate::lexer::*;
+use crate::parsers::expression::argument::indexing_argument_list;
 use crate::parsers::expression::logical::operator_or_expression;
 use crate::parsers::expression::operator_expression;
 use crate::parsers::program::{no_lt, ws};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
+use nom::character::complete::char;
 use nom::combinator::recognize;
+use nom::combinator::{map, opt};
 use nom::sequence::tuple;
 
 /// `[` *indexing_argument_list*? `]`
 pub(crate) fn array_constructor(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((char('['), ws, opt(indexing_argument_list), ws, char(']'))),
+        |t| Node::Array(t.2.unwrap_or(vec![])),
+    )(i)
 }
 
 /// `{` ( *association_list* [ no line terminator here ] `,`? )? `}`
@@ -64,6 +70,24 @@ pub(crate) fn range_operator(i: Input) -> LexResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ast::BinaryOpKind;
+
+    #[test]
+    fn test_array_constructor() {
+        use_parser!(array_constructor);
+        // Parse errors
+        assert_err!("[(]");
+        // Success cases
+        assert_ok!("[ \n]", Node::array(vec![]));
+        assert_ok!(
+            "[1, 2 * 3, []]",
+            Node::array(vec![
+                Node::integer(1),
+                Node::binary_op(Node::integer(2), BinaryOpKind::Multiply, Node::integer(3)),
+                Node::array(vec![])
+            ])
+        );
+    }
 
     #[test]
     fn test_range_constructor() {

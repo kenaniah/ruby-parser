@@ -12,13 +12,14 @@ pub enum Node {
     Interpolated(Interpolated),
     BinaryOp(BinaryOp),
     UnaryOp(UnaryOp),
-    Block(Vec<Node>),
+    Block(Vec<Self>),
     BlockArg(Box<Self>),
     Segment(Segment),
     Comment(String),
     Ranged(Ranged),
     Defined(Box<Self>),
     Splat(Box<Self>),
+    Array(Vec<Self>),
     Nil,
     Self_,
     EndOfProgram,
@@ -104,6 +105,10 @@ impl Node {
     /// Creates a token that reprents a splat argument
     pub(crate) fn block_arg(node: Node) -> Self {
         Self::BlockArg(Box::new(node))
+    }
+    /// Creates a token that reprents an array constructor
+    pub(crate) fn array(node: Vec<Node>) -> Self {
+        Self::Array(node)
     }
     /// Creates a token that reprents a range
     pub(crate) fn range(from: Node, to: Node, exclusive: bool) -> Self {
