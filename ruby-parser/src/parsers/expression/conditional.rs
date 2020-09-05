@@ -163,8 +163,8 @@ mod tests {
             "if 1; 2 end",
             Node::conditional(
                 ConditionalKind::If,
-                Node::integer(1),
-                Node::Block(vec![Node::integer(2)]),
+                Node::int(1),
+                Node::Block(vec![Node::int(2)]),
                 Node::empty()
             )
         );
@@ -172,17 +172,17 @@ mod tests {
             "if 1; else 2 end",
             Node::conditional(
                 ConditionalKind::If,
-                Node::integer(1),
+                Node::int(1),
                 Node::empty(),
-                Node::Block(vec![Node::integer(2)]),
+                Node::Block(vec![Node::int(2)]),
             )
         );
         assert_ok!(
             "if 1  and  2 then 3; end",
             Node::conditional(
                 ConditionalKind::If,
-                Node::logical_and(Node::integer(1), Node::integer(2)),
-                Node::Block(vec![Node::integer(3)]),
+                Node::logical_and(Node::int(1), Node::int(2)),
+                Node::Block(vec![Node::int(3)]),
                 Node::empty()
             )
         );
@@ -190,26 +190,26 @@ mod tests {
             "if 1 \n2 else 3\n end",
             Node::conditional(
                 ConditionalKind::If,
-                Node::integer(1),
-                Node::Block(vec![Node::integer(2)]),
-                Node::Block(vec![Node::integer(3)]),
+                Node::int(1),
+                Node::Block(vec![Node::int(2)]),
+                Node::Block(vec![Node::int(3)]),
             )
         );
         assert_ok!(
             "if 1 \n2 elsif 3 then 4 elsif 5\n6 else 7 end",
             Node::conditional(
                 ConditionalKind::If,
-                Node::integer(1),
-                Node::Block(vec![Node::integer(2)]),
+                Node::int(1),
+                Node::Block(vec![Node::int(2)]),
                 Node::conditional(
                     ConditionalKind::Elsif,
-                    Node::integer(3),
-                    Node::Block(vec![Node::integer(4)]),
+                    Node::int(3),
+                    Node::Block(vec![Node::int(4)]),
                     Node::conditional(
                         ConditionalKind::Elsif,
-                        Node::integer(5),
-                        Node::Block(vec![Node::integer(6)]),
-                        Node::Block(vec![Node::integer(7)]),
+                        Node::int(5),
+                        Node::Block(vec![Node::int(6)]),
+                        Node::Block(vec![Node::int(7)]),
                     ),
                 ),
             )
@@ -227,8 +227,8 @@ mod tests {
             "unless 1; 2 end",
             Node::conditional(
                 ConditionalKind::Unless,
-                Node::integer(1),
-                Node::Block(vec![Node::integer(2)]),
+                Node::int(1),
+                Node::Block(vec![Node::int(2)]),
                 Node::empty()
             )
         );
@@ -236,9 +236,9 @@ mod tests {
             "unless 1 then else 3 end",
             Node::conditional(
                 ConditionalKind::Unless,
-                Node::integer(1),
+                Node::int(1),
                 Node::empty(),
-                Node::Block(vec![Node::integer(3)])
+                Node::Block(vec![Node::int(3)])
             )
         );
     }
@@ -254,9 +254,9 @@ mod tests {
         assert_ok!("\"hi\"", Node::literal_string("hi"));
         let ok = Node::conditional(
             ConditionalKind::Ternary,
-            Node::integer(1),
-            Node::integer(2),
-            Node::integer(3),
+            Node::int(1),
+            Node::int(2),
+            Node::int(3),
         );
         assert_ok!("1 ? 2 : 3", ok);
         assert_ok!("1 ? 2: 3", ok);
@@ -268,14 +268,14 @@ mod tests {
             "1 ? 2 ? 3 : 4 : 5",
             Node::conditional(
                 ConditionalKind::Ternary,
-                Node::integer(1),
+                Node::int(1),
                 Node::conditional(
                     ConditionalKind::Ternary,
-                    Node::integer(2),
-                    Node::integer(3),
-                    Node::integer(4)
+                    Node::int(2),
+                    Node::int(3),
+                    Node::int(4)
                 ),
-                Node::integer(5),
+                Node::int(5),
             )
         );
     }

@@ -230,7 +230,7 @@ mod tests {
             "\"#@@VAR#{2; 3.5} \"",
             is(vec![
                 Node::ident("@@VAR", IdentifierKind::ClassVariable),
-                Node::Block(vec![Node::integer(2), Node::float(3.5)]),
+                Node::Block(vec![Node::int(2), Node::float(3.5)]),
                 seg(" ")
             ])
         );

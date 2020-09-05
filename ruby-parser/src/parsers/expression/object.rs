@@ -103,15 +103,10 @@ mod tests {
         assert_err!("{1 \n => 2}");
         // Success cases
         assert_ok!("{}", Node::Hash(vec![]));
-        assert_ok!("{1=>2}", Node::Hash(vec![Node::integer(1), Node::integer(2)]));
+        assert_ok!("{1=>2}", Node::Hash(vec![Node::int(1), Node::int(2)]));
         assert_ok!(
             "{1 => 2,\n\n 3=>4}",
-            Node::Hash(vec![
-                Node::integer(1),
-                Node::integer(2),
-                Node::integer(3),
-                Node::integer(4)
-            ])
+            Node::Hash(vec![Node::int(1), Node::int(2), Node::int(3), Node::int(4)])
         );
     }
 
@@ -125,8 +120,8 @@ mod tests {
         assert_ok!(
             "[1, 2 * 3, []]",
             Node::array(vec![
-                Node::integer(1),
-                Node::binary_op(Node::integer(2), BinaryOpKind::Multiply, Node::integer(3)),
+                Node::int(1),
+                Node::binary_op(Node::int(2), BinaryOpKind::Multiply, Node::int(3)),
                 Node::array(vec![])
             ])
         );
@@ -140,11 +135,8 @@ mod tests {
         assert_err!("1 ");
         assert_err!("1....5");
         // Success cases
-        assert_ok!("2", Node::integer(2));
-        assert_ok!(
-            "2 ..  5",
-            Node::range(Node::integer(2), Node::integer(5), false)
-        );
+        assert_ok!("2", Node::int(2));
+        assert_ok!("2 ..  5", Node::range(Node::int(2), Node::int(5), false));
         assert_ok!(
             "2.0...4.0",
             Node::range(Node::float(2.0), Node::float(4.0), true)

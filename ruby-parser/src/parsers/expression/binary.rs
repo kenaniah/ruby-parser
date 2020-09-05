@@ -274,9 +274,9 @@ mod tests {
         assert_ok!(
             "1 === 2 + 3",
             Node::binary_op(
-                Node::integer(1),
+                Node::int(1),
                 Op::CaseEqual,
-                Node::binary_op(Node::integer(2), Op::Add, Node::integer(3)),
+                Node::binary_op(Node::int(2), Op::Add, Node::int(3)),
             )
         );
         assert_ok!(
@@ -289,11 +289,9 @@ mod tests {
         );
         assert_ok!(
             "(1 == 2)",
-            Node::Block(vec![Node::binary_op(
-                Node::integer(1),
-                Op::Equal,
-                Node::integer(2),
-            )])
+            Node::Block(vec![
+                Node::binary_op(Node::int(1), Op::Equal, Node::int(2),)
+            ])
         );
         assert_remaining!("1?2:3", "?2:3");
     }
@@ -310,15 +308,15 @@ mod tests {
             Node::binary_op(
                 Node::binary_op(
                     Node::binary_op(
-                        Node::binary_op(Node::integer(1), Op::GreaterEqual, Node::integer(2)),
+                        Node::binary_op(Node::int(1), Op::GreaterEqual, Node::int(2)),
                         Op::LessThan,
-                        Node::binary_op(Node::integer(3), Op::Add, Node::integer(4))
+                        Node::binary_op(Node::int(3), Op::Add, Node::int(4))
                     ),
                     Op::GreaterThan,
-                    Node::integer(5)
+                    Node::int(5)
                 ),
                 Op::LessEqual,
-                Node::integer(6)
+                Node::int(6)
             )
         );
         assert_remaining!("1?2:3", "?2:3");
@@ -336,15 +334,15 @@ mod tests {
             Node::binary_op(
                 Node::binary_op(
                     Node::binary_op(
-                        Node::integer(1),
+                        Node::int(1),
                         Op::BitOr,
-                        Node::binary_op(Node::integer(2), Op::Add, Node::integer(3))
+                        Node::binary_op(Node::int(2), Op::Add, Node::int(3))
                     ),
                     Op::BitXor,
-                    Node::integer(4)
+                    Node::int(4)
                 ),
                 Op::BitOr,
-                Node::integer(5)
+                Node::int(5)
             )
         );
         assert_remaining!("1?2:3", "?2:3");
@@ -359,14 +357,14 @@ mod tests {
         // Success cases
         assert_ok!(
             "1 & 2",
-            Node::binary_op(Node::integer(1), Op::BitAnd, Node::integer(2))
+            Node::binary_op(Node::int(1), Op::BitAnd, Node::int(2))
         );
         assert_ok!(
             "1+2&3",
             Node::binary_op(
-                Node::binary_op(Node::integer(1), Op::Add, Node::integer(2)),
+                Node::binary_op(Node::int(1), Op::Add, Node::int(2)),
                 Op::BitAnd,
-                Node::integer(3)
+                Node::int(3)
             )
         );
         assert_remaining!("1?2:3", "?2:3");
@@ -381,22 +379,22 @@ mod tests {
         // Success cases
         assert_ok!(
             "1 << 2",
-            Node::binary_op(Node::integer(1), Op::ShiftLeft, Node::integer(2))
+            Node::binary_op(Node::int(1), Op::ShiftLeft, Node::int(2))
         );
         assert_ok!(
             "1 - 2 >> 3",
             Node::binary_op(
-                Node::binary_op(Node::integer(1), Op::Subtract, Node::integer(2)),
+                Node::binary_op(Node::int(1), Op::Subtract, Node::int(2)),
                 Op::ShiftRight,
-                Node::integer(3)
+                Node::int(3)
             )
         );
         assert_ok!(
             "1 << 2 * -3",
             Node::binary_op(
-                Node::integer(1),
+                Node::int(1),
                 Op::ShiftLeft,
-                Node::binary_op(Node::integer(2), Op::Multiply, Node::integer(-3)),
+                Node::binary_op(Node::int(2), Op::Multiply, Node::int(-3)),
             )
         );
         assert_remaining!("1?2:3", "?2:3");
@@ -409,40 +407,37 @@ mod tests {
         assert_err!("");
         assert_err!("2 +");
         // Success cases
-        assert_ok!(
-            "1+ 2",
-            Node::binary_op(Node::integer(1), Op::Add, Node::integer(2))
-        );
+        assert_ok!("1+ 2", Node::binary_op(Node::int(1), Op::Add, Node::int(2)));
         assert_ok!(
             "1 - 2 -3",
             Node::binary_op(
-                Node::binary_op(Node::integer(1), Op::Subtract, Node::integer(2)),
+                Node::binary_op(Node::int(1), Op::Subtract, Node::int(2)),
                 Op::Subtract,
-                Node::integer(3)
+                Node::int(3)
             )
         );
         assert_ok!(
             "1*2",
-            Node::binary_op(Node::integer(1), Op::Multiply, Node::integer(2))
+            Node::binary_op(Node::int(1), Op::Multiply, Node::int(2))
         );
         assert_ok!(
             "1 * 2 + 3",
             Node::binary_op(
-                Node::binary_op(Node::integer(1), Op::Multiply, Node::integer(2)),
+                Node::binary_op(Node::int(1), Op::Multiply, Node::int(2)),
                 Op::Add,
-                Node::integer(3)
+                Node::int(3)
             )
         );
         assert_ok!(
             "1 + 2 * 3 - 4",
             Node::binary_op(
                 Node::binary_op(
-                    Node::integer(1),
+                    Node::int(1),
                     Op::Add,
-                    Node::binary_op(Node::integer(2), Op::Multiply, Node::integer(3))
+                    Node::binary_op(Node::int(2), Op::Multiply, Node::int(3))
                 ),
                 Op::Subtract,
-                Node::integer(4)
+                Node::int(4)
             )
         );
         assert_remaining!("1?2:3", "?2:3");
@@ -458,7 +453,7 @@ mod tests {
         assert_ok!(":hi", Node::literal_symbol(":hi"));
         assert_ok!(
             "12 / 2",
-            Node::binary_op(Node::integer(12), Op::Divide, Node::integer(2))
+            Node::binary_op(Node::int(12), Op::Divide, Node::int(2))
         );
         assert_ok!(
             "\"hi\" * 3.0/4 % 2",
@@ -466,10 +461,10 @@ mod tests {
                 Node::binary_op(
                     Node::binary_op(Node::literal_string("hi"), Op::Multiply, Node::float(3.0)),
                     Op::Divide,
-                    Node::integer(4)
+                    Node::int(4)
                 ),
                 Op::Modulus,
-                Node::integer(2)
+                Node::int(2)
             )
         );
         assert_remaining!("1?2:3", "?2:3");
@@ -488,9 +483,9 @@ mod tests {
         assert_ok!(
             "3 **\n# comment\n4**-5.2",
             Node::binary_op(
-                Node::integer(3),
+                Node::int(3),
                 Op::Power,
-                Node::binary_op(Node::integer(4), Op::Power, Node::float(-5.2))
+                Node::binary_op(Node::int(4), Op::Power, Node::float(-5.2))
             )
         );
         assert_remaining!("1?2:3", "?2:3");

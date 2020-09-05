@@ -87,7 +87,7 @@ mod tests {
         assert_err!("((foo)");
         // Success cases
         assert_ok!("nil", Node::Nil);
-        assert_ok!("42", Node::integer(42));
+        assert_ok!("42", Node::int(42));
         assert_ok!("24.2", Node::float(24.2));
         assert_ok!("meh", Node::ident("meh", IdentifierKind::LocalVariable));
         assert_ok!("-23e4", Node::float(-230000.0));
@@ -97,10 +97,7 @@ mod tests {
             "((false))",
             Node::Block(vec![Node::Block(vec![Node::boolean(false)])])
         );
-        assert_ok!(
-            "(;2\n\t5;;)",
-            Node::Block(vec![Node::integer(2), Node::integer(5)])
-        );
+        assert_ok!("(;2\n\t5;;)", Node::Block(vec![Node::int(2), Node::int(5)]));
         assert_ok!("(;)", Node::Block(vec![]));
     }
 }

@@ -83,7 +83,7 @@ mod tests {
         use_parser!(splatting_argument);
         // Parse errors
         assert_err!("*");
-        assert_ok!("*3", Node::splat(Node::integer(3)));
+        assert_ok!("*3", Node::splat(Node::int(3)));
     }
 
     #[test]
@@ -95,10 +95,7 @@ mod tests {
         assert_err!("1, 2\n, 3");
         // Success cases
         assert_ok!("hi", vec![Node::ident("hi", IdentifierKind::LocalVariable)]);
-        assert_ok!(
-            "1, 2,\n3",
-            vec![Node::integer(1), Node::integer(2), Node::integer(3)]
-        );
+        assert_ok!("1, 2,\n3", vec![Node::int(1), Node::int(2), Node::int(3)]);
     }
 
     #[test]
@@ -111,7 +108,7 @@ mod tests {
             Node::block_arg(Node::binary_op(
                 Node::literal_symbol(":foo"),
                 BinaryOpKind::Subtract,
-                Node::integer(2)
+                Node::int(2)
             ))
         );
     }

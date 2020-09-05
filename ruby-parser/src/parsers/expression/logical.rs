@@ -233,17 +233,11 @@ mod tests {
         // Success cases
         assert_ok!(
             "1 or 2 and 3",
-            Node::logical_and(
-                Node::logical_or(Node::integer(1), Node::integer(2)),
-                Node::integer(3)
-            )
+            Node::logical_and(Node::logical_or(Node::int(1), Node::int(2)), Node::int(3))
         );
         assert_ok!(
             "1 and 2 or 3",
-            Node::logical_or(
-                Node::logical_and(Node::integer(1), Node::integer(2)),
-                Node::integer(3)
-            )
+            Node::logical_or(Node::logical_and(Node::int(1), Node::int(2)), Node::int(3))
         );
         assert_ok!(
             "1 and 2 and not 3 or 4 or 5 and 6 or 7 and 8",
@@ -253,18 +247,18 @@ mod tests {
                         Node::logical_or(
                             Node::logical_or(
                                 Node::logical_and(
-                                    Node::logical_and(Node::integer(1), Node::integer(2)),
-                                    Node::logical_not(Node::integer(3))
+                                    Node::logical_and(Node::int(1), Node::int(2)),
+                                    Node::logical_not(Node::int(3))
                                 ),
-                                Node::integer(4)
+                                Node::int(4)
                             ),
-                            Node::integer(5)
+                            Node::int(5)
                         ),
-                        Node::integer(6)
+                        Node::int(6)
                     ),
-                    Node::integer(7)
+                    Node::int(7)
                 ),
-                Node::integer(8)
+                Node::int(8)
             )
         );
     }
@@ -276,23 +270,17 @@ mod tests {
         assert_err!("or");
         assert_err!("1 or");
         // Success cases
-        assert_ok!(
-            "1 or 2",
-            Node::logical_or(Node::integer(1), Node::integer(2))
-        );
+        assert_ok!("1 or 2", Node::logical_or(Node::int(1), Node::int(2)));
         assert_ok!(
             "not 1 or not 2",
             Node::logical_or(
-                Node::logical_not(Node::integer(1)),
-                Node::logical_not(Node::integer(2))
+                Node::logical_not(Node::int(1)),
+                Node::logical_not(Node::int(2))
             )
         );
         assert_ok!(
             "1 or 2 or 3",
-            Node::logical_or(
-                Node::logical_or(Node::integer(1), Node::integer(2)),
-                Node::integer(3)
-            )
+            Node::logical_or(Node::logical_or(Node::int(1), Node::int(2)), Node::int(3))
         );
     }
 
@@ -303,23 +291,17 @@ mod tests {
         assert_err!("and");
         assert_err!("1 and");
         // Success cases
-        assert_ok!(
-            "1 and 2",
-            Node::logical_and(Node::integer(1), Node::integer(2))
-        );
+        assert_ok!("1 and 2", Node::logical_and(Node::int(1), Node::int(2)));
         assert_ok!(
             "not 1 and not 2",
             Node::logical_and(
-                Node::logical_not(Node::integer(1)),
-                Node::logical_not(Node::integer(2))
+                Node::logical_not(Node::int(1)),
+                Node::logical_not(Node::int(2))
             )
         );
         assert_ok!(
             "1 and 2 and 3",
-            Node::logical_and(
-                Node::logical_and(Node::integer(1), Node::integer(2)),
-                Node::integer(3)
-            )
+            Node::logical_and(Node::logical_and(Node::int(1), Node::int(2)), Node::int(3))
         );
     }
 
@@ -347,24 +329,15 @@ mod tests {
         // Success cases
         assert_ok!(
             "1 || 2 && 3",
-            Node::logical_or(
-                Node::integer(1),
-                Node::logical_and(Node::integer(2), Node::integer(3)),
-            )
+            Node::logical_or(Node::int(1), Node::logical_and(Node::int(2), Node::int(3)),)
         );
         assert_ok!(
             "1 || 2 || 3",
-            Node::logical_or(
-                Node::logical_or(Node::integer(1), Node::integer(2)),
-                Node::integer(3),
-            )
+            Node::logical_or(Node::logical_or(Node::int(1), Node::int(2)), Node::int(3),)
         );
         assert_ok!(
             "1 && 2 || 3",
-            Node::logical_or(
-                Node::logical_and(Node::integer(1), Node::integer(2)),
-                Node::integer(3),
-            )
+            Node::logical_or(Node::logical_and(Node::int(1), Node::int(2)), Node::int(3),)
         );
     }
 
@@ -378,16 +351,13 @@ mod tests {
         assert_ok!(
             "1 && 2 != 3",
             Node::logical_and(
-                Node::integer(1),
-                Node::binary_op(Node::integer(2), BinaryOpKind::NotEqual, Node::integer(3)),
+                Node::int(1),
+                Node::binary_op(Node::int(2), BinaryOpKind::NotEqual, Node::int(3)),
             )
         );
         assert_ok!(
             "1 && 2 && 3",
-            Node::logical_and(
-                Node::logical_and(Node::integer(1), Node::integer(2)),
-                Node::integer(3),
-            )
+            Node::logical_and(Node::logical_and(Node::int(1), Node::int(2)), Node::int(3),)
         );
     }
 }

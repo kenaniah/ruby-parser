@@ -38,7 +38,7 @@ impl Node {
         Self::Literal(Literal::Boolean(val))
     }
     /// Creates a token that represents an integer value
-    pub(crate) fn integer(val: isize) -> Self {
+    pub(crate) fn int(val: isize) -> Self {
         Self::Literal(Literal::Integer(val))
     }
     /// Creates a token that represents a float value

@@ -357,7 +357,7 @@ mod tests {
         assert_ok!(
             "<<~foo\n#{2}  bar\nfoo",
             i(vec![
-                Node::Block(vec![Node::integer(2)]),
+                Node::Block(vec![Node::int(2)]),
                 Node::Segment(Segment::String("  bar\n".to_owned()))
             ])
         );
@@ -367,7 +367,7 @@ mod tests {
             "<<~foo\n    bar#{\n2\n} stuff\n\t\n     \n  3\nfoo",
             i(vec![
                 Node::Segment(Segment::String("  bar".to_owned())),
-                Node::Block(vec![Node::integer(2)]),
+                Node::Block(vec![Node::int(2)]),
                 Node::Segment(Segment::String(" stuff\n\n   \n3\n".to_owned()))
             ])
         );

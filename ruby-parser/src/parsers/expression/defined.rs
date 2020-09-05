@@ -48,9 +48,9 @@ mod tests {
         assert_ok!(
             "defined?(2 + 1)",
             Node::Defined(Box::new(Node::binary_op(
-                Node::integer(2),
+                Node::int(2),
                 BinaryOpKind::Add,
-                Node::integer(1)
+                Node::int(1)
             )))
         );
     }
@@ -74,17 +74,17 @@ mod tests {
         assert_ok!(
             "defined? 2 + 1",
             Node::defined(Node::binary_op(
-                Node::integer(2),
+                Node::int(2),
                 BinaryOpKind::Add,
-                Node::integer(1)
+                Node::int(1)
             ))
         );
         assert_ok!(
             "defined?\n(2 +\n 1)",
             Node::defined(Node::Block(vec![Node::binary_op(
-                Node::integer(2),
+                Node::int(2),
                 BinaryOpKind::Add,
-                Node::integer(1)
+                Node::int(1)
             )]))
         );
     }

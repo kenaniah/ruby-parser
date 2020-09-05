@@ -100,10 +100,7 @@ mod tests {
     #[test]
     fn test_compound_statement() {
         use_parser!(compound_statement);
-        assert_ok!(
-            "2; 5",
-            Node::Block(vec![Node::integer(2), Node::integer(5)])
-        );
+        assert_ok!("2; 5", Node::Block(vec![Node::int(2), Node::int(5)]));
     }
 
     #[test]

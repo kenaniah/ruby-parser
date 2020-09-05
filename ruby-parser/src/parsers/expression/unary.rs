@@ -52,9 +52,9 @@ mod tests {
         assert_ok!("nil", Node::Nil);
         assert_ok!("-nil", Node::unary_op(Op::Negative, Node::Nil));
         assert_ok!("-\n\n  nil", Node::unary_op(Op::Negative, Node::Nil));
-        assert_ok!("-42", Node::integer(-42));
-        assert_ok!("- 42", Node::unary_op(Op::Negative, Node::integer(42)));
-        assert_ok!("--42", Node::unary_op(Op::Negative, Node::integer(-42)));
+        assert_ok!("-42", Node::int(-42));
+        assert_ok!("- 42", Node::unary_op(Op::Negative, Node::int(42)));
+        assert_ok!("--42", Node::unary_op(Op::Negative, Node::int(-42)));
         // Integration cases
         assert_ok!(
             "!foo",
@@ -76,7 +76,7 @@ mod tests {
         assert_err!("((foo)");
         // Success cases
         assert_ok!("nil", Node::Nil);
-        assert_ok!("+42", Node::unary_op(Op::Positive, Node::integer(42)));
+        assert_ok!("+42", Node::unary_op(Op::Positive, Node::int(42)));
         assert_ok!(
             "!! meh",
             Node::unary_op(
