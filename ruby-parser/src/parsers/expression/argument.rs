@@ -27,7 +27,8 @@ pub(crate) fn indexing_argument_list(i: Input) -> NodeListResult {
     ))(i)
 }
 
-fn comma(i: Input) -> LexResult {
+/// [ no line terminator here ] `,`
+pub(crate) fn comma(i: Input) -> LexResult {
     recognize(tuple((no_lt, char(','))))(i)
 }
 

@@ -51,7 +51,7 @@ pub(crate) fn primary_expression(i: Input) -> NodeResult {
         variable::variable_reference,
         //scoped_constant_reference,
         object::array_constructor,
-        //hash_constructor,
+        object::hash_constructor,
         literal,
         defined::defined_with_parenthesis,
         //primary_method_invocation,

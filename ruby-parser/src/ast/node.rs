@@ -20,6 +20,7 @@ pub enum Node {
     Defined(Box<Self>),
     Splat(Box<Self>),
     Array(Vec<Self>),
+    Hash(Vec<Self>),
     Nil,
     Self_,
     EndOfProgram,
@@ -109,6 +110,10 @@ impl Node {
     /// Creates a token that reprents an array constructor
     pub(crate) fn array(node: Vec<Node>) -> Self {
         Self::Array(node)
+    }
+    /// Creates a token that reprents a hash constructor
+    pub(crate) fn hash(node: Vec<Node>) -> Self {
+        Self::Hash(node)
     }
     /// Creates a token that reprents a range
     pub(crate) fn range(from: Node, to: Node, exclusive: bool) -> Self {

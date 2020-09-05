@@ -1,5 +1,6 @@
 use crate::ast::Ranged;
 use crate::lexer::*;
+use crate::parsers::expression::argument::comma;
 use crate::parsers::expression::argument::indexing_argument_list;
 use crate::parsers::expression::logical::operator_or_expression;
 use crate::parsers::expression::operator_expression;
@@ -7,8 +8,8 @@ use crate::parsers::program::{no_lt, ws};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::recognize;
-use nom::combinator::{map, opt};
+use nom::combinator::{map, opt, recognize};
+use nom::multi::many0;
 use nom::sequence::tuple;
 
 /// `[` *indexing_argument_list*? `]`
@@ -21,17 +22,38 @@ pub(crate) fn array_constructor(i: Input) -> NodeResult {
 
 /// `{` ( *association_list* [ no line terminator here ] `,`? )? `}`
 pub(crate) fn hash_constructor(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((
+            char('{'),
+            ws,
+            opt(map(tuple((association_list, opt(comma), ws)), |t| t.0)),
+            ws,
+            char('}'),
+        )),
+        |t| Node::Hash(t.2.unwrap_or(vec![])),
+    )(i)
 }
 
 /// *association* ( [ no line terminator here ] `,` *association* )*
 pub(crate) fn association_list(i: Input) -> NodeListResult {
-    stub_list(i)
+    map(
+        tuple((
+            association,
+            many0(map(tuple((no_lt, char(','), ws, association)), |t| t.3)),
+        )),
+        |(mut first, vec)| {
+            first.extend(vec.into_iter().flatten().collect::<Vec<Node>>());
+            first
+        },
+    )(i)
 }
 
 /// *association_key* [ no line terminator here ] `=>` *association_value*
-pub(crate) fn association(i: Input) -> NodeResult {
-    stub(i)
+pub(crate) fn association(i: Input) -> NodeListResult {
+    map(
+        tuple((association_key, no_lt, tag("=>"), ws, association_value)),
+        |t| vec![t.0, t.4],
+    )(i)
 }
 
 /// *operator_expression*
@@ -71,6 +93,27 @@ pub(crate) fn range_operator(i: Input) -> LexResult {
 mod tests {
     use super::*;
     use crate::ast::BinaryOpKind;
+
+    #[test]
+    fn test_hash_constructor() {
+        use_parser!(hash_constructor);
+        // Parse errors
+        assert_err!("{");
+        assert_err!("{1 => }");
+        assert_err!("{1 \n => 2}");
+        // Success cases
+        assert_ok!("{}", Node::Hash(vec![]));
+        assert_ok!("{1=>2}", Node::Hash(vec![Node::integer(1), Node::integer(2)]));
+        assert_ok!(
+            "{1 => 2,\n\n 3=>4}",
+            Node::Hash(vec![
+                Node::integer(1),
+                Node::integer(2),
+                Node::integer(3),
+                Node::integer(4)
+            ])
+        );
+    }
 
     #[test]
     fn test_array_constructor() {
