@@ -4,6 +4,7 @@ use crate::parsers::expression::argument::{comma, indexing_argument_list};
 use crate::parsers::expression::logical::operator_or_expression;
 use crate::parsers::expression::operator_expression;
 use crate::parsers::program::{no_lt, ws};
+use crate::parsers::token::literal::string::double_quoted_string;
 use crate::parsers::token::literal::string::single_quoted_string;
 use crate::parsers::token::literal::symbol::symbol_name;
 use nom::branch::alt;
@@ -65,6 +66,20 @@ pub(crate) fn association(i: Input) -> NodeListResult {
             )),
             |t| vec![Node::Literal(Literal::Symbol(t.0)), t.3],
         ),
+        map(
+            tuple((double_quoted_string, char(':'), ws, association_value)),
+            |t| {
+                vec![
+                    match t.0 {
+                        Interpolatable::String(s) => Node::Literal(Literal::Symbol(s)),
+                        Interpolatable::Interpolated(vec) => {
+                            Node::Interpolated(Interpolated::Symbol(vec))
+                        }
+                    },
+                    t.3,
+                ]
+            },
+        ),
     ))(i)
 }
 
@@ -124,6 +139,20 @@ mod tests {
         assert_ok!(
             "{foo: 2}",
             Node::Hash(vec![Node::literal_symbol("foo"), Node::int(2)])
+        );
+        assert_ok!(
+            "{\"foo\": 2}",
+            Node::Hash(vec![Node::literal_symbol("foo"), Node::int(2)])
+        );
+        assert_ok!(
+            "{\"foo#{1}\": 2}",
+            Node::Hash(vec![
+                Node::Interpolated(Interpolated::Symbol(vec![
+                    Node::Segment(Segment::String("foo".to_owned())),
+                    Node::Block(vec![Node::int(1)])
+                ])),
+                Node::int(2)
+            ])
         );
         assert_ok!(
             "{1 => 2,\n\n 3=>4}",
