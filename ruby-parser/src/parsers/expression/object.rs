@@ -1,7 +1,6 @@
 use crate::ast::Ranged;
 use crate::lexer::*;
-use crate::parsers::expression::argument::comma;
-use crate::parsers::expression::argument::indexing_argument_list;
+use crate::parsers::expression::argument::{comma, indexing_argument_list};
 use crate::parsers::expression::logical::operator_or_expression;
 use crate::parsers::expression::operator_expression;
 use crate::parsers::program::{no_lt, ws};

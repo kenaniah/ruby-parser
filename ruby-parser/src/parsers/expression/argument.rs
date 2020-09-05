@@ -106,7 +106,7 @@ mod tests {
         assert_ok!(
             "&:foo - 2",
             Node::block_arg(Node::binary_op(
-                Node::literal_symbol(":foo"),
+                Node::literal_symbol("foo"),
                 BinaryOpKind::Subtract,
                 Node::int(2)
             ))

@@ -9,7 +9,7 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::{map, recognize};
-use nom::sequence::tuple;
+use nom::sequence::{preceded, tuple};
 
 /// *symbol_literal* | *dynamic_symbol*
 pub(crate) fn symbol(i: Input) -> NodeResult {
@@ -18,7 +18,7 @@ pub(crate) fn symbol(i: Input) -> NodeResult {
 
 /// `:` *symbol_name*
 pub(crate) fn symbol_literal(i: Input) -> NodeResult {
-    map(recognize(tuple((char(':'), symbol_name))), |s| {
+    map(preceded(char(':'), symbol_name), |s| {
         Node::Literal(Literal::Symbol((*s).to_owned()))
     })(i)
 }
@@ -26,27 +26,16 @@ pub(crate) fn symbol_literal(i: Input) -> NodeResult {
 /// `:` *single_quoted_string*  | `:` *double_quoted_string* | `%s` *literal_beginning_delimiter* *non_expanded_literal_string** *literal_ending_delimiter*
 pub(crate) fn dynamic_symbol(i: Input) -> NodeResult {
     alt((
-        map(tuple((char(':'), single_quoted_string)), |mut t| {
-            t.1.insert(0, ':');
+        map(tuple((char(':'), single_quoted_string)), |t| {
             Node::Literal(Literal::Symbol(t.1))
         }),
         map(tuple((char(':'), double_quoted_string)), |t| match t.1 {
-            Interpolatable::String(mut s) => {
-                s.insert(0, ':');
-                Node::Literal(Literal::Symbol(s))
-            }
-            Interpolatable::Interpolated(mut vec) => {
-                vec.insert(0, Node::Segment(Segment::String(":".to_owned())));
-                Node::Interpolated(Interpolated::Symbol(vec))
-            }
+            Interpolatable::String(s) => Node::Literal(Literal::Symbol(s)),
+            Interpolatable::Interpolated(vec) => Node::Interpolated(Interpolated::Symbol(vec)),
         }),
-        map(
-            tuple((tag("%s"), non_expanded_delimited_string)),
-            |mut t| {
-                t.1.insert(0, ':');
-                Node::Literal(Literal::Symbol(t.1))
-            },
-        ),
+        map(tuple((tag("%s"), non_expanded_delimited_string)), |t| {
+            Node::Literal(Literal::Symbol(t.1))
+        }),
     ))(i)
 }
 
@@ -85,18 +74,18 @@ mod tests {
         assert_err!(":====");
         assert_err!(":foo==");
         // Success cases
-        assert_symbol!(":foo", ":foo");
-        assert_symbol!(":_", ":_");
-        assert_symbol!(":===", ":===");
-        assert_symbol!(":!", ":!");
-        assert_symbol!(":[]", ":[]");
-        assert_symbol!(":foo=", ":foo=");
-        assert_symbol!(":>=", ":>=");
-        assert_symbol!(":if", ":if");
-        assert_symbol!(":$glob", ":$glob");
-        assert_symbol!(":@@v", ":@@v");
-        assert_symbol!(":CONST", ":CONST");
-        assert_symbol!(":😉😎", ":😉😎");
+        assert_symbol!(":foo", "foo");
+        assert_symbol!(":_", "_");
+        assert_symbol!(":===", "===");
+        assert_symbol!(":!", "!");
+        assert_symbol!(":[]", "[]");
+        assert_symbol!(":foo=", "foo=");
+        assert_symbol!(":>=", ">=");
+        assert_symbol!(":if", "if");
+        assert_symbol!(":$glob", "$glob");
+        assert_symbol!(":@@v", "@@v");
+        assert_symbol!(":CONST", "CONST");
+        assert_symbol!(":😉😎", "😉😎");
     }
 
     #[test]
@@ -108,17 +97,16 @@ mod tests {
         assert_err!(":'\"");
         assert_err!(":'foo bar''");
         // Success cases
-        assert_symbol!(":''", ":");
-        assert_symbol!(":\"\"", ":");
-        assert_symbol!(":'foo #$bar'", ":foo #$bar");
-        assert_symbol!(":'$123'", ":$123");
-        assert_symbol!(":\"\\x00\"", ":\0");
-        assert_symbol!(":\"foo\\nbar\"", ":foo\nbar");
-        assert_symbol!("%s(foo #{2 + 4} bar)", ":foo #{2 + 4} bar");
+        assert_symbol!(":''", "");
+        assert_symbol!(":\"\"", "");
+        assert_symbol!(":'foo #$bar'", "foo #$bar");
+        assert_symbol!(":'$123'", "$123");
+        assert_symbol!(":\"\\x00\"", "\0");
+        assert_symbol!(":\"foo\\nbar\"", "foo\nbar");
+        assert_symbol!("%s(foo #{2 + 4} bar)", "foo #{2 + 4} bar");
         assert_interpolated!(
             ":\"foo#$bar\"",
             vec![
-                Node::Segment(Segment::String(":".to_owned())),
                 Node::Segment(Segment::String("foo".to_owned())),
                 Node::ident("$bar", IdentifierKind::GlobalVariable)
             ]

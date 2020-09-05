@@ -282,7 +282,7 @@ mod tests {
         assert_ok!(
             ":hi != \n\n hello",
             Node::binary_op(
-                Node::literal_symbol(":hi"),
+                Node::literal_symbol("hi"),
                 Op::NotEqual,
                 Node::ident("hello", IdentifierKind::LocalVariable)
             )
@@ -450,7 +450,7 @@ mod tests {
         assert_err!("");
         assert_err!("nil ");
         // Success cases
-        assert_ok!(":hi", Node::literal_symbol(":hi"));
+        assert_ok!(":hi", Node::literal_symbol("hi"));
         assert_ok!(
             "12 / 2",
             Node::binary_op(Node::int(12), Op::Divide, Node::int(2))
