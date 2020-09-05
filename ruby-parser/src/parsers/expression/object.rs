@@ -4,6 +4,8 @@ use crate::parsers::expression::argument::{comma, indexing_argument_list};
 use crate::parsers::expression::logical::operator_or_expression;
 use crate::parsers::expression::operator_expression;
 use crate::parsers::program::{no_lt, ws};
+use crate::parsers::token::literal::string::single_quoted_string;
+use crate::parsers::token::literal::symbol::symbol_name;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
@@ -47,12 +49,23 @@ pub(crate) fn association_list(i: Input) -> NodeListResult {
     )(i)
 }
 
-/// *association_key* [ no line terminator here ] `=>` *association_value*
+/// *association_key* [ no line terminator here ] `=>` *association_value* | *symbol_name* `:` *association_value* | *single_quoted_string* `:` *association_value* | *double_quoted_string* `:` *association_value*
 pub(crate) fn association(i: Input) -> NodeListResult {
-    map(
-        tuple((association_key, no_lt, tag("=>"), ws, association_value)),
-        |t| vec![t.0, t.4],
-    )(i)
+    alt((
+        map(
+            tuple((association_key, no_lt, tag("=>"), ws, association_value)),
+            |t| vec![t.0, t.4],
+        ),
+        map(
+            tuple((
+                alt((map(symbol_name, |s| (*s).to_owned()), single_quoted_string)),
+                char(':'),
+                ws,
+                association_value,
+            )),
+            |t| vec![Node::Literal(Literal::Symbol(t.0)), t.3],
+        ),
+    ))(i)
 }
 
 /// *operator_expression*
@@ -99,10 +112,19 @@ mod tests {
         // Parse errors
         assert_err!("{");
         assert_err!("{1 => }");
+        assert_err!("{1: 2}");
         assert_err!("{1 \n => 2}");
         // Success cases
         assert_ok!("{}", Node::Hash(vec![]));
         assert_ok!("{1=>2}", Node::Hash(vec![Node::int(1), Node::int(2)]));
+        assert_ok!(
+            "{'1': 2}",
+            Node::Hash(vec![Node::literal_symbol("1"), Node::int(2)])
+        );
+        assert_ok!(
+            "{foo: 2}",
+            Node::Hash(vec![Node::literal_symbol("foo"), Node::int(2)])
+        );
         assert_ok!(
             "{1 => 2,\n\n 3=>4}",
             Node::Hash(vec![Node::int(1), Node::int(2), Node::int(3), Node::int(4)])
