@@ -71,6 +71,7 @@ pub(crate) fn block_argument(i: Input) -> NodeResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ast::BinaryOpKind;
 
     #[test]
     fn test_splatting_argument() {
@@ -97,9 +98,16 @@ mod tests {
 
     #[test]
     fn test_block_argument() {
-        use_parser!(splatting_argument);
+        use_parser!(block_argument);
         // Parse errors
-        assert_err!("*");
-        assert_ok!("*3", Node::splat(Node::integer(3)));
+        assert_err!("&");
+        assert_ok!(
+            "&:foo - 2",
+            Node::block_arg(Node::binary_op(
+                Node::literal_symbol(":foo"),
+                BinaryOpKind::Subtract,
+                Node::integer(2)
+            ))
+        );
     }
 }
