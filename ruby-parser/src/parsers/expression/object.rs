@@ -146,8 +146,8 @@ mod tests {
             Node::Hash(vec![Node::literal_symbol("foo"), Node::int(2)])
         );
         assert_ok!(
-            "{1 => 2,\n\n 3=>4}",
-            Node::Hash(vec![Node::int(1), Node::int(2), Node::int(3), Node::int(4)])
+            "{1 => 2,\n\n 3=>\n{}}",
+            Node::Hash(vec![Node::int(1), Node::int(2), Node::int(3), Node::Hash(vec![])])
         );
         assert_ok!(
             "{\"foo#{1}\": 2}",
