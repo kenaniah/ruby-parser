@@ -17,6 +17,7 @@ pub enum Node {
     Comment(String),
     Ranged(Ranged),
     Defined(Box<Self>),
+    Splat(Box<Self>),
     Nil,
     Self_,
     EndOfProgram,
@@ -94,6 +95,10 @@ impl Node {
     /// Creates a token that reprents a defined? statement
     pub(crate) fn defined(node: Node) -> Self {
         Self::Defined(Box::new(node))
+    }
+    /// Creates a token that reprents a splat argument
+    pub(crate) fn splat(node: Node) -> Self {
+        Self::Splat(Box::new(node))
     }
     /// Creates a token that reprents a range
     pub(crate) fn range(from: Node, to: Node, exclusive: bool) -> Self {

@@ -29,7 +29,9 @@ fn comma(i: Input) -> LexResult {
 
 /// `*` *operator_expression*
 pub(crate) fn splatting_argument(i: Input) -> NodeResult {
-    stub(i)
+    map(tuple((char('*'), operator_expression)), |t| {
+        Node::Splat(Box::new(t.1))
+    })(i)
 }
 
 /// *operator_expression* ( [ no line terminator here ] `,` *operator_expression* )*
@@ -67,6 +69,14 @@ pub(crate) fn block_argument(i: Input) -> NodeResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_splatting_argument() {
+        use_parser!(splatting_argument);
+        // Parse errors
+        assert_err!("*");
+        assert_ok!("*3", Node::splat(Node::integer(3)));
+    }
 
     #[test]
     fn test_operator_expression_list() {
