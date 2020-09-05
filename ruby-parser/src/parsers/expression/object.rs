@@ -128,6 +128,7 @@ mod tests {
         assert_err!("{");
         assert_err!("{1 => }");
         assert_err!("{1: 2}");
+        assert_err!("{foo : 2}");
         assert_err!("{1 \n => 2}");
         // Success cases
         assert_ok!("{}", Node::Hash(vec![]));
@@ -145,6 +146,10 @@ mod tests {
             Node::Hash(vec![Node::literal_symbol("foo"), Node::int(2)])
         );
         assert_ok!(
+            "{1 => 2,\n\n 3=>4}",
+            Node::Hash(vec![Node::int(1), Node::int(2), Node::int(3), Node::int(4)])
+        );
+        assert_ok!(
             "{\"foo#{1}\": 2}",
             Node::Hash(vec![
                 Node::Interpolated(Interpolated::Symbol(vec![
@@ -153,10 +158,6 @@ mod tests {
                 ])),
                 Node::int(2)
             ])
-        );
-        assert_ok!(
-            "{1 => 2,\n\n 3=>4}",
-            Node::Hash(vec![Node::int(1), Node::int(2), Node::int(3), Node::int(4)])
         );
     }
 
