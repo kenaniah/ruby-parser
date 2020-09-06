@@ -1,8 +1,8 @@
 use crate::lexer::*;
 
-mod abbreviated;
-mod multiple;
-mod single;
+pub(crate) mod abbreviated;
+pub(crate) mod multiple;
+pub(crate) mod single;
 
 /// *single_assignment* | *abbreviated_assignment_expression* | *assignment_with_rescue_modifier*
 pub(crate) fn assignment_expression(i: Input) -> NodeResult {

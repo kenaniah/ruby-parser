@@ -7,22 +7,22 @@ use nom::character::complete::char;
 use nom::combinator::map;
 use nom::sequence::tuple;
 
-mod argument;
-mod assignment;
-mod begin;
-mod binary;
-mod block;
-mod conditional;
-mod defined;
-mod iteration;
-mod jump;
-mod logical;
-mod method;
-mod object;
-mod super_;
-mod unary;
-mod variable;
-mod yield_;
+pub(crate) mod argument;
+pub(crate) mod assignment;
+pub(crate) mod begin;
+pub(crate) mod binary;
+pub(crate) mod block;
+pub(crate) mod conditional;
+pub(crate) mod defined;
+pub(crate) mod iteration;
+pub(crate) mod jump;
+pub(crate) mod logical;
+pub(crate) mod method;
+pub(crate) mod object;
+pub(crate) mod super_;
+pub(crate) mod unary;
+pub(crate) mod variable;
+pub(crate) mod yield_;
 
 pub(crate) fn expression(i: Input) -> NodeResult {
     logical::keyword_logical_expression(i)
