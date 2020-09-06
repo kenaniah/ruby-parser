@@ -1,5 +1,20 @@
 use crate::lexer::*;
 
+/// `def` *defined_method_name* [ no line terminator here ] *method_parameter_part* *method_body* `end`
+pub(crate) fn method_definition(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// *method_name* | *assignment_like_method_identifier*
+pub(crate) fn defined_method_name(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// *body_statement*
+pub(crate) fn method_body(i: Input) -> NodeResult {
+    stub(i)
+}
+
 /// *super_with_optional_argument* | *indexing_method_invocation* | *method_only_identifier* | *method_identifier* *block* | *method_identifier* [ no line terminator here ] [ no whitespace here ] *argument_with_parentheses* *block*? | *primary_expression* [ no line terminator here ] `.` *method_name* ( [ no line terminator here ] [ no whitespace here ] *argument_with_parentheses* )? *block*? | *primary_expression* [ no line terminator here ] `::` *method_name* [ no line terminator here ] [ no whitespace here ] *argument_with_parentheses* *block*? | *primary_expression* [ no line terminator here ] `::` *method_name_except_constant* *block*?
 pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
     stub(i)
