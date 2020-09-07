@@ -1,22 +1,42 @@
 use crate::lexer::*;
+use crate::parsers::expression::begin::body_statement;
+use crate::parsers::token::identifier::assignment_like_method_identifier;
 
 /// `def` *defined_method_name* [ no line terminator here ] *method_parameter_part* *method_body* `end`
 pub(crate) fn method_definition(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((
+            tag("def"),
+            ws,
+            defined_method_name,
+            no_lt,
+            method_parameter_part,
+            method_body,
+            ws,
+            tag("end"),
+        )),
+        |_| Node::Placeholder,
+    )(i)
 }
 
 /// *method_name* | *assignment_like_method_identifier*
 pub(crate) fn defined_method_name(i: Input) -> NodeResult {
-    stub(i)
+    alt((method_name, assignment_like_method_identifier))(i)
 }
 
 /// *body_statement*
 pub(crate) fn method_body(i: Input) -> NodeResult {
-    stub(i)
+    body_statement(i)
 }
 
 /// *super_with_optional_argument* | *indexing_method_invocation* | *method_only_identifier* | *method_identifier* *block* | *method_identifier* [ no line terminator here ] [ no whitespace here ] *argument_with_parentheses* *block*? | *primary_expression* [ no line terminator here ] `.` *method_name* ( [ no line terminator here ] [ no whitespace here ] *argument_with_parentheses* )? *block*? | *primary_expression* [ no line terminator here ] `::` *method_name* [ no line terminator here ] [ no whitespace here ] *argument_with_parentheses* *block*? | *primary_expression* [ no line terminator here ] `::` *method_name_except_constant* *block*?
 pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
+    // map(
+    //     tuple((
+    //
+    //     )),
+    //     |_| Node::Placeholder
+    // )(i)
     stub(i)
 }
 
@@ -62,5 +82,65 @@ pub(crate) fn chained_method_invocation(i: Input) -> NodeResult {
 
 /// *super_with_argument_and_do_block* | *method_identifier* *argument_without_parenthesis* *do_block* | *primary_expression* [ no line terminator here ] ( `.` | `::` ) *method_name* *argument_without_parenthesis* *do_block*
 pub(crate) fn command_with_do_block(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// `(` *parameter_list*? `)` | *parameter_list*? *separator*
+pub(crate) fn method_parameter_part(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// *mandatory_parameter_list* ( `,` *optional_parameter_list* )? ( `,` *array_parameter* )? ( `,` *proc_parameter* )? |  *optional_parameter_list* ( `,` *array_parameter* )? ( `,` *proc_parameter* )? | *array_parameter* ( `,` *proc_parameter* )? | *proc_parameter*
+pub(crate) fn parameter_list(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// *mandatory_parameter* | *mandatory_parameter_list* `,` *mandatory_parameter*
+pub(crate) fn mandatory_parameter_list(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// *local_variable_identifier*
+pub(crate) fn mandatory_parameter(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// *optional_parameter* | *optional_parameter_list* `,` *optional_parameter*
+pub(crate) fn optional_parameter_list(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// *optional_parameter_name* `=` *default_parameter_expression*
+pub(crate) fn optional_parameter(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// *local_variable_identifier*
+pub(crate) fn optional_parameter_name(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// *operator_expression*
+pub(crate) fn default_parameter_expression(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// `*` *array_parameter_name* | `*`
+pub(crate) fn array_parameter(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// *local_variable_identifier*
+pub(crate) fn array_parameter_name(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// `&` *proc_parameter_name*
+pub(crate) fn proc_parameter(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// *local_variable_identifier*
+pub(crate) fn proc_parameter_name(i: Input) -> NodeResult {
     stub(i)
 }
