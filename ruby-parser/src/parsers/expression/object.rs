@@ -14,7 +14,7 @@ pub(crate) fn array_constructor(i: Input) -> NodeResult {
     )(i)
 }
 
-/// `{` ( *association_list* [ no line terminator here ] `,`? )? `}`
+/// `{` ( *association_list* [ no ⏎ ] `,`? )? `}`
 pub(crate) fn hash_constructor(i: Input) -> NodeResult {
     map(
         tuple((
@@ -28,7 +28,7 @@ pub(crate) fn hash_constructor(i: Input) -> NodeResult {
     )(i)
 }
 
-/// *association* ( [ no line terminator here ] `,` *association* )*
+/// *association* ( [ no ⏎ ] `,` *association* )*
 pub(crate) fn association_list(i: Input) -> NodeListResult {
     map(
         tuple((
@@ -42,7 +42,7 @@ pub(crate) fn association_list(i: Input) -> NodeListResult {
     )(i)
 }
 
-/// *association_key* [ no line terminator here ] `=>` *association_value* | *symbol_name* `:` *association_value* | *single_quoted_string* `:` *association_value* | *double_quoted_string* `:` *association_value*
+/// *association_key* [ no ⏎ ] `=>` *association_value* | *symbol_name* `:` *association_value* | *single_quoted_string* `:` *association_value* | *double_quoted_string* `:` *association_value*
 pub(crate) fn association(i: Input) -> NodeListResult {
     alt((
         map(
@@ -85,7 +85,7 @@ pub(crate) fn association_value(i: Input) -> NodeResult {
     operator_expression(i)
 }
 
-/// *operator_or_expression* | *operator_or_expression* [ no line terminator here ] *range_operator* *operator_or_expression*
+/// *operator_or_expression* | *operator_or_expression* [ no ⏎ ] *range_operator* *operator_or_expression*
 pub(crate) fn range_constructor(i: Input) -> NodeResult {
     let i = stack_frame!("range_constructor", i);
     let (i, lhs) = operator_or_expression(i)?;

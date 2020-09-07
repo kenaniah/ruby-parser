@@ -11,7 +11,7 @@ pub(crate) fn return_with_argument(i: Input) -> NodeResult {
     map(tuple((tag("return"), jump_argument)), |_| Node::Placeholder)(i)
 }
 
-/// [ no line terminator here ] *argument_list*
+/// [ no ⏎ ] *argument_list*
 pub(crate) fn jump_argument(i: Input) -> NodeResult {
     map(tuple((no_lt, argument_list)), |_| Node::Placeholder)(i)
 }

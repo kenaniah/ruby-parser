@@ -68,7 +68,7 @@ pub(crate) fn keyword_not_expression(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// *expression* [ no line terminator here ] `and` *keyword_not_expression*
+/// *expression* [ no ⏎ ] `and` *keyword_not_expression*
 /// `A  -> N A1 | O A1`
 pub(crate) fn keyword_and_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_and_expression", i);
@@ -104,7 +104,7 @@ fn _keyword_and_expression(i: Input) -> NodeResult {
     )(i)
 }
 
-/// *expression* [ no line terminator here ] `or` *keyword_not_expression*
+/// *expression* [ no ⏎ ] `or` *keyword_not_expression*
 /// `O  -> N O1 | N A1 O1`
 pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_or_expression", i);
@@ -151,7 +151,7 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// *operator_and_expression* | *operator_or_expression* [ no line terminator here ] `||` *operator_and_expression*
+/// *operator_and_expression* | *operator_or_expression* [ no ⏎ ] `||` *operator_and_expression*
 pub(crate) fn operator_or_expression(i: Input) -> NodeResult {
     let i = stack_frame!("operator_or_expression", i);
     map(
@@ -182,7 +182,7 @@ fn _operator_or_expression(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// *equality_expression* | *operator_and_expression* [ no line terminator here ] `&&` *equality_expression*
+/// *equality_expression* | *operator_and_expression* [ no ⏎ ] `&&` *equality_expression*
 pub(crate) fn operator_and_expression(i: Input) -> NodeResult {
     let i = stack_frame!("operator_and_expression", i);
     map(

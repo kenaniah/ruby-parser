@@ -4,7 +4,7 @@ use crate::parsers::expression::argument::argument_without_parenthesis;
 use crate::parsers::expression::block::block;
 use crate::parsers::expression::block::do_block;
 
-/// `super` ( [ no line terminator here ] [ no whitespace here ] *argument_with_parenthesis* )? *block*?
+/// `super` ( [ no ⏎ ] [ no ⎵ ] *argument_with_parenthesis* )? *block*?
 pub(crate) fn super_with_optional_argument(i: Input) -> NodeResult {
     map(
         tuple((tag("super"), opt(argument_with_parenthesis), opt(block))),

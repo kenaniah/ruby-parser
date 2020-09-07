@@ -13,7 +13,7 @@ pub(crate) fn while_expression(i: Input) -> NodeResult {
     )(i)
 }
 
-/// *separator* *compound_statement* | [ no line terminator here ] `do` *compound_statement*
+/// *separator* *compound_statement* | [ no ⏎ ] `do` *compound_statement*
 pub(crate) fn do_clause(i: Input) -> NodeResult {
     alt((
         map(tuple((separator, compound_statement)), |t| {
@@ -33,7 +33,7 @@ pub(crate) fn until_expression(i: Input) -> NodeResult {
     )(i)
 }
 
-/// `for` *for_variable* [ no line terminator here ] `in` *expression* *do_clause* `end`
+/// `for` *for_variable* [ no ⏎ ] `in` *expression* *do_clause* `end`
 pub(crate) fn for_expression(i: Input) -> NodeResult {
     map(
         tuple((

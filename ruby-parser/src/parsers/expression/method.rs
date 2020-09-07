@@ -8,7 +8,7 @@ use crate::parsers::token::identifier::{
 use crate::parsers::token::keyword::keyword;
 use crate::parsers::token::operator::operator_method_name;
 
-/// `def` *defined_method_name* [ no line terminator here ] *method_parameter_part* *method_body* `end`
+/// `def` *defined_method_name* [ no ⏎ ] *method_parameter_part* *method_body* `end`
 pub(crate) fn method_definition(i: Input) -> NodeResult {
     map(
         tuple((
@@ -35,7 +35,7 @@ pub(crate) fn method_body(i: Input) -> NodeResult {
     body_statement(i)
 }
 
-/// *super_with_optional_argument* | *indexing_method_invocation* | *method_only_identifier* | *method_identifier* *block* | *method_identifier* [ no line terminator here ] [ no whitespace here ] *argument_with_parentheses* *block*? | *primary_expression* [ no line terminator here ] `.` *method_name* ( [ no line terminator here ] [ no whitespace here ] *argument_with_parentheses* )? *block*? | *primary_expression* [ no line terminator here ] `::` *method_name* [ no line terminator here ] [ no whitespace here ] *argument_with_parentheses* *block*? | *primary_expression* [ no line terminator here ] `::` *method_name_except_constant* *block*?
+/// *super_with_optional_argument* | *indexing_method_invocation* | *method_only_identifier* | *method_identifier* *block* | *method_identifier* [ no ⏎ ] [ no ⎵ ] *argument_with_parentheses* *block*? | *primary_expression* [ no ⏎ ] `.` *method_name* ( [ no ⏎ ] [ no ⎵ ] *argument_with_parentheses* )? *block*? | *primary_expression* [ no ⏎ ] `::` *method_name* [ no ⏎ ] [ no ⎵ ] *argument_with_parentheses* *block*? | *primary_expression* [ no ⏎ ] `::` *method_name_except_constant* *block*?
 pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
     // map(
     //     tuple((
@@ -66,7 +66,7 @@ pub(crate) fn method_name(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// *primary_expression* [ no line terminator here ] [ no whitespace here ] `[` *indexing_argument_list*? `]`
+/// *primary_expression* [ no ⏎ ] [ no ⎵ ] `[` *indexing_argument_list*? `]`
 pub(crate) fn indexing_method_invocation(i: Input) -> NodeResult {
     stub(i)
 }
@@ -81,7 +81,7 @@ pub(crate) fn method_invocation_without_parenthesis(i: Input) -> NodeResult {
     stub(i)
 }
 
-/// *super_with_argument* | *yield_with_argument* | *method_identifier* *argument_without_parenthesis* | *primary_expression* [ no line terminator here ] ( `.` | `::` ) *method_name* *argument_without_parenthesis*
+/// *super_with_argument* | *yield_with_argument* | *method_identifier* *argument_without_parenthesis* | *primary_expression* [ no ⏎ ] ( `.` | `::` ) *method_name* *argument_without_parenthesis*
 pub(crate) fn command(i: Input) -> NodeListResult {
     stub_list(i)
 }
@@ -91,12 +91,12 @@ pub(crate) fn chained_command_with_do_block(i: Input) -> NodeResult {
     stub(i)
 }
 
-/// ( `.` | `::` ) *method_name* | ( `.` | `::` ) *method_name* [ no line terminator here ] [ no whitespace here ] *argument_with_parentheses*
+/// ( `.` | `::` ) *method_name* | ( `.` | `::` ) *method_name* [ no ⏎ ] [ no ⎵ ] *argument_with_parentheses*
 pub(crate) fn chained_method_invocation(i: Input) -> NodeResult {
     stub(i)
 }
 
-/// *super_with_argument_and_do_block* | *method_identifier* *argument_without_parenthesis* *do_block* | *primary_expression* [ no line terminator here ] ( `.` | `::` ) *method_name* *argument_without_parenthesis* *do_block*
+/// *super_with_argument_and_do_block* | *method_identifier* *argument_without_parenthesis* *do_block* | *primary_expression* [ no ⏎ ] ( `.` | `::` ) *method_name* *argument_without_parenthesis* *do_block*
 pub(crate) fn command_with_do_block(i: Input) -> NodeResult {
     stub(i)
 }

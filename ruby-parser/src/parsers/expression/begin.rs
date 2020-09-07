@@ -26,7 +26,7 @@ pub(crate) fn body_statement(i: Input) -> NodeResult {
     )(i)
 }
 
-/// `rescue` [ no line terminator here ] *exception_class_list*? *exception_variable_assignment*? *then_clause*
+/// `rescue` [ no ⏎ ] *exception_class_list*? *exception_variable_assignment*? *then_clause*
 pub(crate) fn rescue_clause(i: Input) -> NodeResult {
     map(
         tuple((

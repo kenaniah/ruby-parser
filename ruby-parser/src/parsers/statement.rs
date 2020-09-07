@@ -45,7 +45,7 @@ pub(crate) fn method_name_or_symbol(i: Input) -> NodeResult {
     stub(i)
 }
 
-/// *statement* [ no line terminator here ] `if` *expression*
+/// *statement* [ no ⏎ ] `if` *expression*
 pub(crate) fn if_modifier_statement(i: Input) -> NodeResult {
     stub(i)
     // map(tuple((statement, no_lt, tag("if"), ws, expression)), |t| {
@@ -58,22 +58,22 @@ pub(crate) fn if_modifier_statement(i: Input) -> NodeResult {
     // })(i)
 }
 
-/// *statement* [ no line terminator here ] `unless` *expression*
+/// *statement* [ no ⏎ ] `unless` *expression*
 pub(crate) fn unless_modifier_statement(i: Input) -> NodeResult {
     stub(i)
 }
 
-/// *statement* [ no line terminator here ] `while` *expression*
+/// *statement* [ no ⏎ ] `while` *expression*
 pub(crate) fn while_modifier_statement(i: Input) -> NodeResult {
     stub(i)
 }
 
-/// *statement* [ no line terminator here ] `until` *expression*
+/// *statement* [ no ⏎ ] `until` *expression*
 pub(crate) fn until_modifier_statement(i: Input) -> NodeResult {
     stub(i)
 }
 
-/// *statement* [ no line terminator here ] `rescue` *fallback_statement*
+/// *statement* [ no ⏎ ] `rescue` *fallback_statement*
 pub(crate) fn rescue_modifier_statement(i: Input) -> NodeResult {
     stub(i)
 }

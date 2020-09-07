@@ -4,7 +4,7 @@ use crate::parsers::expression::method::command;
 use crate::parsers::expression::object::association_list;
 use crate::parsers::expression::operator_expression;
 
-/// *command* | *operator_expression_list* ( [ no line terminator here ] `,` )? | *operator_expression_list* ( [ no line terminator here ] `,` *splatting_argument* ) | *association_list* ( [ no line terminator here ] `,` )? | *splatting_argument*
+/// *command* | *operator_expression_list* ( [ no ⏎ ] `,` )? | *operator_expression_list* ( [ no ⏎ ] `,` *splatting_argument* ) | *association_list* ( [ no ⏎ ] `,` )? | *splatting_argument*
 pub(crate) fn indexing_argument_list(i: Input) -> NodeListResult {
     alt((
         command,
@@ -21,7 +21,7 @@ pub(crate) fn indexing_argument_list(i: Input) -> NodeListResult {
     ))(i)
 }
 
-/// [ no line terminator here ] `,`
+/// [ no ⏎ ] `,`
 pub(crate) fn comma(i: Input) -> LexResult {
     recognize(tuple((no_lt, char(','))))(i)
 }
@@ -33,7 +33,7 @@ pub(crate) fn splatting_argument(i: Input) -> NodeResult {
     })(i)
 }
 
-/// *operator_expression* ( [ no line terminator here ] `,` *operator_expression* )*
+/// *operator_expression* ( [ no ⏎ ] `,` *operator_expression* )*
 pub(crate) fn operator_expression_list(i: Input) -> NodeListResult {
     map(
         tuple((
@@ -50,7 +50,7 @@ pub(crate) fn operator_expression_list(i: Input) -> NodeListResult {
     )(i)
 }
 
-/// `()` | `(` *argument_list* `)` | `(` *operator_expression_list* [ no line terminator here ] `,` *chained_command_with_do_block* `)` | `(` *chained_command_with_do_block* `)`
+/// `()` | `(` *argument_list* `)` | `(` *operator_expression_list* [ no ⏎ ] `,` *chained_command_with_do_block* `)` | `(` *chained_command_with_do_block* `)`
 pub(crate) fn argument_with_parenthesis(i: Input) -> NodeListResult {
     alt((
         map(tuple((char('('), ws, char(')'))), |_| {
@@ -79,12 +79,12 @@ pub(crate) fn argument_with_parenthesis(i: Input) -> NodeListResult {
     ))(i)
 }
 
-/// **not** `{` [ no line terminator here ] *argument_list*
+/// **not** `{` [ no ⏎ ] *argument_list*
 pub(crate) fn argument_without_parenthesis(i: Input) -> NodeListResult {
     map(tuple((not(peek(char('{'))), no_lt, argument_list)), |t| t.2)(i)
 }
 
-/// *block_argument* | *splatting_argument* ( `,` *block_argument* )? | *operator_expression_list* [ no line terminator here ] `,` *association_list* ( [ no line terminator here ] `,` *splatting_argument* )? ( [ no line terminator here ] `,` *block_argument* )? | ( *operator_expression_list* | *association_list* ) ( [ no line terminator here ] `,` *splatting_argument* )? ( [no line terminator here ] `,` *block_argument* )? | *command*
+/// *block_argument* | *splatting_argument* ( `,` *block_argument* )? | *operator_expression_list* [ no ⏎ ] `,` *association_list* ( [ no ⏎ ] `,` *splatting_argument* )? ( [ no ⏎ ] `,` *block_argument* )? | ( *operator_expression_list* | *association_list* ) ( [ no ⏎ ] `,` *splatting_argument* )? ( [ no ⏎ ] `,` *block_argument* )? | *command*
 pub(crate) fn argument_list(i: Input) -> NodeListResult {
     alt((
         map(block_argument, |_| vec![Node::Placeholder]),

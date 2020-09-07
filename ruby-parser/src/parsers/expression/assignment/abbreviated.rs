@@ -7,7 +7,7 @@ use crate::parsers::token::identifier::constant_identifier;
 use crate::parsers::token::identifier::local_variable_identifier;
 use crate::parsers::token::operator::assignment_operator;
 
-/// *variable* [ no line terminator here ] *assignment_operator* *rhs_expression*
+/// *variable* [ no ⏎ ] *assignment_operator* *rhs_expression*
 pub(crate) fn abbreviated_variable_assignment(i: Input) -> NodeResult {
     map(
         tuple((variable, no_lt, assignment_operator, ws, rhs_expression)),
@@ -15,7 +15,7 @@ pub(crate) fn abbreviated_variable_assignment(i: Input) -> NodeResult {
     )(i)
 }
 
-/// *primary_expression* [ no line terminator here ] [ no whitespace here ] `[` *indexing_argument_list*? `]` [ no line terminator here ] *assignment_operator* *rhs_expression*
+/// *primary_expression* [ no ⏎ ] [ no ⎵ ] `[` *indexing_argument_list*? `]` [ no ⏎ ] *assignment_operator* *rhs_expression*
 pub(crate) fn abbreviated_indexing_assignment(i: Input) -> NodeResult {
     map(
         tuple((
@@ -34,7 +34,7 @@ pub(crate) fn abbreviated_indexing_assignment(i: Input) -> NodeResult {
     )(i)
 }
 
-/// *primary_expression* [ no line terminator here ] ( `.` | `::` ) *local_variable_identifier* [ no line terminator here ] *assignment_operator* *rhs_expression* | *primary_expression* [ no line terminator here ] `.` *constant_identifier* [ no line terimanator here ] *assignment_operator* *rhs_expression*
+/// *primary_expression* [ no ⏎ ] ( `.` | `::` ) *local_variable_identifier* [ no ⏎ ] *assignment_operator* *rhs_expression* | *primary_expression* [ no ⏎ ] `.` *constant_identifier* [ no line terimanator here ] *assignment_operator* *rhs_expression*
 pub(crate) fn abbreviated_method_assignment(i: Input) -> NodeResult {
     alt((
         map(

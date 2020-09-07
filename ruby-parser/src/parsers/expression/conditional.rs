@@ -99,12 +99,12 @@ pub(crate) fn when_clause(i: Input) -> NodeResult {
     stub(i)
 }
 
-/// *operator_expression_list* ( [ no line terminator here ] `,`  *splatting_argument* )? | *splatting_argument*
+/// *operator_expression_list* ( [ no ⏎ ] `,`  *splatting_argument* )? | *splatting_argument*
 pub(crate) fn when_argument(i: Input) -> NodeResult {
     stub(i)
 }
 
-/// *range_constructor* | *range_constructor* [ no line terminator here ] `?` *operator_expression* [ no line terminator here ] `:` *operator_expression*
+/// *range_constructor* | *range_constructor* [ no ⏎ ] `?` *operator_expression* [ no ⏎ ] `:` *operator_expression*
 pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
     let i = stack_frame!("conditional_operator_expression", i);
     map(

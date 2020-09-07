@@ -28,7 +28,7 @@ pub(crate) fn assignment_statement(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// *primary_expression* [ no line terminator here ] [ no whitespace here ] `::` *constant_identifier* [ no line terminator here ] `=` *rhs_expression* | `::` *constant_identifier* [ no line terminator here ] `=` *rhs_expression*
+/// *primary_expression* [ no ⏎ ] [ no ⎵ ] `::` *constant_identifier* [ no ⏎ ] `=` *rhs_expression* | `::` *constant_identifier* [ no ⏎ ] `=` *rhs_expression*
 pub(crate) fn scoped_constant_assignment(i: Input) -> NodeResult {
     alt((
         map(
@@ -57,7 +57,7 @@ pub(crate) fn scoped_constant_assignment(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// *left_hand_side* [ no line terminator here ] `=` *operator_expression* [ no line terminator here ] `rescue` *operator_expression*
+/// *left_hand_side* [ no ⏎ ] `=` *operator_expression* [ no ⏎ ] `rescue` *operator_expression*
 pub(crate) fn assignment_with_rescue_modifier(i: Input) -> NodeResult {
     map(
         tuple((

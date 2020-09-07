@@ -26,7 +26,7 @@ pub(crate) fn top_module_path(i: Input) -> NodeResult {
     map(tuple((tag("::"), module_name)), |_| Node::Placeholder)(i)
 }
 
-/// *primary_expression* [ no line terminator here ] `::` *module_name*
+/// *primary_expression* [ no ⏎ ] `::` *module_name*
 pub(crate) fn nested_module_path(i: Input) -> NodeResult {
     map(
         tuple((primary_expression, no_lt, tag("::"), module_name)),

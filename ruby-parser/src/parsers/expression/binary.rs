@@ -2,7 +2,7 @@ use crate::ast::{BinaryOp, BinaryOpKind as Op};
 use crate::lexer::*;
 use crate::parsers::expression::unary::{unary_expression, unary_minus_expression};
 
-/// *relational_expression* | *relational_expression* [ no line terminator here ] ( `<=>` | `===` | `==` | `!=` | `=~` | `!~` ) *relational_expression*
+/// *relational_expression* | *relational_expression* [ no ⏎ ] ( `<=>` | `===` | `==` | `!=` | `=~` | `!~` ) *relational_expression*
 pub(crate) fn equality_expression(i: Input) -> NodeResult {
     let i = stack_frame!("equality_expression", i);
     map(
@@ -45,7 +45,7 @@ fn _equality_expression(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// *bitwise_or_expression* | *relational_expression* [ no line terminator here ] ( `>=` | `>` | `<=` | `<` ) *bitwise_or_expression*
+/// *bitwise_or_expression* | *relational_expression* [ no ⏎ ] ( `>=` | `>` | `<=` | `<` ) *bitwise_or_expression*
 pub(crate) fn relational_expression(i: Input) -> NodeResult {
     let i = stack_frame!("relational_expression", i);
     map(
@@ -79,7 +79,7 @@ fn _relational_expression(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// *bitwise_and_expression* | *bitwise_or_expression* [ no line terminator here ] ( `|` | `^` ) *bitwise_and_expression*
+/// *bitwise_and_expression* | *bitwise_or_expression* [ no ⏎ ] ( `|` | `^` ) *bitwise_and_expression*
 pub(crate) fn bitwise_or_expression(i: Input) -> NodeResult {
     let i = stack_frame!("bitwise_or_expression", i);
     map(
@@ -111,7 +111,7 @@ fn _bitwise_or_expression(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// *bitwise_shift_expression* | *bitwise_and_expression* [ no line terminator here ] `&` *bitwise_shift_expression*
+/// *bitwise_shift_expression* | *bitwise_and_expression* [ no ⏎ ] `&` *bitwise_shift_expression*
 pub(crate) fn bitwise_and_expression(i: Input) -> NodeResult {
     let i = stack_frame!("bitwise_and_expression", i);
     map(
@@ -136,7 +136,7 @@ fn _bitwise_and_expression(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// *additive_expression* | *bitwise_shift_expression* [ no line terminator here ] ( `<<` | `>>` ) *additive_expression*
+/// *additive_expression* | *bitwise_shift_expression* [ no ⏎ ] ( `<<` | `>>` ) *additive_expression*
 pub(crate) fn bitwise_shift_expression(i: Input) -> NodeResult {
     let i = stack_frame!("bitwise_shift_expression", i);
     map(
@@ -168,7 +168,7 @@ fn _bitwise_shift_expression(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// *multiplicative_expression* | *additive_expression* [ no line terminator here ] ( `+` | `-` ) *multiplicative_expression*
+/// *multiplicative_expression* | *additive_expression* [ no ⏎ ] ( `+` | `-` ) *multiplicative_expression*
 pub(crate) fn additive_expression(i: Input) -> NodeResult {
     let i = stack_frame!("additive_expression", i);
     map(
@@ -197,7 +197,7 @@ fn _additive_expression(i: Input) -> NodeResult {
     )(i)
 }
 
-/// *unary_minus_expression* | *multiplicative_expression* [ no line terminator here ] ( `*` | `/` | `%` ) *unary_minus_expression*
+/// *unary_minus_expression* | *multiplicative_expression* [ no ⏎ ] ( `*` | `/` | `%` ) *unary_minus_expression*
 pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
     let i = stack_frame!("multiplicative_expression", i);
     map(
@@ -227,7 +227,7 @@ fn _multiplicative_expression(i: Input) -> NodeResult {
     )(i)
 }
 
-/// *unary_expression* | *unary_expression* [ no line terminator here ] `**` *power_expression*
+/// *unary_expression* | *unary_expression* [ no ⏎ ] `**` *power_expression*
 pub(crate) fn power_expression(i: Input) -> NodeResult {
     let i = stack_frame!("power_expression", i);
     let (i, lhs) = unary_expression(i)?;
