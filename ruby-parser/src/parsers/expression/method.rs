@@ -1,6 +1,12 @@
 use crate::lexer::*;
 use crate::parsers::expression::begin::body_statement;
-use crate::parsers::token::identifier::assignment_like_method_identifier;
+use crate::parsers::expression::operator_expression;
+use crate::parsers::token::identifier::{
+    assignment_like_method_identifier, constant_identifier, local_variable_identifier,
+    method_only_identifier,
+};
+use crate::parsers::token::keyword::keyword;
+use crate::parsers::token::operator::operator_method_name;
 
 /// `def` *defined_method_name* [ no line terminator here ] *method_parameter_part* *method_body* `end`
 pub(crate) fn method_definition(i: Input) -> NodeResult {
@@ -42,12 +48,22 @@ pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
 
 /// *local_variable_identifier* | *constant_identifier* | *method_only_identifier*
 pub(crate) fn method_identifier(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        local_variable_identifier,
+        constant_identifier,
+        method_only_identifier,
+    ))(i)
 }
 
 /// *method_identifier* | *operator_method_name* | *keyword*
 pub(crate) fn method_name(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        method_identifier,
+        map(operator_method_name, |s| {
+            Node::ident(*s, IdentifierKind::Method)
+        }),
+        map(keyword, |s| Node::ident(*s, IdentifierKind::Method)),
+    ))(i)
 }
 
 /// *primary_expression* [ no line terminator here ] [ no whitespace here ] `[` *indexing_argument_list*? `]`
@@ -102,7 +118,7 @@ pub(crate) fn mandatory_parameter_list(i: Input) -> NodeResult {
 
 /// *local_variable_identifier*
 pub(crate) fn mandatory_parameter(i: Input) -> NodeResult {
-    stub(i)
+    local_variable_identifier(i)
 }
 
 /// *optional_parameter* | *optional_parameter_list* `,` *optional_parameter*
@@ -117,12 +133,12 @@ pub(crate) fn optional_parameter(i: Input) -> NodeResult {
 
 /// *local_variable_identifier*
 pub(crate) fn optional_parameter_name(i: Input) -> NodeResult {
-    stub(i)
+    local_variable_identifier(i)
 }
 
 /// *operator_expression*
 pub(crate) fn default_parameter_expression(i: Input) -> NodeResult {
-    stub(i)
+    operator_expression(i)
 }
 
 /// `*` *array_parameter_name* | `*`
@@ -132,15 +148,15 @@ pub(crate) fn array_parameter(i: Input) -> NodeResult {
 
 /// *local_variable_identifier*
 pub(crate) fn array_parameter_name(i: Input) -> NodeResult {
-    stub(i)
+    local_variable_identifier(i)
 }
 
 /// `&` *proc_parameter_name*
 pub(crate) fn proc_parameter(i: Input) -> NodeResult {
-    stub(i)
+    map(tuple((char('&'), ws, proc_parameter_name)), |t| t.2)(i)
 }
 
 /// *local_variable_identifier*
 pub(crate) fn proc_parameter_name(i: Input) -> NodeResult {
-    stub(i)
+    local_variable_identifier(i)
 }
