@@ -3,6 +3,7 @@
 mod heredoc;
 mod interpolable;
 mod metadata;
+mod nom_prelude;
 mod segment;
 mod tracked_location;
 
@@ -10,6 +11,7 @@ pub use crate::ast::{Identifier, IdentifierKind, Interpolated, Literal, Node};
 pub use heredoc::{HeredocIndentation, HeredocMetadata, HeredocQuoteType};
 pub use interpolable::Interpolatable;
 pub use metadata::Metadata;
+pub(crate) use nom_prelude::*;
 pub use segment::Segment;
 pub use tracked_location::TrackedLocation;
 

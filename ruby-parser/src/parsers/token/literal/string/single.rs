@@ -1,8 +1,4 @@
 use crate::lexer::*;
-use nom::branch::alt;
-use nom::character::complete::{char, none_of, one_of};
-use nom::combinator::map;
-use nom::multi::many0;
 
 /// `'` *single_quoted_string_character** `'`
 pub(crate) fn single_quoted_string(i: Input) -> StringResult {

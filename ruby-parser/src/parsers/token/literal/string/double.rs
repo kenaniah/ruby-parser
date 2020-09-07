@@ -2,12 +2,6 @@ use crate::lexer::*;
 use crate::parsers::program::*;
 use crate::parsers::token::identifier::*;
 use crate::parsers::token::literal::numeric::{hexadecimal_digit, octal_digit};
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{anychar, char, none_of, one_of};
-use nom::combinator::{map, not, peek, recognize};
-use nom::multi::{many0, many1, many_m_n, separated_list1};
-use nom::sequence::{preceded, tuple};
 use std::convert::TryFrom;
 
 /// `"` *double_quoted_string_character** `"`

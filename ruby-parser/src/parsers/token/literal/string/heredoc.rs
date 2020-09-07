@@ -4,12 +4,6 @@ use crate::lexer::*;
 use crate::parsers::comment::line_content;
 use crate::parsers::program::{line_terminator, source_character, whitespace};
 use crate::parsers::token::identifier::identifier_character;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{anychar, char, none_of};
-use nom::combinator::{map, not, opt, peek, recognize};
-use nom::multi::{many0, many1};
-use nom::sequence::{delimited, preceded, terminated};
 
 // TODO: ensure nested interpolated heredocs work
 // TODO: ensure sequenced heredocs work

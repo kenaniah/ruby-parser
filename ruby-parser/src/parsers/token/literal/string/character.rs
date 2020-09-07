@@ -1,11 +1,6 @@
 use super::double::double_escape_sequence;
 use crate::lexer::*;
 use crate::parsers::program::*;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::char;
-use nom::combinator::{map, not, peek, recognize};
-use nom::sequence::{preceded, tuple};
 
 /// `?` ( *double_escape_sequence* | *source_character* **but not** ( *whitespace* | `\` ) )
 pub(crate) fn character_literal(i: Input) -> StringResult {

@@ -35,12 +35,6 @@ use crate::lexer::*;
 use crate::parsers::expression::binary::equality_expression;
 use crate::parsers::expression::method::method_invocation_without_parenthesis;
 use crate::parsers::expression::operator_expression;
-use crate::parsers::program::{no_lt, ws};
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::char;
-use nom::combinator::{map, opt};
-use nom::sequence::tuple;
 
 /// *keyword_not_expression* | *keyword_and_expression* | *keyword_or_expression*
 pub(crate) fn keyword_logical_expression(i: Input) -> NodeResult {

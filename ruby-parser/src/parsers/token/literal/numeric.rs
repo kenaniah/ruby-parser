@@ -1,9 +1,4 @@
 use crate::lexer::*;
-use nom::branch::alt;
-use nom::character::complete::{anychar, char, one_of};
-use nom::combinator::{map, opt, value, verify};
-use nom::multi::many0;
-use nom::sequence::{preceded, tuple};
 
 /**
 Provides support for lexing Ruby's Literal literal formats.

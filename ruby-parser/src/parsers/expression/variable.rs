@@ -1,10 +1,6 @@
 use crate::ast::Literal;
 use crate::lexer::*;
 use crate::parsers::token::identifier::*;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::combinator::{map, not, peek};
-use nom::sequence::tuple;
 
 /// *pseudo_variable* | *variable*
 pub(crate) fn variable_reference(i: Input) -> NodeResult {

@@ -2,12 +2,7 @@
 use crate::lexer::*;
 use crate::parsers::comment::comment;
 use crate::parsers::statement::statement;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{anychar, char, line_ending, one_of};
-use nom::combinator::{map, opt, recognize};
-use nom::multi::{many0, many1, separated_list0};
-use nom::sequence::{terminated, tuple};
+use nom::character::complete::line_ending;
 
 /// *compound_statement*
 pub fn program(i: Input) -> NodeResult {

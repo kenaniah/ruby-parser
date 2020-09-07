@@ -1,12 +1,6 @@
 use super::double::double_escape_sequence;
 use super::double::interpolated_character_sequence;
 use crate::lexer::*;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{anychar, char, none_of};
-use nom::combinator::{map, not, peek, verify};
-use nom::multi::many0;
-use nom::sequence::{delimited, preceded, terminated, tuple};
 
 /// `%q` *non_expanded_delimited_string*
 pub(crate) fn quoted_non_expanded_literal_string(i: Input) -> StringResult {

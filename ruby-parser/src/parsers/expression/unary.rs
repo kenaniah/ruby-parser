@@ -2,11 +2,6 @@ use crate::ast::{UnaryOp, UnaryOpKind as Op};
 use crate::lexer::*;
 use crate::parsers::expression::binary::power_expression;
 use crate::parsers::expression::primary_expression;
-use crate::parsers::program::ws;
-use nom::branch::alt;
-use nom::character::complete::{char, one_of};
-use nom::combinator::map;
-use nom::sequence::tuple;
 
 /// *power_expression* | `-` *power_expression*
 pub(crate) fn unary_minus_expression(i: Input) -> NodeResult {

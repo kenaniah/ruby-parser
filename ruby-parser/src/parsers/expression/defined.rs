@@ -1,12 +1,5 @@
 use crate::lexer::*;
 use crate::parsers::expression::{expression, operator_expression};
-use crate::parsers::program::ws;
-use nom::bytes::complete::tag;
-use nom::character::streaming::char;
-use nom::combinator::map;
-use nom::combinator::not;
-use nom::combinator::peek;
-use nom::sequence::tuple;
 
 /// `defined?` `(` *expression* `)`
 pub(crate) fn defined_with_parenthesis(i: Input) -> NodeResult {

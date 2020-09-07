@@ -1,12 +1,6 @@
 use crate::ast::{BinaryOp, BinaryOpKind as Op};
 use crate::lexer::*;
 use crate::parsers::expression::unary::{unary_expression, unary_minus_expression};
-use crate::parsers::program::{no_lt, ws};
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{char, one_of};
-use nom::combinator::{map, opt};
-use nom::sequence::tuple;
 
 /// *relational_expression* | *relational_expression* [ no line terminator here ] ( `<=>` | `===` | `==` | `!=` | `=~` | `!~` ) *relational_expression*
 pub(crate) fn equality_expression(i: Input) -> NodeResult {

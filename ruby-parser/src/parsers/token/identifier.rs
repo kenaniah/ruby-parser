@@ -1,11 +1,5 @@
 use crate::lexer::*;
 use crate::parsers::token::keyword::keyword;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{anychar, char, one_of};
-use nom::combinator::{map, recognize, verify};
-use nom::multi::many0;
-use nom::sequence::tuple;
 
 /// *local_variable_identifier* | *global_variable_identifier* | *class_variable_identifier* | *instance_variable_identifier* | *constant_identifier* | *method_only_identifier* | *assignment_like_method_identifier*
 pub(crate) fn identifier(i: Input) -> NodeResult {

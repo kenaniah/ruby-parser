@@ -3,8 +3,6 @@ Provides support for lexing Ruby's string literal formats.
 !*/
 use crate::ast::Literal;
 use crate::lexer::*;
-use nom::branch::alt;
-use nom::combinator::map;
 
 pub(crate) mod character;
 pub(crate) mod command;

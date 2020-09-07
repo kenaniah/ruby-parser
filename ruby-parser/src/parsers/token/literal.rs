@@ -1,5 +1,4 @@
 use crate::lexer::*;
-use nom::branch::alt;
 
 pub(crate) mod array;
 pub(crate) mod numeric;

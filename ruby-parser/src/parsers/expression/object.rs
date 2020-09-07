@@ -3,15 +3,8 @@ use crate::lexer::*;
 use crate::parsers::expression::argument::{comma, indexing_argument_list};
 use crate::parsers::expression::logical::operator_or_expression;
 use crate::parsers::expression::operator_expression;
-use crate::parsers::program::{no_lt, ws};
 use crate::parsers::token::literal::string::{double_quoted_string, single_quoted_string};
 use crate::parsers::token::literal::symbol::symbol_name;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::char;
-use nom::combinator::{map, opt, recognize};
-use nom::multi::many0;
-use nom::sequence::tuple;
 
 /// `[` *indexing_argument_list*? `]`
 pub(crate) fn array_constructor(i: Input) -> NodeResult {

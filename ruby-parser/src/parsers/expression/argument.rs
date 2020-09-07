@@ -2,13 +2,6 @@ use crate::lexer::*;
 use crate::parsers::expression::method::command;
 use crate::parsers::expression::object::association_list;
 use crate::parsers::expression::operator_expression;
-use crate::parsers::program::no_lt;
-use crate::parsers::program::ws;
-use nom::branch::alt;
-use nom::character::complete::char;
-use nom::combinator::{map, opt, recognize};
-use nom::multi::many0;
-use nom::sequence::{terminated, tuple};
 
 /// *command* | *operator_expression_list* ( [ no line terminator here ] `,` )? | *operator_expression_list* ( [ no line terminator here ] `,` *splatting_argument* ) | *association_list* ( [ no line terminator here ] `,` )? | *splatting_argument*
 pub(crate) fn indexing_argument_list(i: Input) -> NodeListResult {

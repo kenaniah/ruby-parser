@@ -2,12 +2,6 @@
 
 use crate::lexer::*;
 use crate::parsers::program::*;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::char;
-use nom::combinator::{not, opt, peek, recognize};
-use nom::multi::{many0, many1};
-use nom::sequence::{preceded, tuple};
 
 /// *single_line_comment* | *multi_line_comment*
 pub(crate) fn comment(i: Input) -> NodeResult {

@@ -5,11 +5,6 @@ use crate::parsers::token::literal::string::double::double_quoted_string;
 use crate::parsers::token::literal::string::quoted::non_expanded_delimited_string;
 use crate::parsers::token::literal::string::single::single_quoted_string;
 use crate::parsers::token::operator::operator;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::char;
-use nom::combinator::{map, recognize};
-use nom::sequence::{preceded, tuple};
 
 /// *symbol_literal* | *dynamic_symbol*
 pub(crate) fn symbol(i: Input) -> NodeResult {

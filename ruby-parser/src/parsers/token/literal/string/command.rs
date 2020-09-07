@@ -3,12 +3,6 @@ use super::double::interpolated_character_sequence;
 use super::quoted::expanded_delimited_string;
 use crate::lexer::*;
 use crate::parsers::program::source_character;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{char, none_of};
-use nom::combinator::{map, peek};
-use nom::multi::many0;
-use nom::sequence::{delimited, preceded, terminated};
 
 /// *backquoted_external_command_execution* | *quoted_external_command_execution*
 pub(crate) fn external_command_execution(i: Input) -> InterpolatableResult {
