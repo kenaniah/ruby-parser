@@ -1,8 +1,18 @@
 use crate::lexer::*;
+use crate::parsers::expression::assignment::abbreviated::abbreviated_variable_assignment;
+use crate::parsers::expression::assignment::multiple::left_hand_side;
+use crate::parsers::expression::assignment::multiple::multiple_assignment_statement;
+use crate::parsers::expression::assignment::single::single_assignment;
+use crate::parsers::expression::method::method_invocation_without_parenthesis;
+use crate::parsers::expression::operator_expression;
+use crate::parsers::expression::primary_expression;
+use crate::parsers::token::identifier::constant_identifier;
 
 pub(crate) mod abbreviated;
 pub(crate) mod multiple;
 pub(crate) mod single;
+
+// TODO: figure out if assignment expressions and statements can be gramatically combined
 
 /// *single_assignment* | *abbreviated_assignment_expression* | *assignment_with_rescue_modifier*
 pub(crate) fn assignment_expression(i: Input) -> NodeResult {
@@ -11,20 +21,61 @@ pub(crate) fn assignment_expression(i: Input) -> NodeResult {
 
 /// *single_assignment* | *abbreviated_assignment_statement* | *multiple_assignment_statement*
 pub(crate) fn assignment_statement(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        single_assignment,
+        abbreviated_variable_assignment,
+        multiple_assignment_statement,
+    ))(i)
 }
 
 /// *primary_expression* [ no line terminator here ] [ no whitespace here ] `::` *constant_identifier* [ no line terminator here ] `=` *rhs_expression* | `::` *constant_identifier* [ no line terminator here ] `=` *rhs_expression*
 pub(crate) fn scoped_constant_assignment(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        map(
+            tuple((
+                tag("::"),
+                constant_identifier,
+                no_lt,
+                char('='),
+                ws,
+                rhs_expression,
+            )),
+            |t| Node::Placeholder,
+        ),
+        map(
+            tuple((
+                primary_expression,
+                tag("::"),
+                constant_identifier,
+                no_lt,
+                char('='),
+                ws,
+                rhs_expression,
+            )),
+            |t| Node::Placeholder,
+        ),
+    ))(i)
 }
 
 /// *left_hand_side* [ no line terminator here ] `=` *operator_expression* [ no line terminator here ] `rescue` *operator_expression*
 pub(crate) fn assignment_with_rescue_modifier(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((
+            left_hand_side,
+            no_lt,
+            char('='),
+            ws,
+            operator_expression,
+            no_lt,
+            tag("rescue"),
+            ws,
+            operator_expression,
+        )),
+        |t| Node::Placeholder,
+    )(i)
 }
 
-/// ( *operator_expression* | *method_invocation_without_parenthesis* )
+/// *operator_expression* | *method_invocation_without_parenthesis*
 pub(crate) fn rhs_expression(i: Input) -> NodeResult {
-    stub(i)
+    alt((operator_expression, method_invocation_without_parenthesis))(i)
 }
