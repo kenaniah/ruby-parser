@@ -4,16 +4,13 @@ use crate::parsers::expression::assignment::assignment_statement;
 use crate::parsers::expression::expression;
 use crate::parsers::token::literal::symbol;
 
-/// *expression_statement* | *alias_statement* | *undef_statement* | *if_modifier_statement* | *unless_modifier_statement* | *while_modifier_statement* | *until_modifier_statement* | *rescue_modifier_statement* | *assignment_statement*
+/// *expression_statement* | *alias_statement* | *undef_statement* | *expressionn_modifier_statement* | *rescue_modifier_statement* | *assignment_statement*
 pub(crate) fn statement(i: Input) -> NodeResult {
     alt((
         expression_statement,
         alias_statement,
         undef_statement,
-        if_modifier_statement,
-        unless_modifier_statement,
-        while_modifier_statement,
-        until_modifier_statement,
+        expression_modifier_statement,
         rescue_modifier_statement,
         assignment_statement,
     ))(i)
@@ -45,8 +42,8 @@ pub(crate) fn method_name_or_symbol(i: Input) -> NodeResult {
     stub(i)
 }
 
-/// *statement* [ no ⏎ ] `if` *expression*
-pub(crate) fn if_modifier_statement(i: Input) -> NodeResult {
+/// *statement* [ no ⏎ ] ( `if` | `unless` | `while` | `until` ) *expression*
+pub(crate) fn expression_modifier_statement(i: Input) -> NodeResult {
     stub(i)
     // map(tuple((statement, no_lt, tag("if"), ws, expression)), |t| {
     //     Node::Conditional(Conditional {
@@ -56,21 +53,6 @@ pub(crate) fn if_modifier_statement(i: Input) -> NodeResult {
     //         otherwise: Box::new(Node::empty()),
     //     })
     // })(i)
-}
-
-/// *statement* [ no ⏎ ] `unless` *expression*
-pub(crate) fn unless_modifier_statement(i: Input) -> NodeResult {
-    stub(i)
-}
-
-/// *statement* [ no ⏎ ] `while` *expression*
-pub(crate) fn while_modifier_statement(i: Input) -> NodeResult {
-    stub(i)
-}
-
-/// *statement* [ no ⏎ ] `until` *expression*
-pub(crate) fn until_modifier_statement(i: Input) -> NodeResult {
-    stub(i)
 }
 
 /// *statement* [ no ⏎ ] `rescue` *fallback_statement*
