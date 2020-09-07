@@ -2,7 +2,16 @@ use crate::lexer::*;
 
 /// `module` *module_path* *module_body* `end`
 pub(crate) fn module_definition(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((
+            tag("module"),
+            module_path,
+            module_body,
+            ws,
+            tag("end"),
+        )),
+        |t| Node::Placeholder,
+    )(i)
 }
 
 /// *top_module_path* | *module_name* | *nested_module_path*
