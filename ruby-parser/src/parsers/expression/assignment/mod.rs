@@ -40,7 +40,7 @@ pub(crate) fn scoped_constant_assignment(i: Input) -> NodeResult {
                 ws,
                 rhs_expression,
             )),
-            |t| Node::Placeholder,
+            |_| Node::Placeholder,
         ),
         map(
             tuple((
@@ -52,7 +52,7 @@ pub(crate) fn scoped_constant_assignment(i: Input) -> NodeResult {
                 ws,
                 rhs_expression,
             )),
-            |t| Node::Placeholder,
+            |_| Node::Placeholder,
         ),
     ))(i)
 }
@@ -71,7 +71,7 @@ pub(crate) fn assignment_with_rescue_modifier(i: Input) -> NodeResult {
             ws,
             operator_expression,
         )),
-        |t| Node::Placeholder,
+        |_| Node::Placeholder,
     )(i)
 }
 

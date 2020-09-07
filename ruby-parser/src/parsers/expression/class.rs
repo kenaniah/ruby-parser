@@ -14,7 +14,7 @@ pub(crate) fn class_definition(i: Input) -> NodeResult {
             ws,
             tag("end"),
         )),
-        |t| Node::Placeholder,
+        |_| Node::Placeholder,
     )(i)
 }
 

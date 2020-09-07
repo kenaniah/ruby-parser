@@ -9,7 +9,7 @@ use crate::parsers::program::separator;
 pub(crate) fn while_expression(i: Input) -> NodeResult {
     map(
         tuple((tag("while"), expression, do_clause, tag("end"))),
-        |t| Node::Placeholder,
+        |_| Node::Placeholder,
     )(i)
 }
 
@@ -29,7 +29,7 @@ pub(crate) fn do_clause(i: Input) -> NodeResult {
 pub(crate) fn until_expression(i: Input) -> NodeResult {
     map(
         tuple((tag("until"), expression, do_clause, tag("end"))),
-        |t| Node::Placeholder,
+        |_| Node::Placeholder,
     )(i)
 }
 
@@ -45,7 +45,7 @@ pub(crate) fn for_expression(i: Input) -> NodeResult {
             do_clause,
             tag("end"),
         )),
-        |t| Node::Placeholder,
+        |_| Node::Placeholder,
     )(i)
 }
 

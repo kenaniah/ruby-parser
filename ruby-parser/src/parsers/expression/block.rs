@@ -12,7 +12,7 @@ pub(crate) fn block(i: Input) -> NodeResult {
 pub(crate) fn brace_block(i: Input) -> NodeResult {
     map(
         tuple((char('{'), opt(block_parameter), block_body, char('}'))),
-        |t| Node::Placeholder,
+        |_| Node::Placeholder,
     )(i)
 }
 
@@ -20,14 +20,14 @@ pub(crate) fn brace_block(i: Input) -> NodeResult {
 pub(crate) fn do_block(i: Input) -> NodeResult {
     map(
         tuple((tag("do"), opt(block_parameter), block_body, ws, tag("end"))),
-        |t| Node::Placeholder,
+        |_| Node::Placeholder,
     )(i)
 }
 
 /// `| |` | `||` | `|` *block_parameter_list* `|`
 pub(crate) fn block_parameter(i: Input) -> NodeResult {
     alt((
-        map(alt((tag("| |"), tag("||"))), |t| Node::Placeholder),
+        map(alt((tag("| |"), tag("||"))), |_| Node::Placeholder),
         map(tuple((char('|'), block_parameter_list, char('|'))), |t| {
             Node::Placeholder
         }),

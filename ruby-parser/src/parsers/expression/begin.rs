@@ -9,7 +9,7 @@ use crate::parsers::program::compound_statement;
 pub(crate) fn begin_expression(i: Input) -> NodeResult {
     map(
         tuple((tag("begin"), ws, body_statement, ws, tag("end"))),
-        |t| Node::Placeholder,
+        |_| Node::Placeholder,
     )(i)
 }
 
@@ -22,7 +22,7 @@ pub(crate) fn body_statement(i: Input) -> NodeResult {
             opt(else_clause),
             opt(ensure_clause),
         )),
-        |t| Node::Placeholder,
+        |_| Node::Placeholder,
     )(i)
 }
 
@@ -37,7 +37,7 @@ pub(crate) fn rescue_clause(i: Input) -> NodeResult {
             ws,
             then_clause,
         )),
-        |t| Node::Placeholder,
+        |_| Node::Placeholder,
     )(i)
 }
 

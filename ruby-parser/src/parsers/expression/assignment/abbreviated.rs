@@ -11,7 +11,7 @@ use crate::parsers::token::operator::assignment_operator;
 pub(crate) fn abbreviated_variable_assignment(i: Input) -> NodeResult {
     map(
         tuple((variable, no_lt, assignment_operator, ws, rhs_expression)),
-        |t| Node::Placeholder,
+        |_| Node::Placeholder,
     )(i)
 }
 
@@ -30,7 +30,7 @@ pub(crate) fn abbreviated_indexing_assignment(i: Input) -> NodeResult {
             ws,
             rhs_expression,
         )),
-        |t| Node::Placeholder,
+        |_| Node::Placeholder,
     )(i)
 }
 
@@ -48,7 +48,7 @@ pub(crate) fn abbreviated_method_assignment(i: Input) -> NodeResult {
                 ws,
                 rhs_expression,
             )),
-            |t| Node::Placeholder,
+            |_| Node::Placeholder,
         ),
         map(
             tuple((
@@ -61,7 +61,7 @@ pub(crate) fn abbreviated_method_assignment(i: Input) -> NodeResult {
                 ws,
                 rhs_expression,
             )),
-            |t| Node::Placeholder,
+            |_| Node::Placeholder,
         ),
     ))(i)
 }
