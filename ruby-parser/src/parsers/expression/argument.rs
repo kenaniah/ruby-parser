@@ -86,7 +86,37 @@ pub(crate) fn argument_without_parenthesis(i: Input) -> NodeListResult {
 
 /// *block_argument* | *splatting_argument* ( `,` *block_argument* )? | *operator_expression_list* [ no line terminator here ] `,` *association_list* ( [ no line terminator here ] `,` *splatting_argument* )? ( [ no line terminator here ] `,` *block_argument* )? | ( *operator_expression_list* | *association_list* ) ( [ no line terminator here ] `,` *splatting_argument* )? ( [no line terminator here ] `,` *block_argument* )? | *command*
 pub(crate) fn argument_list(i: Input) -> NodeListResult {
-    stub_list(i)
+    alt((
+        map(block_argument, |_| vec![Node::Placeholder]),
+        map(
+            tuple((
+                splatting_argument,
+                opt(tuple((ws, char(','), block_argument))),
+            )),
+            |_| vec![Node::Placeholder],
+        ),
+        map(
+            tuple((
+                operator_expression_list,
+                no_lt,
+                char(','),
+                ws,
+                association_list,
+                opt(tuple((no_lt, char(','), splatting_argument))),
+                opt(tuple((no_lt, char(','), block_argument))),
+            )),
+            |_| vec![Node::Placeholder],
+        ),
+        map(
+            tuple((
+                alt((operator_expression_list, association_list)),
+                opt(tuple((no_lt, char(','), splatting_argument))),
+                opt(tuple((no_lt, char(','), block_argument))),
+            )),
+            |_| vec![Node::Placeholder],
+        ),
+        map(command, |_| vec![Node::Placeholder]),
+    ))(i)
 }
 
 /// `&` *operator_expression*
