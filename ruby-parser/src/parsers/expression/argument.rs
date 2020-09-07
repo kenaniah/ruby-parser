@@ -50,7 +50,12 @@ pub(crate) fn operator_expression_list(i: Input) -> NodeListResult {
 }
 
 /// `()` | `(` *argument_list* `)` | `(` *operator_expression_list* [ no line terminator here ] `,` *chained_command_with_do_block* `)` | `(` *chained_command_with_do_block* `)`
-pub(crate) fn argument_with_parentheses(i: Input) -> NodeResult {
+pub(crate) fn argument_with_parenthesis(i: Input) -> NodeResult {
+    stub(i)
+}
+
+/// **not** `{` [ no line terminator here ] *argument_list*
+pub(crate) fn argument_without_parenthesis(i: Input) -> NodeResult {
     stub(i)
 }
 
