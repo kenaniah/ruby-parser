@@ -1,4 +1,5 @@
 use crate::lexer::*;
+use crate::parsers::expression::method::chained_command_with_do_block;
 use crate::parsers::expression::method::command;
 use crate::parsers::expression::object::association_list;
 use crate::parsers::expression::operator_expression;
@@ -51,7 +52,31 @@ pub(crate) fn operator_expression_list(i: Input) -> NodeListResult {
 
 /// `()` | `(` *argument_list* `)` | `(` *operator_expression_list* [ no line terminator here ] `,` *chained_command_with_do_block* `)` | `(` *chained_command_with_do_block* `)`
 pub(crate) fn argument_with_parenthesis(i: Input) -> NodeListResult {
-    stub_list(i)
+    alt((
+        map(tuple((char('('), ws, char(')'))), |_| {
+            vec![Node::Placeholder]
+        }),
+        map(tuple((char('('), ws, argument_list, ws, char(')'))), |_| {
+            vec![Node::Placeholder]
+        }),
+        map(
+            tuple((
+                char('('),
+                ws,
+                operator_expression_list,
+                no_lt,
+                char(','),
+                chained_command_with_do_block,
+                ws,
+                char(')'),
+            )),
+            |_| vec![Node::Placeholder],
+        ),
+        map(
+            tuple((char('('), ws, chained_command_with_do_block, ws, char(')'))),
+            |_| vec![Node::Placeholder],
+        ),
+    ))(i)
 }
 
 /// **not** `{` [ no line terminator here ] *argument_list*
