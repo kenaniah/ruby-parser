@@ -1,31 +1,76 @@
 use crate::lexer::*;
+use crate::parsers::expression::assignment::multiple::left_hand_side;
+use crate::parsers::expression::assignment::multiple::multiple_right_hand_side;
+use crate::parsers::expression::conditional::else_clause;
+use crate::parsers::expression::conditional::then_clause;
+use crate::parsers::expression::operator_expression;
+use crate::parsers::program::no_lt;
+use crate::parsers::program::{compound_statement, ws};
+use nom::branch::alt;
+use nom::bytes::complete::tag;
+use nom::combinator::{map, opt};
+use nom::multi::many0;
+use nom::sequence::tuple;
 
 /// `begin` *body_statement* `end`
 pub(crate) fn begin_expression(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((tag("begin"), ws, body_statement, ws, tag("end"))),
+        |t| Node::Placeholder,
+    )(i)
 }
 
 /// *compound_statement* *rescue_clause** *else_clause*? *ensure_clause*?
 pub(crate) fn body_statement(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((
+            compound_statement,
+            many0(rescue_clause),
+            opt(else_clause),
+            opt(ensure_clause),
+        )),
+        |t| Node::Placeholder,
+    )(i)
 }
 
 /// `rescue` [ no line terminator here ] *exception_class_list*? *exception_variable_assignment*? *then_clause*
 pub(crate) fn rescue_clause(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((
+            tag("rescue"),
+            no_lt,
+            opt(exception_class_list),
+            opt(exception_variable_assignment),
+            ws,
+            then_clause,
+        )),
+        |t| Node::Placeholder,
+    )(i)
 }
 
 /// *operator_expression* | *multiple_right_hand_side*
 pub(crate) fn exception_class_list(i: Input) -> NodeResult {
-    stub(i)
+    alt((multiple_right_hand_side, operator_expression))(i)
 }
 
 /// `=>` *left_hand_side*
 pub(crate) fn exception_variable_assignment(i: Input) -> NodeResult {
-    stub(i)
+    map(tuple((tag("=>"), ws, left_hand_side)), |t| t.2)(i)
 }
 
 /// `ensure` *compound_statement*
 pub(crate) fn ensure_clause(i: Input) -> NodeResult {
-    stub(i)
+    map(tuple((tag("ensure"), ws, compound_statement)), |t| t.2)(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ensure_clause() {
+        use_parser!(ensure_clause);
+        assert_ok!("ensure ", Node::empty());
+        assert_ok!("ensure 2; 5", Node::Block(vec![Node::int(2), Node::int(5)]));
+    }
 }
