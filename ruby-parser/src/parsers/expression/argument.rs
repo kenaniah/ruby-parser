@@ -28,8 +28,8 @@ pub(crate) fn comma(i: Input) -> LexResult {
 
 /// `*` *operator_expression*
 pub(crate) fn splatting_argument(i: Input) -> NodeResult {
-    map(tuple((char('*'), operator_expression)), |t| {
-        Node::Splat(Box::new(t.1))
+    map(tuple((char('*'), ws, operator_expression)), |t| {
+        Node::Splat(Box::new(t.2))
     })(i)
 }
 
@@ -84,16 +84,22 @@ pub(crate) fn argument_without_parenthesis(i: Input) -> NodeListResult {
     map(tuple((not(peek(char('{'))), no_lt, argument_list)), |t| t.2)(i)
 }
 
-/// *block_argument* | *splatting_argument* ( `,` *block_argument* )? | *operator_expression_list* [ no ⏎ ] `,` *association_list* ( [ no ⏎ ] `,` *splatting_argument* )? ( [ no ⏎ ] `,` *block_argument* )? | ( *operator_expression_list* | *association_list* ) ( [ no ⏎ ] `,` *splatting_argument* )? ( [ no ⏎ ] `,` *block_argument* )? | *command*
+/// *block_argument* | *splatting_argument* ( [ no ⏎ ] `,` *block_argument* )? | *operator_expression_list* [ no ⏎ ] `,` *association_list* ( [ no ⏎ ] `,` *splatting_argument* )? ( [ no ⏎ ] `,` *block_argument* )? | ( *operator_expression_list* | *association_list* ) ( [ no ⏎ ] `,` *splatting_argument* )? ( [ no ⏎ ] `,` *block_argument* )? | *command*
 pub(crate) fn argument_list(i: Input) -> NodeListResult {
     alt((
-        map(block_argument, |_| vec![Node::Placeholder]),
+        map(block_argument, |v| vec![v]),
         map(
             tuple((
                 splatting_argument,
-                opt(tuple((ws, char(','), block_argument))),
+                opt(tuple((no_lt, char(','), ws, block_argument))),
             )),
-            |_| vec![Node::Placeholder],
+            |t| {
+                let mut vec = vec![t.0];
+                if let Some((_, _, _, block)) = t.1 {
+                    vec.push(block);
+                }
+                vec
+            },
         ),
         map(
             tuple((
@@ -102,8 +108,8 @@ pub(crate) fn argument_list(i: Input) -> NodeListResult {
                 char(','),
                 ws,
                 association_list,
-                opt(tuple((no_lt, char(','), splatting_argument))),
-                opt(tuple((no_lt, char(','), block_argument))),
+                opt(tuple((no_lt, char(','), ws, splatting_argument))),
+                opt(tuple((no_lt, char(','), ws, block_argument))),
             )),
             |_| vec![Node::Placeholder],
         ),
@@ -121,8 +127,8 @@ pub(crate) fn argument_list(i: Input) -> NodeListResult {
 
 /// `&` *operator_expression*
 pub(crate) fn block_argument(i: Input) -> NodeResult {
-    map(tuple((char('&'), operator_expression)), |t| {
-        Node::BlockArg(Box::new(t.1))
+    map(tuple((char('&'), ws, operator_expression)), |t| {
+        Node::BlockArg(Box::new(t.2))
     })(i)
 }
 
@@ -132,10 +138,25 @@ mod tests {
     use crate::ast::BinaryOpKind;
 
     #[test]
+    fn test_argument_list() {
+        use_parser!(argument_list);
+        // Parse errors
+        assert_err!("&");
+        // Success cases
+        assert_ok!("& :foo", vec![Node::block_arg(Node::literal_symbol("foo"))]);
+        assert_ok!("*1", vec![Node::splat(Node::int(1))]);
+        assert_ok!(
+            "*1 ,\n&2",
+            vec![Node::splat(Node::int(1)), Node::block_arg(Node::int(2))]
+        );
+    }
+
+    #[test]
     fn test_splatting_argument() {
         use_parser!(splatting_argument);
         // Parse errors
         assert_err!("*");
+        // Success cases
         assert_ok!("*3", Node::splat(Node::int(3)));
     }
 
