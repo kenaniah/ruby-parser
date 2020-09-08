@@ -7,7 +7,7 @@ use crate::parsers::expression::operator_expression;
 /// *command* | *operator_expression_list* ( [ no ⏎ ] `,` )? | *operator_expression_list* ( [ no ⏎ ] `,` *splatting_argument* ) | *association_list* ( [ no ⏎ ] `,` )? | *splatting_argument*
 pub(crate) fn indexing_argument_list(i: Input) -> NodeListResult {
     alt((
-        command,
+        map(command, |v| vec![v]),
         terminated(operator_expression_list, opt(comma)),
         map(
             tuple((operator_expression_list, comma, splatting_argument)),
@@ -38,10 +38,7 @@ pub(crate) fn operator_expression_list(i: Input) -> NodeListResult {
     map(
         tuple((
             operator_expression,
-            many0(map(
-                tuple((no_lt, char(','), ws, operator_expression)),
-                |t| t.3,
-            )),
+            many0(map(tuple((comma, ws, operator_expression)), |t| t.2)),
         )),
         |(first, mut vec)| {
             vec.insert(0, first);
@@ -64,8 +61,7 @@ pub(crate) fn argument_with_parenthesis(i: Input) -> NodeListResult {
                 char('('),
                 ws,
                 operator_expression_list,
-                no_lt,
-                char(','),
+                comma,
                 chained_command_with_do_block,
                 ws,
                 char(')'),
@@ -89,13 +85,10 @@ pub(crate) fn argument_list(i: Input) -> NodeListResult {
     alt((
         map(block_argument, |v| vec![v]),
         map(
-            tuple((
-                splatting_argument,
-                opt(tuple((no_lt, char(','), ws, block_argument))),
-            )),
+            tuple((splatting_argument, opt(tuple((comma, ws, block_argument))))),
             |t| {
                 let mut vec = vec![t.0];
-                if let Some((_, _, _, block)) = t.1 {
+                if let Some((_, _, block)) = t.1 {
                     vec.push(block);
                 }
                 vec
@@ -103,25 +96,48 @@ pub(crate) fn argument_list(i: Input) -> NodeListResult {
         ),
         map(
             tuple((
+                //FIXME: needs to backtrack in order for association_list to work.
+                // May need to attempt matching associations before operator expressions
                 operator_expression_list,
-                no_lt,
-                char(','),
+                comma,
                 ws,
                 association_list,
-                opt(tuple((no_lt, char(','), ws, splatting_argument))),
-                opt(tuple((no_lt, char(','), ws, block_argument))),
+                opt(tuple((comma, ws, splatting_argument))),
+                opt(tuple((comma, ws, block_argument))),
             )),
-            |_| vec![Node::Placeholder],
+            |t| {
+                let mut vec = t.0;
+                vec.push(Node::hash(t.3));
+                if let Some((_, _, splat)) = t.4 {
+                    vec.push(splat);
+                }
+                if let Some((_, _, block)) = t.5 {
+                    vec.push(block);
+                }
+                vec
+            },
         ),
         map(
             tuple((
-                alt((operator_expression_list, association_list)),
-                opt(tuple((no_lt, char(','), splatting_argument))),
-                opt(tuple((no_lt, char(','), block_argument))),
+                alt((
+                    operator_expression_list,
+                    map(association_list, |v| vec![Node::hash(v)]),
+                )),
+                opt(tuple((comma, ws, splatting_argument))),
+                opt(tuple((comma, ws, block_argument))),
             )),
-            |_| vec![Node::Placeholder],
+            |t| {
+                let mut vec = t.0;
+                if let Some((_, _, splat)) = t.1 {
+                    vec.push(splat);
+                }
+                if let Some((_, _, block)) = t.2 {
+                    vec.push(block);
+                }
+                vec
+            },
         ),
-        map(command, |_| vec![Node::Placeholder]),
+        map(command, |v| vec![v]),
     ))(i)
 }
 
@@ -148,6 +164,19 @@ mod tests {
         assert_ok!(
             "*1 ,\n&2",
             vec![Node::splat(Node::int(1)), Node::block_arg(Node::int(2))]
+        );
+        assert_ok!("1, 2,\n3", vec![Node::int(1), Node::int(2), Node::int(3)]);
+        assert_ok!(
+            "1, foo: 2, 3 => 4",
+            vec![
+                Node::int(1),
+                Node::hash(vec![
+                    Node::literal_symbol("foo"),
+                    Node::int(2),
+                    Node::int(3),
+                    Node::int(4)
+                ])
+            ]
         );
     }
 
