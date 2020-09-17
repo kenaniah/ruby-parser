@@ -115,31 +115,28 @@ pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
 
 fn _conditional_operator_expression(i: Input) -> NodeResult {
     let i = stack_frame!("_conditional_operator_expression", i);
-    alt((
-        map(
-            tuple((
-                no_lt,
-                char('?'),
-                ws,
-                operator_expression,
-                no_lt,
-                char(':'),
-                ws,
-                operator_expression,
-                opt(_conditional_operator_expression),
-            )),
-            |t| {
-                let node = Node::Conditional(Conditional {
-                    cond: Box::new(Node::Placeholder),
-                    then: Box::new(t.3),
-                    otherwise: Box::new(t.7),
-                    kind: ConditionalKind::Ternary,
-                });
-                Node::update_placeholder(node, t.8)
-            },
-        ),
-        range_constructor,
-    ))(i)
+    map(
+        tuple((
+            no_lt,
+            char('?'),
+            ws,
+            operator_expression,
+            no_lt,
+            char(':'),
+            ws,
+            operator_expression,
+            opt(_conditional_operator_expression),
+        )),
+        |t| {
+            let node = Node::Conditional(Conditional {
+                cond: Box::new(Node::Placeholder),
+                then: Box::new(t.3),
+                otherwise: Box::new(t.7),
+                kind: ConditionalKind::Ternary,
+            });
+            Node::update_placeholder(node, t.8)
+        },
+    )(i)
 }
 
 #[cfg(test)]
@@ -270,6 +267,15 @@ mod tests {
                     Node::int(4)
                 ),
                 Node::int(5),
+            )
+        );
+        assert_ok!(
+            "1??2:?3",
+            Node::conditional(
+                ConditionalKind::Ternary,
+                Node::int(1),
+                Node::literal_string("2"),
+                Node::literal_string("3"),
             )
         );
     }

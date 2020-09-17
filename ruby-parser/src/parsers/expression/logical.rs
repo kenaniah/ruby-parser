@@ -161,25 +161,22 @@ pub(crate) fn operator_or_expression(i: Input) -> NodeResult {
 }
 
 fn _operator_or_expression(i: Input) -> NodeResult {
-    alt((
-        map(
-            tuple((
-                no_lt,
-                tag("||"),
-                ws,
-                operator_and_expression,
-                opt(_operator_or_expression),
-            )),
-            |t| {
-                let node = Node::LogicalOr(LogicalOr {
-                    first: Box::new(Node::Placeholder),
-                    second: Box::new(t.3),
-                });
-                Node::update_placeholder(node, t.4)
-            },
-        ),
-        operator_and_expression,
-    ))(i)
+    map(
+        tuple((
+            no_lt,
+            tag("||"),
+            ws,
+            operator_and_expression,
+            opt(_operator_or_expression),
+        )),
+        |t| {
+            let node = Node::LogicalOr(LogicalOr {
+                first: Box::new(Node::Placeholder),
+                second: Box::new(t.3),
+            });
+            Node::update_placeholder(node, t.4)
+        },
+    )(i)
 }
 
 /// *equality_expression* | *operator_and_expression* [ no ⏎ ] `&&` *equality_expression*
@@ -192,25 +189,22 @@ pub(crate) fn operator_and_expression(i: Input) -> NodeResult {
 }
 
 fn _operator_and_expression(i: Input) -> NodeResult {
-    alt((
-        map(
-            tuple((
-                no_lt,
-                tag("&&"),
-                ws,
-                equality_expression,
-                opt(_operator_and_expression),
-            )),
-            |t| {
-                let node = Node::LogicalAnd(LogicalAnd {
-                    first: Box::new(Node::Placeholder),
-                    second: Box::new(t.3),
-                });
-                Node::update_placeholder(node, t.4)
-            },
-        ),
-        equality_expression,
-    ))(i)
+    map(
+        tuple((
+            no_lt,
+            tag("&&"),
+            ws,
+            equality_expression,
+            opt(_operator_and_expression),
+        )),
+        |t| {
+            let node = Node::LogicalAnd(LogicalAnd {
+                first: Box::new(Node::Placeholder),
+                second: Box::new(t.3),
+            });
+            Node::update_placeholder(node, t.4)
+        },
+    )(i)
 }
 
 #[cfg(test)]

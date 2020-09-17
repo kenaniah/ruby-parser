@@ -17,10 +17,10 @@ pub(crate) fn character_literal(i: Input) -> StringResult {
                     |c| c.to_string(),
                 ),
             )),
-            // Ensure the next character is either EOF or whitespace
-            peek(alt((whitespace, recognize(not(source_character))))),
-            // Ensure the next character is not a colon (prevents conflicts w/ ternary)
-            peek(not(tuple((ws, char(':'))))),
+            // // Ensure the next character is either EOF or whitespace
+            // peek(alt((whitespace, recognize(not(source_character))))),
+            // // Ensure the next character is not a colon (prevents conflicts w/ ternary)
+            // peek(not(tuple((ws, char(':'))))),
         )),
         |t| t.1,
     )(i)

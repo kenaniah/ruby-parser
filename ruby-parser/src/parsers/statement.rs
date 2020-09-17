@@ -4,7 +4,7 @@ use crate::parsers::expression::assignment::assignment_statement;
 use crate::parsers::expression::expression;
 use crate::parsers::token::literal::symbol;
 
-/// *expression_statement* | *alias_statement* | *undef_statement* | *expressionn_modifier_statement* | *rescue_modifier_statement* | *assignment_statement*
+/// *expression_statement* | *alias_statement* | *undef_statement* | *expression_modifier_statement* | *rescue_modifier_statement* | *assignment_statement*
 pub(crate) fn statement(i: Input) -> NodeResult {
     alt((
         expression_statement,

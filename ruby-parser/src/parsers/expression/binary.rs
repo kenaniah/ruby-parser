@@ -12,37 +12,34 @@ pub(crate) fn equality_expression(i: Input) -> NodeResult {
 }
 
 fn _equality_expression(i: Input) -> NodeResult {
-    alt((
-        map(
-            tuple((
-                no_lt,
-                alt((
-                    tag("<=>"),
-                    tag("==="),
-                    tag("=="),
-                    tag("!="),
-                    tag("=~"),
-                    tag("!~"),
-                )),
-                ws,
-                relational_expression,
-                opt(_equality_expression),
+    map(
+        tuple((
+            no_lt,
+            alt((
+                tag("<=>"),
+                tag("==="),
+                tag("=="),
+                tag("!="),
+                tag("=~"),
+                tag("!~"),
             )),
-            |t| {
-                let op = match *t.1 {
-                    "<=>" => Op::Compare,
-                    "===" => Op::CaseEqual,
-                    "==" => Op::Equal,
-                    "!=" => Op::NotEqual,
-                    "=~" => Op::RegexMatch,
-                    "!~" => Op::NotRegexMatch,
-                    _ => unreachable!(),
-                };
-                _partial_node(op, t.3, t.4)
-            },
-        ),
-        relational_expression,
-    ))(i)
+            ws,
+            relational_expression,
+            opt(_equality_expression),
+        )),
+        |t| {
+            let op = match *t.1 {
+                "<=>" => Op::Compare,
+                "===" => Op::CaseEqual,
+                "==" => Op::Equal,
+                "!=" => Op::NotEqual,
+                "=~" => Op::RegexMatch,
+                "!~" => Op::NotRegexMatch,
+                _ => unreachable!(),
+            };
+            _partial_node(op, t.3, t.4)
+        },
+    )(i)
 }
 
 /// *bitwise_or_expression* | *relational_expression* [ no ⏎ ] ( `>=` | `>` | `<=` | `<` ) *bitwise_or_expression*
@@ -55,28 +52,25 @@ pub(crate) fn relational_expression(i: Input) -> NodeResult {
 }
 
 fn _relational_expression(i: Input) -> NodeResult {
-    alt((
-        map(
-            tuple((
-                no_lt,
-                alt((tag(">="), tag(">"), tag("<="), tag("<"))),
-                ws,
-                bitwise_or_expression,
-                opt(_relational_expression),
-            )),
-            |t| {
-                let op = match *t.1 {
-                    ">=" => Op::GreaterEqual,
-                    ">" => Op::GreaterThan,
-                    "<=" => Op::LessEqual,
-                    "<" => Op::LessThan,
-                    _ => unreachable!(),
-                };
-                _partial_node(op, t.3, t.4)
-            },
-        ),
-        bitwise_or_expression,
-    ))(i)
+    map(
+        tuple((
+            no_lt,
+            alt((tag(">="), tag(">"), tag("<="), tag("<"))),
+            ws,
+            bitwise_or_expression,
+            opt(_relational_expression),
+        )),
+        |t| {
+            let op = match *t.1 {
+                ">=" => Op::GreaterEqual,
+                ">" => Op::GreaterThan,
+                "<=" => Op::LessEqual,
+                "<" => Op::LessThan,
+                _ => unreachable!(),
+            };
+            _partial_node(op, t.3, t.4)
+        },
+    )(i)
 }
 
 /// *bitwise_and_expression* | *bitwise_or_expression* [ no ⏎ ] ( `|` | `^` ) *bitwise_and_expression*
@@ -89,26 +83,23 @@ pub(crate) fn bitwise_or_expression(i: Input) -> NodeResult {
 }
 
 fn _bitwise_or_expression(i: Input) -> NodeResult {
-    alt((
-        map(
-            tuple((
-                no_lt,
-                one_of("|^"),
-                ws,
-                bitwise_and_expression,
-                opt(_bitwise_or_expression),
-            )),
-            |t| {
-                let op = match t.1 {
-                    '|' => Op::BitOr,
-                    '^' => Op::BitXor,
-                    _ => unreachable!(),
-                };
-                _partial_node(op, t.3, t.4)
-            },
-        ),
-        bitwise_and_expression,
-    ))(i)
+    map(
+        tuple((
+            no_lt,
+            one_of("|^"),
+            ws,
+            bitwise_and_expression,
+            opt(_bitwise_or_expression),
+        )),
+        |t| {
+            let op = match t.1 {
+                '|' => Op::BitOr,
+                '^' => Op::BitXor,
+                _ => unreachable!(),
+            };
+            _partial_node(op, t.3, t.4)
+        },
+    )(i)
 }
 
 /// *bitwise_shift_expression* | *bitwise_and_expression* [ no ⏎ ] `&` *bitwise_shift_expression*
@@ -121,19 +112,16 @@ pub(crate) fn bitwise_and_expression(i: Input) -> NodeResult {
 }
 
 fn _bitwise_and_expression(i: Input) -> NodeResult {
-    alt((
-        map(
-            tuple((
-                no_lt,
-                char('&'),
-                ws,
-                bitwise_shift_expression,
-                opt(_bitwise_and_expression),
-            )),
-            |t| _partial_node(Op::BitAnd, t.3, t.4),
-        ),
-        bitwise_shift_expression,
-    ))(i)
+    map(
+        tuple((
+            no_lt,
+            char('&'),
+            ws,
+            bitwise_shift_expression,
+            opt(_bitwise_and_expression),
+        )),
+        |t| _partial_node(Op::BitAnd, t.3, t.4),
+    )(i)
 }
 
 /// *additive_expression* | *bitwise_shift_expression* [ no ⏎ ] ( `<<` | `>>` ) *additive_expression*
@@ -146,26 +134,23 @@ pub(crate) fn bitwise_shift_expression(i: Input) -> NodeResult {
 }
 
 fn _bitwise_shift_expression(i: Input) -> NodeResult {
-    alt((
-        map(
-            tuple((
-                no_lt,
-                alt((tag("<<"), tag(">>"))),
-                ws,
-                additive_expression,
-                opt(_bitwise_shift_expression),
-            )),
-            |t| {
-                let op = match *t.1 {
-                    "<<" => Op::ShiftLeft,
-                    ">>" => Op::ShiftRight,
-                    _ => unreachable!(),
-                };
-                _partial_node(op, t.3, t.4)
-            },
-        ),
-        additive_expression,
-    ))(i)
+    map(
+        tuple((
+            no_lt,
+            alt((tag("<<"), tag(">>"))),
+            ws,
+            additive_expression,
+            opt(_bitwise_shift_expression),
+        )),
+        |t| {
+            let op = match *t.1 {
+                "<<" => Op::ShiftLeft,
+                ">>" => Op::ShiftRight,
+                _ => unreachable!(),
+            };
+            _partial_node(op, t.3, t.4)
+        },
+    )(i)
 }
 
 /// *multiplicative_expression* | *additive_expression* [ no ⏎ ] ( `+` | `-` ) *multiplicative_expression*
