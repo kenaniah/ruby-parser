@@ -1,4 +1,5 @@
 use crate::lexer::*;
+use crate::parsers::expression::association;
 use crate::parsers::expression::method::chained_command_with_do_block;
 use crate::parsers::expression::method::command;
 use crate::parsers::expression::object::association_list;
@@ -33,12 +34,15 @@ pub(crate) fn splatting_argument(i: Input) -> NodeResult {
     })(i)
 }
 
-/// *operator_expression* ( [ no ⏎ ] `,` *operator_expression* )*
+/// *operator_expression* ( [ no ⏎ ] `,` *operator_expression* **but not** *association* )*
 pub(crate) fn operator_expression_list(i: Input) -> NodeListResult {
     map(
         tuple((
             operator_expression,
-            many0(map(tuple((comma, ws, operator_expression)), |t| t.2)),
+            many0(map(
+                tuple((comma, ws, peek(not(association)), operator_expression)),
+                |t| t.3,
+            )),
         )),
         |(first, mut vec)| {
             vec.insert(0, first);
