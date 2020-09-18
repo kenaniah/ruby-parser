@@ -6,14 +6,28 @@ use crate::parsers::token::literal::symbol;
 
 /// *expression_statement* | *alias_statement* | *undef_statement* | *expression_modifier_statement* | *rescue_modifier_statement* | *assignment_statement*
 pub(crate) fn statement(i: Input) -> NodeResult {
-    alt((
-        expression_statement,
-        alias_statement,
-        undef_statement,
-        expression_modifier_statement,
-        rescue_modifier_statement,
-        assignment_statement,
-    ))(i)
+    map(
+        tuple((
+            alt((
+                expression_statement,
+                alias_statement,
+                undef_statement,
+                assignment_statement,
+            )),
+            opt(_statement_modifier),
+        )),
+        |t| t.0,
+    )(i)
+}
+
+pub(crate) fn _statement_modifier(i: Input) -> NodeResult {
+    map(
+        tuple((
+            alt((_expression_modifier_statement, _rescue_modifier_statement)),
+            opt(_statement_modifier),
+        )),
+        |t| Node::Placeholder,
+    )(i)
 }
 
 /// *expression*
@@ -43,8 +57,16 @@ pub(crate) fn method_name_or_symbol(i: Input) -> NodeResult {
 }
 
 /// *statement* [ no ⏎ ] ( `if` | `unless` | `while` | `until` ) *expression*
-pub(crate) fn expression_modifier_statement(i: Input) -> NodeResult {
-    stub(i)
+pub(crate) fn _expression_modifier_statement(i: Input) -> NodeResult {
+    map(
+        tuple((
+            no_lt,
+            alt((tag("if"), tag("unless"), tag("while"), tag("until"))),
+            ws,
+            expression,
+        )),
+        |t| Node::Placeholder,
+    )(i)
     // map(tuple((statement, no_lt, tag("if"), ws, expression)), |t| {
     //     Node::Conditional(Conditional {
     //         kind: ConditionalKind::ModifyingIf,
@@ -56,8 +78,10 @@ pub(crate) fn expression_modifier_statement(i: Input) -> NodeResult {
 }
 
 /// *statement* [ no ⏎ ] `rescue` *fallback_statement*
-pub(crate) fn rescue_modifier_statement(i: Input) -> NodeResult {
-    stub(i)
+pub(crate) fn _rescue_modifier_statement(i: Input) -> NodeResult {
+    map(tuple((no_lt, tag("rescue"), ws, fallback_statement)), |t| {
+        Node::Placeholder
+    })(i)
 }
 
 /// *statement* **but not** *fallback_not_allowed*
