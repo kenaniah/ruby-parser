@@ -137,7 +137,7 @@ impl Node {
             otherwise: Box::new(otherwise),
         })
     }
-    /// Allows placeholding nodes to be updated when working around left-recursive parsers
+    /// Allows placeholding nodes to be updated when working around left-recursion via LL(2)
     pub(crate) fn update_placeholder(value: Node, ast: Option<Node>) -> Node {
         if let Some(mut parent_node) = ast {
             use std::borrow::BorrowMut;
