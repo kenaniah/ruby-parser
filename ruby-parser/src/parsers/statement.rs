@@ -1,11 +1,10 @@
-use crate::ast::{Alias, Conditional, ConditionalKind};
+use crate::ast::{Alias, Conditional, ConditionalKind, Undef};
 use crate::lexer::*;
 use crate::parsers::expression::assignment::assignment_statement;
 use crate::parsers::expression::expression;
 use crate::parsers::expression::logical::keyword_and_expression;
 use crate::parsers::expression::logical::keyword_or_expression;
 use crate::parsers::expression::method::defined_method_name;
-use crate::parsers::token::literal::symbol;
 use std::convert::TryFrom;
 
 /// *expression_statement* | *alias_statement* | *undef_statement* | *expression_modifier_statement* | *rescue_modifier_statement* | *assignment_statement*
@@ -56,7 +55,9 @@ pub(crate) fn alias_statement(i: Input) -> NodeResult {
 
 /// `undef` *undef_list*
 pub(crate) fn undef_statement(i: Input) -> NodeResult {
-    map(tuple((tag("undef"), ws, undef_list)), |t| Node::Placeholder)(i)
+    map(tuple((tag("undef"), ws, undef_list)), |t| {
+        Node::Undef(Undef { list: t.2 })
+    })(i)
 }
 
 /// *method_name_or_symbol* ( [ no ⏎ ] `,` *method_name_or_symbol* )*
@@ -184,6 +185,24 @@ mod tests {
                     kind: IdentifierKind::Method
                 }
             )
+        );
+    }
+
+    #[test]
+    fn test_undef_statement() {
+        use_parser!(undef_statement);
+        // Parse error
+        assert_err!("undef 1 2");
+        assert_err!("undef");
+        assert_err!("undef foo?? bar");
+        assert_err!("undef foo? :bar?!");
+        // Success cases
+        assert_ok!(
+            "undef foo?",
+            Node::undef(vec![Identifier {
+                name: "foo?".to_owned(),
+                kind: IdentifierKind::Method
+            },])
         );
     }
 

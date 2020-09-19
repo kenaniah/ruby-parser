@@ -22,6 +22,7 @@ pub enum Node {
     Array(Vec<Self>),
     Hash(Vec<Self>),
     Alias(Alias),
+    Undef(Undef),
     Nil,
     Self_,
     EndOfProgram,
@@ -33,9 +34,6 @@ impl Node {
     /// Creates a token that represents an empty block
     pub(crate) fn empty() -> Self {
         Self::Block(vec![])
-    }
-    pub(crate) fn alias(to: Identifier, from: Identifier) -> Self {
-        Self::Alias(Alias { to, from })
     }
     /// Creates a token that represents a boolean value
     pub(crate) fn boolean(val: bool) -> Self {
@@ -140,6 +138,14 @@ impl Node {
             then: Box::new(then),
             otherwise: Box::new(otherwise),
         })
+    }
+    /// Creates a token that represents an alias
+    pub(crate) fn alias(to: Identifier, from: Identifier) -> Self {
+        Self::Alias(Alias { to, from })
+    }
+    /// Creates a token that represents an undefinition
+    pub(crate) fn undef(list: Vec<Identifier>) -> Self {
+        Self::Undef(Undef { list })
     }
     /// Allows placeholding nodes to be updated when working around left-recursion via LL(2)
     pub(crate) fn update_placeholder(value: Node, ast: Option<Node>) -> Node {
