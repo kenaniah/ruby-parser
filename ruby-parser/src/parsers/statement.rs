@@ -5,7 +5,6 @@ use crate::parsers::expression::expression;
 use crate::parsers::expression::logical::keyword_and_expression;
 use crate::parsers::expression::logical::keyword_or_expression;
 use crate::parsers::expression::method::defined_method_name;
-use std::convert::TryFrom;
 
 /// *expression_statement* | *alias_statement* | *undef_statement* | *expression_modifier_statement* | *rescue_modifier_statement* | *assignment_statement*
 pub(crate) fn statement(i: Input) -> NodeResult {
@@ -80,9 +79,7 @@ pub(crate) fn undef_list(i: Input) -> IdentifierListResult {
 
 /// *defined_method_name* | *symbol*
 pub(crate) fn method_name_or_symbol(i: Input) -> IdentifierResult {
-    map(preceded(opt(char(':')), defined_method_name), |v| {
-        Identifier::try_from(v).unwrap()
-    })(i)
+    preceded(opt(char(':')), defined_method_name)(i)
 }
 
 /// *statement* [ no ⏎ ] ( `if` | `unless` | `while` | `until` ) *expression*
