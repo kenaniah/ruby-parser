@@ -272,7 +272,7 @@ mod tests {
             Node::conditional(
                 ConditionalKind::ModifyingIf,
                 Node::logical_or(Node::int(5), Node::int(6)),
-                Node::r#loop(
+                Node::loop_(
                     LoopKind::ModifyingUntil,
                     Node::int(4),
                     Node::conditional(

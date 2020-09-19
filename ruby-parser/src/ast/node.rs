@@ -142,7 +142,7 @@ impl Node {
         })
     }
     /// Creates a token that represents a loop expression
-    pub(crate) fn r#loop(kind: LoopKind, cond: Node, body: Node, bindings: Vec<Node>) -> Self {
+    pub(crate) fn loop_(kind: LoopKind, cond: Node, body: Node, bindings: Vec<Node>) -> Self {
         Self::Loop(Loop {
             kind,
             cond: Box::new(cond),
