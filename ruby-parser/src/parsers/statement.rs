@@ -6,6 +6,7 @@ use crate::parsers::expression::logical::keyword_and_expression;
 use crate::parsers::expression::logical::keyword_or_expression;
 use crate::parsers::expression::method::defined_method_name;
 use crate::parsers::token::literal::symbol;
+use std::convert::TryFrom;
 
 /// *expression_statement* | *alias_statement* | *undef_statement* | *expression_modifier_statement* | *rescue_modifier_statement* | *assignment_statement*
 pub(crate) fn statement(i: Input) -> NodeResult {
@@ -51,8 +52,8 @@ pub(crate) fn alias_statement(i: Input) -> NodeResult {
         )),
         |t| {
             Node::Alias(Alias {
-                to: Box::new(t.2),
-                from: Box::new(t.4),
+                to: Identifier::try_from(t.2).unwrap(),
+                from: Identifier::try_from(t.4).unwrap(),
             })
         },
     )(i)
@@ -83,7 +84,7 @@ pub(crate) fn undef_list(i: Input) -> NodeListResult {
 
 /// *defined_method_name* | *symbol*
 pub(crate) fn method_name_or_symbol(i: Input) -> NodeResult {
-    alt((defined_method_name, symbol))(i)
+    preceded(opt(char(':')), defined_method_name)(i)
 }
 
 /// *statement* [ no ⏎ ] ( `if` | `unless` | `while` | `until` ) *expression*
@@ -140,15 +141,53 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_alias_statement(){
+    fn test_alias_statement() {
         use_parser!(alias_statement);
         // Parse error
         assert_err!("alias 1 2");
         assert_err!("alias foo");
+        assert_err!("alias foo?? bar");
+        assert_err!("alias foo? :bar?!");
         // Success cases
-        assert_ok!("alias foo BAR");
-        assert_ok!("alias\n\nfoo\t:bar");
-        assert_ok!("alias :sym func_name");
+        assert_ok!(
+            "alias foo? BAR",
+            Node::alias(
+                Identifier {
+                    name: "foo?".to_owned(),
+                    kind: IdentifierKind::Method
+                },
+                Identifier {
+                    name: "BAR".to_owned(),
+                    kind: IdentifierKind::Constant
+                }
+            )
+        );
+        assert_ok!(
+            "alias\n\nfoo\t:bar!",
+            Node::alias(
+                Identifier {
+                    name: "foo".to_owned(),
+                    kind: IdentifierKind::LocalVariable
+                },
+                Identifier {
+                    name: "bar!".to_owned(),
+                    kind: IdentifierKind::Method
+                }
+            )
+        );
+        assert_ok!(
+            "alias :sym func_name!",
+            Node::alias(
+                Identifier {
+                    name: "sym".to_owned(),
+                    kind: IdentifierKind::LocalVariable
+                },
+                Identifier {
+                    name: "func_name!".to_owned(),
+                    kind: IdentifierKind::Method
+                }
+            )
+        );
     }
 
     #[test]

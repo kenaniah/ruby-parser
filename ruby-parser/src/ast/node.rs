@@ -34,6 +34,9 @@ impl Node {
     pub(crate) fn empty() -> Self {
         Self::Block(vec![])
     }
+    pub(crate) fn alias(to: Identifier, from: Identifier) -> Self {
+        Self::Alias(Alias { to, from })
+    }
     /// Creates a token that represents a boolean value
     pub(crate) fn boolean(val: bool) -> Self {
         Self::Literal(Literal::Boolean(val))

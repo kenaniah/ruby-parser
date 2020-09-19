@@ -49,9 +49,9 @@ pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
 /// *local_variable_identifier* | *constant_identifier* | *method_only_identifier*
 pub(crate) fn method_identifier(i: Input) -> NodeResult {
     alt((
+        method_only_identifier,
         local_variable_identifier,
         constant_identifier,
-        method_only_identifier,
     ))(i)
 }
 
