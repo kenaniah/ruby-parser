@@ -48,6 +48,12 @@ pub(crate) type SegmentVecResult<'a> = Parsed<'a, Vec<Segment>>;
 /// Describes a parsed string
 pub(crate) type StringResult<'a> = Parsed<'a, String>;
 
+/// Describes a parsed identifier
+pub(crate) type IdentifierResult<'a> = Parsed<'a, Identifier>;
+
+/// Describes a list of parsed identifiers
+pub(crate) type IdentifierListResult<'a> = Parsed<'a, Vec<Identifier>>;
+
 pub(crate) fn stub(i: Input) -> NodeResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }

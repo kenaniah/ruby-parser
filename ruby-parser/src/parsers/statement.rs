@@ -50,12 +50,7 @@ pub(crate) fn alias_statement(i: Input) -> NodeResult {
             ws,
             method_name_or_symbol,
         )),
-        |t| {
-            Node::Alias(Alias {
-                to: Identifier::try_from(t.2).unwrap(),
-                from: Identifier::try_from(t.4).unwrap(),
-            })
-        },
+        |t| Node::Alias(Alias { to: t.2, from: t.4 }),
     )(i)
 }
 
@@ -65,7 +60,7 @@ pub(crate) fn undef_statement(i: Input) -> NodeResult {
 }
 
 /// *method_name_or_symbol* ( [ no ⏎ ] `,` *method_name_or_symbol* )*
-pub(crate) fn undef_list(i: Input) -> NodeListResult {
+pub(crate) fn undef_list(i: Input) -> IdentifierListResult {
     map(
         tuple((
             method_name_or_symbol,
@@ -83,8 +78,10 @@ pub(crate) fn undef_list(i: Input) -> NodeListResult {
 }
 
 /// *defined_method_name* | *symbol*
-pub(crate) fn method_name_or_symbol(i: Input) -> NodeResult {
-    preceded(opt(char(':')), defined_method_name)(i)
+pub(crate) fn method_name_or_symbol(i: Input) -> IdentifierResult {
+    map(preceded(opt(char(':')), defined_method_name), |v| {
+        Identifier::try_from(v).unwrap()
+    })(i)
 }
 
 /// *statement* [ no ⏎ ] ( `if` | `unless` | `while` | `until` ) *expression*
