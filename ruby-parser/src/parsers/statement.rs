@@ -204,6 +204,23 @@ mod tests {
                 kind: IdentifierKind::Method
             },])
         );
+        assert_ok!(
+            "undef \n:bar   , BAZ\t,\n foo!",
+            Node::undef(vec![
+                Identifier {
+                    name: "bar".to_owned(),
+                    kind: IdentifierKind::LocalVariable
+                },
+                Identifier {
+                    name: "BAZ".to_owned(),
+                    kind: IdentifierKind::Constant
+                },
+                Identifier {
+                    name: "foo!".to_owned(),
+                    kind: IdentifierKind::Method
+                }
+            ])
+        );
     }
 
     #[test]
