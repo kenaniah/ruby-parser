@@ -1,4 +1,6 @@
-use crate::ast::{Alias, Conditional, ConditionalKind, Loop, LoopKind, Undef};
+use crate::ast::{
+    Alias, Conditional, ConditionalKind, Loop, LoopKind, Rescue, RescueClause, Undef,
+};
 use crate::lexer::*;
 use crate::parsers::expression::assignment::assignment_statement;
 use crate::parsers::expression::expression;
@@ -124,7 +126,15 @@ pub(crate) fn _expression_modifier_statement(i: Input) -> NodeResult {
 /// *statement* [ no ⏎ ] `rescue` *fallback_statement*
 pub(crate) fn _rescue_modifier_statement(i: Input) -> NodeResult {
     map(tuple((no_lt, tag("rescue"), ws, fallback_statement)), |t| {
-        Node::Placeholder
+        Node::Rescue(Rescue {
+            body: Box::new(Node::Placeholder),
+            rescue: vec![RescueClause {
+                exceptions: vec![],
+                assigned_to: Box::new(Node::None),
+                then: Box::new(t.3),
+            }],
+            otherwise: Box::new(Node::None),
+        })
     })(i)
 }
 
@@ -262,8 +272,33 @@ mod tests {
                 Node::None
             )
         );
+        assert_ok!(
+            "1 rescue 2",
+            Node::rescued_statement(Node::int(1), Node::int(2))
+        );
+        // assert_ok!(
+        //     "1 rescue 2 rescue 3",
+        //     Node::rescued_statement(
+        //         Node::rescued_statement(Node::int(1), Node::int(2)),
+        //         Node::int(3)
+        //     )
+        // );
         //assert_ok!("undef :hi rescue 3 if false");
-        assert_ok!("undef :hi if true rescue 3");
+        assert_ok!(
+            "undef :hi if true rescue 3",
+            Node::rescued_statement(
+                Node::conditional(
+                    ConditionalKind::ModifyingIf,
+                    Node::boolean(true),
+                    Node::undef(vec![Identifier {
+                        name: "hi".to_owned(),
+                        kind: IdentifierKind::LocalVariable
+                    }]),
+                    Node::None
+                ),
+                Node::int(3)
+            )
+        );
         assert_ok!(
             "1 if 2 unless 3 until 4 if 5 or 6",
             Node::conditional(

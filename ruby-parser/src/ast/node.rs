@@ -25,6 +25,7 @@ pub enum Node {
     Alias(Alias),
     Undef(Undef),
     Loop(Loop),
+    Rescue(Rescue),
     Nil,
     Self_,
     EndOfProgram,
@@ -160,6 +161,18 @@ impl Node {
             },
         })
     }
+    /// Creates a token that represents a rescued statement
+    pub(crate) fn rescued_statement(body: Node, rescued: Node) -> Self {
+        Self::Rescue(Rescue {
+            body: Box::new(body),
+            rescue: vec![RescueClause {
+                exceptions: vec![],
+                assigned_to: Box::new(Node::None),
+                then: Box::new(rescued),
+            }],
+            otherwise: Box::new(Node::None),
+        })
+    }
     /// Creates a token that represents an alias
     pub(crate) fn alias(to: Identifier, from: Identifier) -> Self {
         Self::Alias(Alias { to, from })
@@ -196,6 +209,7 @@ impl Node {
                         Node::LogicalOr(sub) => n = sub.first.borrow_mut(),
                         Node::LogicalAnd(sub) => n = sub.first.borrow_mut(),
                         Node::LogicalNot(sub) => n = sub.expr.borrow_mut(),
+                        Node::Rescue(sub) => n = sub.body.borrow_mut(),
                         _ => break,
                     }
                 }
