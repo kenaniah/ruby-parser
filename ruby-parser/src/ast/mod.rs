@@ -9,6 +9,7 @@ mod literal;
 mod logical;
 mod node;
 mod object;
+mod statement;
 mod unary_op;
 
 pub use binary_op::*;
@@ -20,4 +21,5 @@ pub use literal::*;
 pub use logical::*;
 pub use node::*;
 pub use object::*;
+pub use statement::*;
 pub use unary_op::*;

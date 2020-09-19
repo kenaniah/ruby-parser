@@ -1,4 +1,4 @@
-use crate::ast::{Conditional, ConditionalKind};
+use crate::ast::{Alias, Conditional, ConditionalKind};
 use crate::lexer::*;
 use crate::parsers::expression::assignment::assignment_statement;
 use crate::parsers::expression::expression;
@@ -41,7 +41,21 @@ pub(crate) fn expression_statement(i: Input) -> NodeResult {
 
 /// `alias` *method_name_or_symbol* *method_name_or_symbol*
 pub(crate) fn alias_statement(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((
+            tag("alias"),
+            ws,
+            method_name_or_symbol,
+            ws,
+            method_name_or_symbol,
+        )),
+        |t| {
+            Node::Alias(Alias {
+                to: Box::new(t.2),
+                from: Box::new(t.4),
+            })
+        },
+    )(i)
 }
 
 /// `undef` *undef_list*
@@ -124,6 +138,18 @@ pub(crate) fn fallback_not_allowed(i: Input) -> LexResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_alias_statement(){
+        use_parser!(alias_statement);
+        // Parse error
+        assert_err!("alias 1 2");
+        assert_err!("alias foo");
+        // Success cases
+        assert_ok!("alias foo BAR");
+        assert_ok!("alias\n\nfoo\t:bar");
+        assert_ok!("alias :sym func_name");
+    }
 
     #[test]
     fn test_statement() {

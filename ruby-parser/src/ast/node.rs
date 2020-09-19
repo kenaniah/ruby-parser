@@ -21,6 +21,7 @@ pub enum Node {
     Splat(Box<Self>),
     Array(Vec<Self>),
     Hash(Vec<Self>),
+    Alias(Alias),
     Nil,
     Self_,
     EndOfProgram,
