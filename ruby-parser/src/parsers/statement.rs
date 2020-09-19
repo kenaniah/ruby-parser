@@ -1,4 +1,4 @@
-use crate::ast::{Alias, Conditional, ConditionalKind, Undef};
+use crate::ast::{Alias, Conditional, ConditionalKind, Loop, LoopKind, Undef};
 use crate::lexer::*;
 use crate::parsers::expression::assignment::assignment_statement;
 use crate::parsers::expression::expression;
@@ -99,15 +99,27 @@ pub(crate) fn _expression_modifier_statement(i: Input) -> NodeResult {
                 kind: ConditionalKind::ModifyingIf,
                 cond: Box::new(expr),
                 then: Box::new(Node::Placeholder),
-                otherwise: Box::new(Node::empty()),
+                otherwise: Box::new(Node::None),
             }),
             "unless" => Node::Conditional(Conditional {
                 kind: ConditionalKind::ModifyingUnless,
                 cond: Box::new(expr),
                 then: Box::new(Node::Placeholder),
-                otherwise: Box::new(Node::empty()),
+                otherwise: Box::new(Node::None),
             }),
-            _ => Node::Placeholder,
+            "while" => Node::Loop(Loop {
+                kind: LoopKind::ModifyingWhile,
+                cond: Box::new(expr),
+                body: Box::new(Node::Placeholder),
+                bindings: None,
+            }),
+            "until" => Node::Loop(Loop {
+                kind: LoopKind::ModifyingUntil,
+                cond: Box::new(expr),
+                body: Box::new(Node::Placeholder),
+                bindings: None,
+            }),
+            _ => unreachable!(),
         },
     )(i)
 }
@@ -236,7 +248,7 @@ mod tests {
                 ConditionalKind::ModifyingIf,
                 Node::boolean(true),
                 Node::int(2),
-                Node::empty()
+                Node::None
             )
         );
         assert_ok!(
@@ -248,13 +260,36 @@ mod tests {
                     ConditionalKind::ModifyingIf,
                     Node::boolean(true),
                     Node::int(2),
-                    Node::empty()
+                    Node::None
                 ),
-                Node::empty()
+                Node::None
             )
         );
         //assert_ok!("undef :hi rescue 3 if false");
         assert_ok!("undef :hi if true rescue 3");
-        assert_ok!("1 if 2 unless 3 until 4 if 5 or 6");
+        assert_ok!(
+            "1 if 2 unless 3 until 4 if 5 or 6",
+            Node::conditional(
+                ConditionalKind::ModifyingIf,
+                Node::logical_or(Node::int(5), Node::int(6)),
+                Node::r#loop(
+                    LoopKind::ModifyingUntil,
+                    Node::int(4),
+                    Node::conditional(
+                        ConditionalKind::ModifyingUnless,
+                        Node::int(3),
+                        Node::conditional(
+                            ConditionalKind::ModifyingIf,
+                            Node::int(2),
+                            Node::int(1),
+                            Node::None
+                        ),
+                        Node::None
+                    ),
+                    vec![]
+                ),
+                Node::None
+            )
+        );
     }
 }

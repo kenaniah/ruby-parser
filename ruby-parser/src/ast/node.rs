@@ -3,6 +3,7 @@ use crate::lexer::*;
 
 #[derive(Debug, PartialEq)]
 pub enum Node {
+    None,
     Conditional(Conditional),
     LogicalAnd(LogicalAnd),
     LogicalOr(LogicalOr),
@@ -23,6 +24,7 @@ pub enum Node {
     Hash(Vec<Self>),
     Alias(Alias),
     Undef(Undef),
+    Loop(Loop),
     Nil,
     Self_,
     EndOfProgram,
@@ -139,6 +141,19 @@ impl Node {
             otherwise: Box::new(otherwise),
         })
     }
+    /// Creates a token that represents a loop expression
+    pub(crate) fn r#loop(kind: LoopKind, cond: Node, body: Node, bindings: Vec<Node>) -> Self {
+        Self::Loop(Loop {
+            kind,
+            cond: Box::new(cond),
+            body: Box::new(body),
+            bindings: if bindings.len() > 0 {
+                Some(bindings)
+            } else {
+                None
+            },
+        })
+    }
     /// Creates a token that represents an alias
     pub(crate) fn alias(to: Identifier, from: Identifier) -> Self {
         Self::Alias(Alias { to, from })
@@ -159,6 +174,14 @@ impl Node {
                             n = match sub.kind {
                                 ConditionalKind::ModifyingIf | ConditionalKind::ModifyingUnless => {
                                     sub.then.borrow_mut()
+                                }
+                                _ => sub.cond.borrow_mut(),
+                            }
+                        }
+                        Node::Loop(sub) => {
+                            n = match sub.kind {
+                                LoopKind::ModifyingWhile | LoopKind::ModifyingUntil => {
+                                    sub.body.borrow_mut()
                                 }
                                 _ => sub.cond.borrow_mut(),
                             }

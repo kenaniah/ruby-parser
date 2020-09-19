@@ -21,7 +21,7 @@ pub(crate) fn if_expression(i: Input) -> NodeResult {
                 kind: ConditionalKind::If,
                 cond: Box::new(t.2),
                 then: Box::new(t.3),
-                otherwise: Box::new(t.5.unwrap_or(Node::empty())),
+                otherwise: Box::new(t.5.unwrap_or(Node::None)),
             });
             let mut n = &mut parent_node;
             for node in t.4 {
@@ -62,7 +62,7 @@ pub(crate) fn elsif_clause(i: Input) -> NodeResult {
             kind: ConditionalKind::Elsif,
             cond: Box::new(t.2),
             then: Box::new(t.3),
-            otherwise: Box::new(Node::empty()),
+            otherwise: Box::new(Node::None),
         })
     })(i)
 }
@@ -83,7 +83,7 @@ pub(crate) fn unless_expression(i: Input) -> NodeResult {
                 kind: ConditionalKind::Unless,
                 cond: Box::new(t.2),
                 then: Box::new(t.3),
-                otherwise: Box::new(t.4.unwrap_or(Node::empty())),
+                otherwise: Box::new(t.4.unwrap_or(Node::None)),
             })
         },
     )(i)
@@ -156,7 +156,7 @@ mod tests {
                 ConditionalKind::If,
                 Node::int(1),
                 Node::Block(vec![Node::int(2)]),
-                Node::empty()
+                Node::None
             )
         );
         assert_ok!(
@@ -174,7 +174,7 @@ mod tests {
                 ConditionalKind::If,
                 Node::logical_and(Node::int(1), Node::int(2)),
                 Node::Block(vec![Node::int(3)]),
-                Node::empty()
+                Node::None
             )
         );
         assert_ok!(
@@ -220,7 +220,7 @@ mod tests {
                 ConditionalKind::Unless,
                 Node::int(1),
                 Node::Block(vec![Node::int(2)]),
-                Node::empty()
+                Node::None
             )
         );
         assert_ok!(
