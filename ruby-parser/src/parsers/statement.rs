@@ -276,14 +276,6 @@ mod tests {
             "1 rescue 2",
             Node::rescued_statement(Node::int(1), Node::int(2))
         );
-        // assert_ok!(
-        //     "1 rescue 2 rescue 3",
-        //     Node::rescued_statement(
-        //         Node::rescued_statement(Node::int(1), Node::int(2)),
-        //         Node::int(3)
-        //     )
-        // );
-        //assert_ok!("undef :hi rescue 3 if false");
         assert_ok!(
             "undef :hi if true rescue 3",
             Node::rescued_statement(
