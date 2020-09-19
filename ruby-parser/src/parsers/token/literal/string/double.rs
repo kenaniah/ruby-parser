@@ -171,9 +171,15 @@ pub(crate) fn control_escaped_character(i: Input) -> StringResult {
 /// `#` *global_variable_identifier* | `#` *class_variable_identifier* | `#` *instance_variable_identifier* | `#` `{` *compound_statement* `}`
 pub(crate) fn interpolated_character_sequence(i: Input) -> NodeResult {
     alt((
-        preceded(char('#'), global_variable_identifier),
-        preceded(char('#'), class_variable_identifier),
-        preceded(char('#'), instance_variable_identifier),
+        map(preceded(char('#'), global_variable_identifier), |v| {
+            Node::from(v)
+        }),
+        map(preceded(char('#'), class_variable_identifier), |v| {
+            Node::from(v)
+        }),
+        map(preceded(char('#'), instance_variable_identifier), |v| {
+            Node::from(v)
+        }),
         map(tuple((tag("#{"), compound_statement, char('}'))), |t| t.1),
     ))(i)
 }

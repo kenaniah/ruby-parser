@@ -18,7 +18,7 @@ pub(crate) fn module_path(i: Input) -> NodeResult {
 
 /// *constant_identifier*
 pub(crate) fn module_name(i: Input) -> NodeResult {
-    constant_identifier(i)
+    map(constant_identifier, |v| Node::from(v))(i)
 }
 
 /// `::` *module_name*

@@ -4,11 +4,11 @@ use crate::parsers::token::identifier::*;
 
 /// *pseudo_variable* | *variable*
 pub(crate) fn variable_reference(i: Input) -> NodeResult {
-    alt((pseudo_variable, variable))(i)
+    alt((pseudo_variable, map(variable, |v| Node::from(v))))(i)
 }
 
 /// *constant_identifier* | *global_variable_identifier* | *class_variable_identifier* | *instance_variable_identifier* | *local_variable_identifier*
-pub(crate) fn variable(i: Input) -> NodeResult {
+pub(crate) fn variable(i: Input) -> IdentifierResult {
     alt((
         constant_identifier,
         global_variable_identifier,

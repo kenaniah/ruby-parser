@@ -2,7 +2,7 @@ use crate::lexer::*;
 use crate::parsers::token::keyword::keyword;
 
 /// *local_variable_identifier* | *global_variable_identifier* | *class_variable_identifier* | *instance_variable_identifier* | *constant_identifier* | *method_only_identifier* | *assignment_like_method_identifier*
-pub(crate) fn identifier(i: Input) -> NodeResult {
+pub(crate) fn identifier(i: Input) -> IdentifierResult {
     // Reordered to use the longest production
     alt((
         method_only_identifier,
@@ -16,7 +16,7 @@ pub(crate) fn identifier(i: Input) -> NodeResult {
 }
 
 /// ( *lowercase_character* | `_` ) *identifier_character**
-pub(crate) fn local_variable_identifier(i: Input) -> NodeResult {
+pub(crate) fn local_variable_identifier(i: Input) -> IdentifierResult {
     use crate::nom::InputLength;
     map(
         verify(
@@ -30,48 +30,48 @@ pub(crate) fn local_variable_identifier(i: Input) -> NodeResult {
                 _ => true,
             },
         ),
-        |s| Node::ident(*s, IdentifierKind::LocalVariable),
+        |s| Identifier::new(s.to_string(), IdentifierKind::LocalVariable),
     )(i)
 }
 
 /// `$` *identifier_start_character* *identifier_character**
-pub(crate) fn global_variable_identifier(i: Input) -> NodeResult {
+pub(crate) fn global_variable_identifier(i: Input) -> IdentifierResult {
     map(
         recognize(tuple((
             char('$'),
             identifier_start_character,
             many0(identifier_character),
         ))),
-        |s| Node::ident(*s, IdentifierKind::GlobalVariable),
+        |s| Identifier::new(s.to_string(), IdentifierKind::GlobalVariable),
     )(i)
 }
 
 /// `@@` *identifier_start_character* *identifier_character**
-pub(crate) fn class_variable_identifier(i: Input) -> NodeResult {
+pub(crate) fn class_variable_identifier(i: Input) -> IdentifierResult {
     map(
         recognize(tuple((
             tag("@@"),
             identifier_start_character,
             many0(identifier_character),
         ))),
-        |s| Node::ident(*s, IdentifierKind::ClassVariable),
+        |s| Identifier::new(s.to_string(), IdentifierKind::ClassVariable),
     )(i)
 }
 
 /// `@` *identifier_start_character* *identifier_character**
-pub(crate) fn instance_variable_identifier(i: Input) -> NodeResult {
+pub(crate) fn instance_variable_identifier(i: Input) -> IdentifierResult {
     map(
         recognize(tuple((
             char('@'),
             identifier_start_character,
             many0(identifier_character),
         ))),
-        |s| Node::ident(*s, IdentifierKind::InstanceVariable),
+        |s| Identifier::new(s.to_string(), IdentifierKind::InstanceVariable),
     )(i)
 }
 
 /// *uppercase_character* *identifier_character**
-pub(crate) fn constant_identifier(i: Input) -> NodeResult {
+pub(crate) fn constant_identifier(i: Input) -> IdentifierResult {
     use crate::nom::InputLength;
     map(
         verify(
@@ -82,7 +82,7 @@ pub(crate) fn constant_identifier(i: Input) -> NodeResult {
                 _ => true,
             },
         ),
-        |s| Node::ident(*s, IdentifierKind::Constant),
+        |s| Identifier::new(s.to_string(), IdentifierKind::Constant),
     )(i)
 }
 
@@ -101,24 +101,24 @@ fn lowercase_character(i: Input) -> CharResult {
 }
 
 /// ( *constant_identifier* | *local_variable_identifier* ) ( `!` | `?` )
-pub(crate) fn method_only_identifier(i: Input) -> NodeResult {
+pub(crate) fn method_only_identifier(i: Input) -> IdentifierResult {
     map(
         recognize(tuple((
             alt((constant_identifier, local_variable_identifier)),
             one_of("!?"),
         ))),
-        |s| Node::ident(*s, IdentifierKind::Method),
+        |s| Identifier::new(s.to_string(), IdentifierKind::Method),
     )(i)
 }
 
 /// ( *constant_identifier* | *local_variable_identifier* ) `=`
-pub(crate) fn assignment_like_method_identifier(i: Input) -> NodeResult {
+pub(crate) fn assignment_like_method_identifier(i: Input) -> IdentifierResult {
     map(
         recognize(tuple((
             alt((constant_identifier, local_variable_identifier)),
             char('='),
         ))),
-        |s| Node::ident(*s, IdentifierKind::AssignmentMethod),
+        |s| Identifier::new(s.to_string(), IdentifierKind::AssignmentMethod),
     )(i)
 }
 
@@ -139,6 +139,10 @@ pub(crate) fn identifier_start_character(i: Input) -> CharResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn i(name: &str, kind: IdentifierKind) -> Identifier {
+        Identifier::new(name.to_owned(), kind)
+    }
 
     #[test]
     fn test_identifier_character() {
@@ -201,18 +205,18 @@ mod tests {
         assert_err!("BEGIN");
         assert_err!("END");
         // Success cases
-        assert_ok!("_", Node::ident("_", LocalVariable));
-        assert_ok!("local", Node::ident("local", LocalVariable));
-        assert_ok!("local_Var", Node::ident("local_Var", LocalVariable));
-        assert_ok!("ClassName", Node::ident("ClassName", Constant));
-        assert_ok!("FOO", Node::ident("FOO", Constant));
-        assert_ok!("@_", Node::ident("@_", InstanceVariable));
-        assert_ok!("@@prop", Node::ident("@@prop", ClassVariable));
-        assert_ok!("$_foo", Node::ident("$_foo", GlobalVariable));
-        assert_ok!("is_valid?", Node::ident("is_valid?", Method));
-        assert_ok!("bang!", Node::ident("bang!", Method));
-        assert_ok!("var=", Node::ident("var=", AssignmentMethod));
-        assert_ok!("truely", Node::ident("truely", LocalVariable));
+        assert_ok!("_", i("_", LocalVariable));
+        assert_ok!("local", i("local", LocalVariable));
+        assert_ok!("local_Var", i("local_Var", LocalVariable));
+        assert_ok!("ClassName", i("ClassName", Constant));
+        assert_ok!("FOO", i("FOO", Constant));
+        assert_ok!("@_", i("@_", InstanceVariable));
+        assert_ok!("@@prop", i("@@prop", ClassVariable));
+        assert_ok!("$_foo", i("$_foo", GlobalVariable));
+        assert_ok!("is_valid?", i("is_valid?", Method));
+        assert_ok!("bang!", i("bang!", Method));
+        assert_ok!("var=", i("var=", AssignmentMethod));
+        assert_ok!("truely", i("truely", LocalVariable));
     }
 
     #[test]

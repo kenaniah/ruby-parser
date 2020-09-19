@@ -26,7 +26,7 @@ pub(crate) fn method_definition(i: Input) -> NodeResult {
 }
 
 /// *method_name* | *assignment_like_method_identifier*
-pub(crate) fn defined_method_name(i: Input) -> NodeResult {
+pub(crate) fn defined_method_name(i: Input) -> IdentifierResult {
     alt((method_name, assignment_like_method_identifier))(i)
 }
 
@@ -47,7 +47,7 @@ pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
 }
 
 /// *local_variable_identifier* | *constant_identifier* | *method_only_identifier*
-pub(crate) fn method_identifier(i: Input) -> NodeResult {
+pub(crate) fn method_identifier(i: Input) -> IdentifierResult {
     alt((
         method_only_identifier,
         local_variable_identifier,
@@ -56,13 +56,15 @@ pub(crate) fn method_identifier(i: Input) -> NodeResult {
 }
 
 /// *method_identifier* | *operator_method_name* | *keyword*
-pub(crate) fn method_name(i: Input) -> NodeResult {
+pub(crate) fn method_name(i: Input) -> IdentifierResult {
     alt((
         method_identifier,
         map(operator_method_name, |s| {
-            Node::ident(*s, IdentifierKind::Method)
+            Identifier::new(s.to_string(), IdentifierKind::Method)
         }),
-        map(keyword, |s| Node::ident(*s, IdentifierKind::Method)),
+        map(keyword, |s| {
+            Identifier::new(s.to_string(), IdentifierKind::Method)
+        }),
     ))(i)
 }
 
@@ -117,7 +119,7 @@ pub(crate) fn mandatory_parameter_list(i: Input) -> NodeResult {
 }
 
 /// *local_variable_identifier*
-pub(crate) fn mandatory_parameter(i: Input) -> NodeResult {
+pub(crate) fn mandatory_parameter(i: Input) -> IdentifierResult {
     local_variable_identifier(i)
 }
 
@@ -132,7 +134,7 @@ pub(crate) fn optional_parameter(i: Input) -> NodeResult {
 }
 
 /// *local_variable_identifier*
-pub(crate) fn optional_parameter_name(i: Input) -> NodeResult {
+pub(crate) fn optional_parameter_name(i: Input) -> IdentifierResult {
     local_variable_identifier(i)
 }
 
@@ -147,16 +149,16 @@ pub(crate) fn array_parameter(i: Input) -> NodeResult {
 }
 
 /// *local_variable_identifier*
-pub(crate) fn array_parameter_name(i: Input) -> NodeResult {
+pub(crate) fn array_parameter_name(i: Input) -> IdentifierResult {
     local_variable_identifier(i)
 }
 
 /// `&` *proc_parameter_name*
-pub(crate) fn proc_parameter(i: Input) -> NodeResult {
+pub(crate) fn proc_parameter(i: Input) -> IdentifierResult {
     map(tuple((char('&'), ws, proc_parameter_name)), |t| t.2)(i)
 }
 
 /// *local_variable_identifier*
-pub(crate) fn proc_parameter_name(i: Input) -> NodeResult {
+pub(crate) fn proc_parameter_name(i: Input) -> IdentifierResult {
     local_variable_identifier(i)
 }
