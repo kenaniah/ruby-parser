@@ -30,7 +30,7 @@ pub(crate) fn _statement_modifier(i: Input) -> NodeResult {
             alt((_expression_modifier_statement, _rescue_modifier_statement)),
             opt(_statement_modifier),
         )),
-        |t| Node::Placeholder,
+        |(node, ast)| Node::update_placeholder(node, ast),
     )(i)
 }
 
@@ -81,16 +81,22 @@ pub(crate) fn _expression_modifier_statement(i: Input) -> NodeResult {
             ws,
             expression,
         )),
-        |t| Node::Placeholder,
+        |(_, kind, _, expr)| match *kind {
+            "if" => Node::Conditional(Conditional {
+                kind: ConditionalKind::ModifyingIf,
+                cond: Box::new(expr),
+                then: Box::new(Node::Placeholder),
+                otherwise: Box::new(Node::empty()),
+            }),
+            "unless" => Node::Conditional(Conditional {
+                kind: ConditionalKind::ModifyingUnless,
+                cond: Box::new(expr),
+                then: Box::new(Node::Placeholder),
+                otherwise: Box::new(Node::empty()),
+            }),
+            _ => Node::Placeholder,
+        },
     )(i)
-    // map(tuple((statement, no_lt, tag("if"), ws, expression)), |t| {
-    //     Node::Conditional(Conditional {
-    //         kind: ConditionalKind::ModifyingIf,
-    //         cond: Box::new(t.4),
-    //         then: Box::new(t.0),
-    //         otherwise: Box::new(Node::empty()),
-    //     })
-    // })(i)
 }
 
 /// *statement* [ no ⏎ ] `rescue` *fallback_statement*
@@ -126,7 +132,29 @@ mod tests {
         assert_err!("");
         assert_err!("2 if");
         // Success cases
-        assert_ok!("2 if true");
+        assert_ok!(
+            "2 if true",
+            Node::conditional(
+                ConditionalKind::ModifyingIf,
+                Node::boolean(true),
+                Node::int(2),
+                Node::empty()
+            )
+        );
+        assert_ok!(
+            "2 if true unless false",
+            Node::conditional(
+                ConditionalKind::ModifyingUnless,
+                Node::boolean(false),
+                Node::conditional(
+                    ConditionalKind::ModifyingIf,
+                    Node::boolean(true),
+                    Node::int(2),
+                    Node::empty()
+                ),
+                Node::empty()
+            )
+        );
         //assert_ok!("undef :hi rescue 3 if false");
         assert_ok!("undef :hi if true rescue 3");
         assert_ok!("1 if 2 unless 3 until 4 if 5 or 6");

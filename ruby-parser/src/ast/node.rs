@@ -145,7 +145,14 @@ impl Node {
                 let mut n = &mut parent_node;
                 loop {
                     match n {
-                        Node::Conditional(sub) => n = sub.cond.borrow_mut(),
+                        Node::Conditional(sub) => {
+                            n = match sub.kind {
+                                ConditionalKind::ModifyingIf | ConditionalKind::ModifyingUnless => {
+                                    sub.then.borrow_mut()
+                                }
+                                _ => sub.cond.borrow_mut(),
+                            }
+                        }
                         Node::BinaryOp(sub) => n = sub.lhs.borrow_mut(),
                         Node::LogicalOr(sub) => n = sub.first.borrow_mut(),
                         Node::LogicalAnd(sub) => n = sub.first.borrow_mut(),
