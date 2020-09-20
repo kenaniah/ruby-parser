@@ -23,7 +23,7 @@ fn _equality_expression(i: Input) -> NodeResult {
                 tag("=~"),
                 tag("!~"),
             )),
-            ws,
+            ws0,
             relational_expression,
             opt(_equality_expression),
         )),
@@ -56,7 +56,7 @@ fn _relational_expression(i: Input) -> NodeResult {
         tuple((
             no_lt,
             alt((tag(">="), tag(">"), tag("<="), tag("<"))),
-            ws,
+            ws0,
             bitwise_or_expression,
             opt(_relational_expression),
         )),
@@ -87,7 +87,7 @@ fn _bitwise_or_expression(i: Input) -> NodeResult {
         tuple((
             no_lt,
             one_of("|^"),
-            ws,
+            ws0,
             bitwise_and_expression,
             opt(_bitwise_or_expression),
         )),
@@ -116,7 +116,7 @@ fn _bitwise_and_expression(i: Input) -> NodeResult {
         tuple((
             no_lt,
             char('&'),
-            ws,
+            ws0,
             bitwise_shift_expression,
             opt(_bitwise_and_expression),
         )),
@@ -138,7 +138,7 @@ fn _bitwise_shift_expression(i: Input) -> NodeResult {
         tuple((
             no_lt,
             alt((tag("<<"), tag(">>"))),
-            ws,
+            ws0,
             additive_expression,
             opt(_bitwise_shift_expression),
         )),
@@ -167,7 +167,7 @@ fn _additive_expression(i: Input) -> NodeResult {
         tuple((
             no_lt,
             one_of("+-"),
-            ws,
+            ws0,
             multiplicative_expression,
             opt(_additive_expression),
         )),
@@ -196,7 +196,7 @@ fn _multiplicative_expression(i: Input) -> NodeResult {
         tuple((
             no_lt,
             one_of("*/%"),
-            ws,
+            ws0,
             unary_minus_expression,
             opt(_multiplicative_expression),
         )),
@@ -216,7 +216,7 @@ fn _multiplicative_expression(i: Input) -> NodeResult {
 pub(crate) fn power_expression(i: Input) -> NodeResult {
     let i = stack_frame!("power_expression", i);
     let (i, lhs) = unary_expression(i)?;
-    if let Ok((j, t)) = tuple((no_lt, tag("**"), ws, power_expression))(i.clone()) {
+    if let Ok((j, t)) = tuple((no_lt, tag("**"), ws0, power_expression))(i.clone()) {
         Ok((
             j,
             Node::BinaryOp(BinaryOp {

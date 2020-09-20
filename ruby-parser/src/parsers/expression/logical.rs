@@ -51,14 +51,14 @@ pub(crate) fn keyword_not_expression(i: Input) -> NodeResult {
     let i = stack_frame!("keyword_not_expression", i);
     alt((
         map(
-            tuple((char('!'), ws, method_invocation_without_parenthesis)),
+            tuple((char('!'), ws0, method_invocation_without_parenthesis)),
             |t| {
                 Node::LogicalNot(LogicalNot {
                     expr: Box::new(t.2),
                 })
             },
         ),
-        map(tuple((tag("not"), ws, keyword_not_expression)), |t| {
+        map(tuple((tag("not"), ws0, keyword_not_expression)), |t| {
             Node::LogicalNot(LogicalNot {
                 expr: Box::new(t.2),
             })
@@ -90,7 +90,7 @@ fn _keyword_and_expression(i: Input) -> NodeResult {
         tuple((
             no_lt,
             tag("and"),
-            ws,
+            ws0,
             keyword_not_expression,
             opt(_keyword_and_expression),
         )),
@@ -136,7 +136,7 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
             tuple((
                 no_lt,
                 tag("or"),
-                ws,
+                ws0,
                 keyword_not_expression,
                 opt(_keyword_or_expression),
             )),
@@ -165,7 +165,7 @@ fn _operator_or_expression(i: Input) -> NodeResult {
         tuple((
             no_lt,
             tag("||"),
-            ws,
+            ws0,
             operator_and_expression,
             opt(_operator_or_expression),
         )),
@@ -193,7 +193,7 @@ fn _operator_and_expression(i: Input) -> NodeResult {
         tuple((
             no_lt,
             tag("&&"),
-            ws,
+            ws0,
             equality_expression,
             opt(_operator_and_expression),
         )),

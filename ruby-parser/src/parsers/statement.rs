@@ -44,9 +44,9 @@ pub(crate) fn alias_statement(i: Input) -> NodeResult {
     map(
         tuple((
             tag("alias"),
-            ws,
+            ws0,
             method_name_or_symbol,
-            ws,
+            ws0,
             method_name_or_symbol,
         )),
         |t| Node::Alias(Alias { to: t.2, from: t.4 }),
@@ -55,7 +55,7 @@ pub(crate) fn alias_statement(i: Input) -> NodeResult {
 
 /// `undef` *undef_list*
 pub(crate) fn undef_statement(i: Input) -> NodeResult {
-    map(tuple((tag("undef"), ws, undef_list)), |t| {
+    map(tuple((tag("undef"), ws0, undef_list)), |t| {
         Node::Undef(Undef { list: t.2 })
     })(i)
 }
@@ -66,7 +66,7 @@ pub(crate) fn undef_list(i: Input) -> IdentifierListResult {
         tuple((
             method_name_or_symbol,
             many0(map(
-                tuple((no_lt, char(','), ws, method_name_or_symbol)),
+                tuple((no_lt, char(','), ws0, method_name_or_symbol)),
                 |t| t.3,
             )),
         )),
@@ -89,7 +89,7 @@ pub(crate) fn _expression_modifier_statement(i: Input) -> NodeResult {
         tuple((
             no_lt,
             alt((tag("if"), tag("unless"), tag("while"), tag("until"))),
-            ws,
+            ws0,
             expression,
         )),
         |(_, kind, _, expr)| match *kind {
@@ -124,7 +124,7 @@ pub(crate) fn _expression_modifier_statement(i: Input) -> NodeResult {
 
 /// *statement* [ no ⏎ ] `rescue` *fallback_statement*
 pub(crate) fn _rescue_modifier_statement(i: Input) -> NodeResult {
-    map(tuple((no_lt, tag("rescue"), ws, simple_statement)), |t| {
+    map(tuple((no_lt, tag("rescue"), ws0, simple_statement)), |t| {
         Node::Rescue(Rescue {
             body: Box::new(Node::Placeholder),
             rescue: vec![RescueClause {

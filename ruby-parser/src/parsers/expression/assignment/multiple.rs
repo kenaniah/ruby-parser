@@ -44,7 +44,7 @@ pub(crate) fn multiple_left_hand_side(i: Input) -> NodeResult {
 
 /// `*` *left_hand_side*?
 pub(crate) fn packing_left_hand_side(i: Input) -> NodeResult {
-    map(tuple((char('*'), ws, opt(left_hand_side))), |_| {
+    map(tuple((char('*'), ws0, opt(left_hand_side))), |_| {
         Node::Placeholder
     })(i)
 }
@@ -52,7 +52,7 @@ pub(crate) fn packing_left_hand_side(i: Input) -> NodeResult {
 /// `(` *multiple_left_hand_side* `)`
 pub(crate) fn grouped_left_hand_side(i: Input) -> NodeResult {
     map(
-        tuple((char('('), ws, multiple_left_hand_side, ws, char(')'))),
+        tuple((char('('), ws0, multiple_left_hand_side, ws0, char(')'))),
         |_| Node::Placeholder,
     )(i)
 }
@@ -68,7 +68,7 @@ pub(crate) fn multiple_right_hand_side(i: Input) -> NodeResult {
         map(
             tuple((
                 operator_expression_list,
-                opt(tuple((no_lt, char(','), ws, splatting_right_hand_side))),
+                opt(tuple((no_lt, char(','), ws0, splatting_right_hand_side))),
             )),
             |_| Node::Placeholder,
         ),

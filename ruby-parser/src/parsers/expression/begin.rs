@@ -8,7 +8,7 @@ use crate::parsers::program::compound_statement;
 /// `begin` *body_statement* `end`
 pub(crate) fn begin_expression(i: Input) -> NodeResult {
     map(
-        tuple((tag("begin"), ws, body_statement, ws, tag("end"))),
+        tuple((tag("begin"), ws0, body_statement, ws0, tag("end"))),
         |_| Node::Placeholder,
     )(i)
 }
@@ -34,7 +34,7 @@ pub(crate) fn rescue_clause(i: Input) -> NodeResult {
             no_lt,
             opt(exception_class_list),
             opt(exception_variable_assignment),
-            ws,
+            ws0,
             then_clause,
         )),
         |_| Node::Placeholder,
@@ -48,12 +48,12 @@ pub(crate) fn exception_class_list(i: Input) -> NodeResult {
 
 /// `=>` *left_hand_side*
 pub(crate) fn exception_variable_assignment(i: Input) -> NodeResult {
-    map(tuple((tag("=>"), ws, left_hand_side)), |t| t.2)(i)
+    map(tuple((tag("=>"), ws0, left_hand_side)), |t| t.2)(i)
 }
 
 /// `ensure` *compound_statement*
 pub(crate) fn ensure_clause(i: Input) -> NodeResult {
-    map(tuple((tag("ensure"), ws, compound_statement)), |t| t.2)(i)
+    map(tuple((tag("ensure"), ws0, compound_statement)), |t| t.2)(i)
 }
 
 #[cfg(test)]

@@ -19,7 +19,7 @@ pub(crate) fn brace_block(i: Input) -> NodeResult {
 /// `do` *block_parameter*? *block_body* `end`
 pub(crate) fn do_block(i: Input) -> NodeResult {
     map(
-        tuple((tag("do"), opt(block_parameter), block_body, ws, tag("end"))),
+        tuple((tag("do"), opt(block_parameter), block_body, ws0, tag("end"))),
         |_| Node::Placeholder,
     )(i)
 }

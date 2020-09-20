@@ -8,7 +8,7 @@ pub(crate) fn unary_minus_expression(i: Input) -> NodeResult {
     let i = stack_frame!("unary_minus_expression", i);
     alt((
         power_expression,
-        map(tuple((char('-'), ws, power_expression)), |t| {
+        map(tuple((char('-'), ws0, power_expression)), |t| {
             Node::UnaryOp(UnaryOp {
                 op: Op::from(t.0),
                 rhs: Box::new(t.2),
@@ -21,7 +21,7 @@ pub(crate) fn unary_minus_expression(i: Input) -> NodeResult {
 pub(crate) fn unary_expression(i: Input) -> NodeResult {
     let i = stack_frame!("unary_expression", i);
     alt((
-        map(tuple((one_of("~+!"), ws, unary_expression)), |t| {
+        map(tuple((one_of("~+!"), ws0, unary_expression)), |t| {
             Node::UnaryOp(UnaryOp {
                 op: Op::from(t.0),
                 rhs: Box::new(t.2),

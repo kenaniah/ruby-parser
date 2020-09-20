@@ -13,12 +13,12 @@ pub(crate) fn method_definition(i: Input) -> NodeResult {
     map(
         tuple((
             tag("def"),
-            ws,
+            ws0,
             defined_method_name,
             no_lt,
             method_parameter_part,
             method_body,
-            ws,
+            ws0,
             tag("end"),
         )),
         |_| Node::Placeholder,
@@ -155,7 +155,7 @@ pub(crate) fn array_parameter_name(i: Input) -> IdentifierResult {
 
 /// `&` *proc_parameter_name*
 pub(crate) fn proc_parameter(i: Input) -> IdentifierResult {
-    map(tuple((char('&'), ws, proc_parameter_name)), |t| t.2)(i)
+    map(tuple((char('&'), ws0, proc_parameter_name)), |t| t.2)(i)
 }
 
 /// *local_variable_identifier*

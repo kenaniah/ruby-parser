@@ -6,7 +6,7 @@ use crate::parsers::token::identifier::constant_identifier;
 /// `module` *module_path* *module_body* `end`
 pub(crate) fn module_definition(i: Input) -> NodeResult {
     map(
-        tuple((tag("module"), module_path, module_body, ws, tag("end"))),
+        tuple((tag("module"), module_path, module_body, ws0, tag("end"))),
         |_| Node::Placeholder,
     )(i)
 }

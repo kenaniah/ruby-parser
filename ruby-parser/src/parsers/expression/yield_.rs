@@ -14,14 +14,14 @@ pub(crate) fn yield_with_optional_argument(i: Input) -> NodeResult {
 /// `yield` [ no ⏎ ] [ no ⎵ ] `(` *argument_list `)`
 pub(crate) fn yield_with_parenthesis_and_argument(i: Input) -> NodeResult {
     map(
-        tuple((tag("yield("), ws, argument_list, ws, char(')'))),
+        tuple((tag("yield("), ws0, argument_list, ws0, char(')'))),
         |_| Node::Placeholder,
     )(i)
 }
 
 /// `yield` [ no ⏎ ] [ no ⎵ ] `()`
 pub(crate) fn yield_with_parenthesis_without_argument(i: Input) -> NodeResult {
-    map(tuple((tag("yield("), ws, char(')'))), |_| Node::Placeholder)(i)
+    map(tuple((tag("yield("), ws0, char(')'))), |_| Node::Placeholder)(i)
 }
 
 /// `yield` *argument_without_parenthesis*

@@ -1,4 +1,4 @@
-pub(crate) use crate::parsers::program::{no_lt, ws};
+pub(crate) use crate::parsers::program::{no_lt, ws0, ws1};
 pub(crate) use nom::branch::alt;
 pub(crate) use nom::bytes::complete::tag;
 pub(crate) use nom::character::complete::{anychar, char, none_of, one_of};

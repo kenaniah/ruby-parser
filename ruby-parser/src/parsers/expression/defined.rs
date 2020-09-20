@@ -4,7 +4,7 @@ use crate::parsers::expression::{expression, operator_expression};
 /// `defined?` `(` *expression* `)`
 pub(crate) fn defined_with_parenthesis(i: Input) -> NodeResult {
     map(
-        tuple((tag("defined?"), char('('), ws, expression, ws, char(')'))),
+        tuple((tag("defined?"), char('('), ws0, expression, ws0, char(')'))),
         |t| Node::Defined(Box::new(t.3)),
     )(i)
 }
@@ -15,7 +15,7 @@ pub(crate) fn defined_without_parenthesis(i: Input) -> NodeResult {
         tuple((
             tag("defined?"),
             peek(not(char('('))),
-            ws,
+            ws0,
             operator_expression,
         )),
         |t| Node::Defined(Box::new(t.3)),

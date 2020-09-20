@@ -9,7 +9,7 @@ pub(crate) fn if_expression(i: Input) -> NodeResult {
     map(
         tuple((
             tag("if"),
-            ws,
+            ws0,
             expression,
             then_clause,
             many0(elsif_clause),
@@ -42,9 +42,9 @@ pub(crate) fn if_expression(i: Input) -> NodeResult {
 /// *separator* *compound_statement* | *separator*? `then` *compound_statement*
 pub(crate) fn then_clause(i: Input) -> NodeResult {
     alt((
-        map(tuple((separator, ws, compound_statement, ws)), |t| t.2),
+        map(tuple((separator, ws0, compound_statement, ws0)), |t| t.2),
         map(
-            tuple((opt(separator), ws, tag("then"), ws, compound_statement, ws)),
+            tuple((opt(separator), ws0, tag("then"), ws0, compound_statement, ws0)),
             |t| t.4,
         ),
     ))(i)
@@ -52,12 +52,12 @@ pub(crate) fn then_clause(i: Input) -> NodeResult {
 
 /// `else` *compound_statement*
 pub(crate) fn else_clause(i: Input) -> NodeResult {
-    map(tuple((tag("else"), ws, compound_statement, ws)), |t| t.2)(i)
+    map(tuple((tag("else"), ws0, compound_statement, ws0)), |t| t.2)(i)
 }
 
 /// `elsif` *expression* *then_clause*
 pub(crate) fn elsif_clause(i: Input) -> NodeResult {
-    map(tuple((tag("elsif"), ws, expression, then_clause)), |t| {
+    map(tuple((tag("elsif"), ws0, expression, then_clause)), |t| {
         Node::Conditional(Conditional {
             kind: ConditionalKind::Elsif,
             cond: Box::new(t.2),
@@ -72,7 +72,7 @@ pub(crate) fn unless_expression(i: Input) -> NodeResult {
     map(
         tuple((
             tag("unless"),
-            ws,
+            ws0,
             expression,
             then_clause,
             opt(else_clause),
@@ -119,11 +119,11 @@ fn _conditional_operator_expression(i: Input) -> NodeResult {
         tuple((
             no_lt,
             char('?'),
-            ws,
+            ws0,
             operator_expression,
             no_lt,
             char(':'),
-            ws,
+            ws0,
             operator_expression,
             opt(_conditional_operator_expression),
         )),

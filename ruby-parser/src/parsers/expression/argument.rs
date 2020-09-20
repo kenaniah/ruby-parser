@@ -29,7 +29,7 @@ pub(crate) fn comma(i: Input) -> LexResult {
 
 /// `*` *operator_expression*
 pub(crate) fn splatting_argument(i: Input) -> NodeResult {
-    map(tuple((char('*'), ws, operator_expression)), |t| {
+    map(tuple((char('*'), ws0, operator_expression)), |t| {
         Node::Splat(Box::new(t.2))
     })(i)
 }
@@ -40,7 +40,7 @@ pub(crate) fn operator_expression_list(i: Input) -> NodeListResult {
         tuple((
             operator_expression,
             many0(map(
-                tuple((comma, ws, peek(not(association)), operator_expression)),
+                tuple((comma, ws0, peek(not(association)), operator_expression)),
                 |t| t.3,
             )),
         )),
@@ -54,26 +54,26 @@ pub(crate) fn operator_expression_list(i: Input) -> NodeListResult {
 /// `()` | `(` *argument_list* `)` | `(` *operator_expression_list* [ no ⏎ ] `,` *chained_command_with_do_block* `)` | `(` *chained_command_with_do_block* `)`
 pub(crate) fn argument_with_parenthesis(i: Input) -> NodeListResult {
     alt((
-        map(tuple((char('('), ws, char(')'))), |_| {
+        map(tuple((char('('), ws0, char(')'))), |_| {
             vec![Node::Placeholder]
         }),
-        map(tuple((char('('), ws, argument_list, ws, char(')'))), |_| {
+        map(tuple((char('('), ws0, argument_list, ws0, char(')'))), |_| {
             vec![Node::Placeholder]
         }),
         map(
             tuple((
                 char('('),
-                ws,
+                ws0,
                 operator_expression_list,
                 comma,
                 chained_command_with_do_block,
-                ws,
+                ws0,
                 char(')'),
             )),
             |_| vec![Node::Placeholder],
         ),
         map(
-            tuple((char('('), ws, chained_command_with_do_block, ws, char(')'))),
+            tuple((char('('), ws0, chained_command_with_do_block, ws0, char(')'))),
             |_| vec![Node::Placeholder],
         ),
     ))(i)
@@ -89,7 +89,7 @@ pub(crate) fn argument_list(i: Input) -> NodeListResult {
     alt((
         map(block_argument, |v| vec![v]),
         map(
-            tuple((splatting_argument, opt(tuple((comma, ws, block_argument))))),
+            tuple((splatting_argument, opt(tuple((comma, ws0, block_argument))))),
             |t| {
                 let mut vec = vec![t.0];
                 if let Some((_, _, block)) = t.1 {
@@ -104,10 +104,10 @@ pub(crate) fn argument_list(i: Input) -> NodeListResult {
                 // May need to attempt matching associations before operator expressions
                 operator_expression_list,
                 comma,
-                ws,
+                ws0,
                 association_list,
-                opt(tuple((comma, ws, splatting_argument))),
-                opt(tuple((comma, ws, block_argument))),
+                opt(tuple((comma, ws0, splatting_argument))),
+                opt(tuple((comma, ws0, block_argument))),
             )),
             |t| {
                 let mut vec = t.0;
@@ -127,8 +127,8 @@ pub(crate) fn argument_list(i: Input) -> NodeListResult {
                     operator_expression_list,
                     map(association_list, |v| vec![Node::hash(v)]),
                 )),
-                opt(tuple((comma, ws, splatting_argument))),
-                opt(tuple((comma, ws, block_argument))),
+                opt(tuple((comma, ws0, splatting_argument))),
+                opt(tuple((comma, ws0, block_argument))),
             )),
             |t| {
                 let mut vec = t.0;
@@ -147,7 +147,7 @@ pub(crate) fn argument_list(i: Input) -> NodeListResult {
 
 /// `&` *operator_expression*
 pub(crate) fn block_argument(i: Input) -> NodeResult {
-    map(tuple((char('&'), ws, operator_expression)), |t| {
+    map(tuple((char('&'), ws0, operator_expression)), |t| {
         Node::BlockArg(Box::new(t.2))
     })(i)
 }

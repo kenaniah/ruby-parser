@@ -9,7 +9,7 @@ use crate::parsers::token::literal::symbol::symbol_name;
 /// `[` *indexing_argument_list*? `]`
 pub(crate) fn array_constructor(i: Input) -> NodeResult {
     map(
-        tuple((char('['), ws, opt(indexing_argument_list), ws, char(']'))),
+        tuple((char('['), ws0, opt(indexing_argument_list), ws0, char(']'))),
         |t| Node::Array(t.2.unwrap_or(vec![])),
     )(i)
 }
@@ -19,9 +19,9 @@ pub(crate) fn hash_constructor(i: Input) -> NodeResult {
     map(
         tuple((
             char('{'),
-            ws,
-            opt(map(tuple((association_list, opt(comma), ws)), |t| t.0)),
-            ws,
+            ws0,
+            opt(map(tuple((association_list, opt(comma), ws0)), |t| t.0)),
+            ws0,
             char('}'),
         )),
         |t| Node::Hash(t.2.unwrap_or(vec![])),
@@ -33,7 +33,7 @@ pub(crate) fn association_list(i: Input) -> NodeListResult {
     map(
         tuple((
             association,
-            many0(map(tuple((no_lt, char(','), ws, association)), |t| t.3)),
+            many0(map(tuple((no_lt, char(','), ws0, association)), |t| t.3)),
         )),
         |(mut first, vec)| {
             first.extend(vec.into_iter().flatten().collect::<Vec<Node>>());
@@ -46,20 +46,20 @@ pub(crate) fn association_list(i: Input) -> NodeListResult {
 pub(crate) fn association(i: Input) -> NodeListResult {
     alt((
         map(
-            tuple((association_key, no_lt, tag("=>"), ws, association_value)),
+            tuple((association_key, no_lt, tag("=>"), ws0, association_value)),
             |t| vec![t.0, t.4],
         ),
         map(
             tuple((
                 alt((map(symbol_name, |s| (*s).to_owned()), single_quoted_string)),
                 char(':'),
-                ws,
+                ws0,
                 association_value,
             )),
             |t| vec![Node::Literal(Literal::Symbol(t.0)), t.3],
         ),
         map(
-            tuple((double_quoted_string, char(':'), ws, association_value)),
+            tuple((double_quoted_string, char(':'), ws0, association_value)),
             |t| {
                 vec![
                     match t.0 {
@@ -89,7 +89,7 @@ pub(crate) fn association_value(i: Input) -> NodeResult {
 pub(crate) fn range_constructor(i: Input) -> NodeResult {
     let i = stack_frame!("range_constructor", i);
     let (i, lhs) = operator_or_expression(i)?;
-    if let Ok((j, t)) = tuple((no_lt, range_operator, ws, operator_or_expression))(i.clone()) {
+    if let Ok((j, t)) = tuple((no_lt, range_operator, ws0, operator_or_expression))(i.clone()) {
         Ok((
             j,
             Node::Ranged(Ranged {
