@@ -4,19 +4,18 @@ use crate::ast::{
 use crate::lexer::*;
 use crate::parsers::expression::assignment::assignment_statement;
 use crate::parsers::expression::expression;
-use crate::parsers::expression::logical::keyword_and_expression;
-use crate::parsers::expression::logical::keyword_or_expression;
 use crate::parsers::expression::method::defined_method_name;
 
-/// *expression_statement* | *alias_statement* | *undef_statement* | *expression_modifier_statement* | *rescue_modifier_statement* | *assignment_statement*
+/// *simple_statement* | *expression_modifier_statement* | *rescue_modifier_statement*
 pub(crate) fn statement(i: Input) -> NodeResult {
     map(
-        tuple((_simple_statement, opt(_statement_modifier))),
+        tuple((simple_statement, opt(_statement_modifier))),
         |(node, ast)| Node::update_placeholder(node, ast),
     )(i)
 }
 
-pub(crate) fn _simple_statement(i: Input) -> NodeResult {
+/// *expression_statement* | *alias_statement* | *undef_statement* | *assignment_statement*
+pub(crate) fn simple_statement(i: Input) -> NodeResult {
     alt((
         expression_statement,
         alias_statement,
@@ -125,7 +124,7 @@ pub(crate) fn _expression_modifier_statement(i: Input) -> NodeResult {
 
 /// *statement* [ no ⏎ ] `rescue` *fallback_statement*
 pub(crate) fn _rescue_modifier_statement(i: Input) -> NodeResult {
-    map(tuple((no_lt, tag("rescue"), ws, fallback_statement)), |t| {
+    map(tuple((no_lt, tag("rescue"), ws, simple_statement)), |t| {
         Node::Rescue(Rescue {
             body: Box::new(Node::Placeholder),
             rescue: vec![RescueClause {
@@ -136,21 +135,6 @@ pub(crate) fn _rescue_modifier_statement(i: Input) -> NodeResult {
             otherwise: Box::new(Node::None),
         })
     })(i)
-}
-
-/// *statement* **but not** *fallback_not_allowed*
-pub(crate) fn fallback_statement(i: Input) -> NodeResult {
-    //let (i, _) = peek(not(fallback_not_allowed))(i)?;
-    _simple_statement(i)
-}
-
-/// *keyword_and_expression* | *keyword_or_expression* | *if_modifier_statement* | *unless_modifier_statement* | *while_modifier_statement* | *until_modifier_statement* | *rescue_modifier_statement*
-pub(crate) fn fallback_not_allowed(i: Input) -> LexResult {
-    alt((
-        recognize(keyword_and_expression),
-        recognize(keyword_or_expression),
-        recognize(tuple((_simple_statement, _statement_modifier))),
-    ))(i)
 }
 
 #[cfg(test)]
