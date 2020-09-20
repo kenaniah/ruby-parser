@@ -159,29 +159,6 @@ mod tests {
         assert_err!("\r\n");
     }
 
-    #[test]
-    fn should_pass_instead() {
-        use_parser!(program);
-        assert_err!(
-            "1 rescue 2 rescue 3" // Node::rescued_statement(
-                                  //     Node::rescued_statement(Node::int(1), Node::int(2)),
-                                  //     Node::int(3)
-                                  // )
-        );
-        assert_err!("1 rescue 2 or 3");
-        assert_err!(
-            "undef :hi rescue 3 if false" // Node::conditional(
-                                          //     ConditionalKind::ModifyingIf,
-                                          //     Node::boolean(false),
-                                          //     Node::undef(vec![Identifier {
-                                          //         name: "hi".to_owned(),
-                                          //         kind: IdentifierKind::LocalVariable
-                                          //     }]),
-                                          //     Node::None
-                                          // )
-        );
-    }
-
     // #[test]
     // fn test_end_of_program_marker() {
     //     use_parser!(end_of_program_marker);

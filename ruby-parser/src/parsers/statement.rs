@@ -140,8 +140,8 @@ pub(crate) fn _rescue_modifier_statement(i: Input) -> NodeResult {
 
 /// *statement* **but not** *fallback_not_allowed*
 pub(crate) fn fallback_statement(i: Input) -> NodeResult {
-    let (i, _) = peek(not(fallback_not_allowed))(i)?;
-    statement(i)
+    //let (i, _) = peek(not(fallback_not_allowed))(i)?;
+    _simple_statement(i)
 }
 
 /// *keyword_and_expression* | *keyword_or_expression* | *if_modifier_statement* | *unless_modifier_statement* | *while_modifier_statement* | *until_modifier_statement* | *rescue_modifier_statement*
@@ -277,6 +277,17 @@ mod tests {
             Node::rescued_statement(Node::int(1), Node::int(2))
         );
         assert_ok!(
+            "1 rescue 2 rescue 3",
+            Node::rescued_statement(
+                Node::rescued_statement(Node::int(1), Node::int(2)),
+                Node::int(3)
+            )
+        );
+        assert_ok!(
+            "1 rescue 2 or 3",
+            Node::rescued_statement(Node::int(1), Node::logical_or(Node::int(2), Node::int(3)))
+        );
+        assert_ok!(
             "undef :hi if true rescue 3",
             Node::rescued_statement(
                 Node::conditional(
@@ -289,6 +300,21 @@ mod tests {
                     Node::None
                 ),
                 Node::int(3)
+            )
+        );
+        assert_ok!(
+            "undef :hi rescue 3 if false",
+            Node::conditional(
+                ConditionalKind::ModifyingIf,
+                Node::boolean(false),
+                Node::rescued_statement(
+                    Node::undef(vec![Identifier {
+                        name: "hi".to_owned(),
+                        kind: IdentifierKind::LocalVariable
+                    }]),
+                    Node::int(3)
+                ),
+                Node::None
             )
         );
         assert_ok!(
