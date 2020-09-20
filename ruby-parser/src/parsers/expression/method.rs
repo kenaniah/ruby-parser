@@ -18,7 +18,6 @@ pub(crate) fn method_definition(i: Input) -> NodeResult {
             no_lt,
             method_parameter_part,
             method_body,
-            ws0,
             tag("end"),
         )),
         |_| Node::Placeholder,

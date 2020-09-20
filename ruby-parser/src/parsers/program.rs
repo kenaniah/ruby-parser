@@ -11,8 +11,8 @@ pub fn program(i: Input) -> NodeResult {
 
 /// *statement_list*? *separator_list*?
 pub(crate) fn compound_statement(i: Input) -> NodeResult {
-    map(terminated(opt(statement_list), opt(separator_list)), |cs| {
-        cs.unwrap_or(Node::Block(vec![]))
+    map(tuple((ws0, opt(statement_list), opt(separator_list), ws0)), |t| {
+        t.1.unwrap_or(Node::Block(vec![]))
     })(i)
 }
 

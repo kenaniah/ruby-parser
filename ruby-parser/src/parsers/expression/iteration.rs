@@ -8,7 +8,7 @@ use crate::parsers::program::separator;
 /// `while` *expression* *do_clause* `end`
 pub(crate) fn while_expression(i: Input) -> NodeResult {
     map(
-        tuple((tag("while"), expression, do_clause, tag("end"))),
+        tuple((tag("while"), ws0, expression, ws0, do_clause, tag("end"))),
         |_| Node::Placeholder,
     )(i)
 }
@@ -38,10 +38,13 @@ pub(crate) fn for_expression(i: Input) -> NodeResult {
     map(
         tuple((
             tag("for"),
+            ws0,
             for_variable,
             no_lt,
             tag("in"),
+            ws0,
             expression,
+            ws0,
             do_clause,
             tag("end"),
         )),

@@ -42,17 +42,17 @@ pub(crate) fn if_expression(i: Input) -> NodeResult {
 /// *separator* *compound_statement* | *separator*? `then` *compound_statement*
 pub(crate) fn then_clause(i: Input) -> NodeResult {
     alt((
-        map(tuple((separator, ws0, compound_statement, ws0)), |t| t.2),
+        map(tuple((separator, compound_statement)), |t| t.1),
         map(
-            tuple((opt(separator), ws0, tag("then"), ws0, compound_statement, ws0)),
-            |t| t.4,
+            tuple((opt(separator), ws0, tag("then"), compound_statement)),
+            |t| t.3,
         ),
     ))(i)
 }
 
 /// `else` *compound_statement*
 pub(crate) fn else_clause(i: Input) -> NodeResult {
-    map(tuple((tag("else"), ws0, compound_statement, ws0)), |t| t.2)(i)
+    map(tuple((tag("else"), compound_statement)), |t| t.1)(i)
 }
 
 /// `elsif` *expression* *then_clause*

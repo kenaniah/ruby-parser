@@ -7,11 +7,11 @@ pub(crate) fn class_definition(i: Input) -> NodeResult {
     map(
         tuple((
             tag("class"),
+            ws0,
             module_path,
             no_lt,
             opt(tuple((char('<'), ws0, superclass))),
             module_body,
-            ws0,
             tag("end"),
         )),
         |_| Node::Placeholder,
