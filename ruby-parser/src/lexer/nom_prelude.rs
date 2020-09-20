@@ -9,6 +9,13 @@ use crate::lexer::{Input, LexResult};
 use crate::parsers::token::identifier::identifier_character;
 use nom::bytes::complete::tag as nom_tag;
 
+/// Recognizes a pattern
+///
+/// The input data will be compared to the tag combinator's argument and will return the part of the input that matches the argument. Tags that start with an identifying character must not be followed by an identifying character in order for a match to be successful.
+///
+/// It will return `Err(Err::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern
+///
+/// See documentation for `nom::bytes::complete::tag` for more info.
 pub fn tag(tag: &str) -> impl Fn(Input) -> LexResult + '_
 where {
     move |i: Input| {
