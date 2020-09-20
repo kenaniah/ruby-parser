@@ -149,7 +149,9 @@ mod tests {
         // Parse errors
         assert_err!("if");
         assert_err!("if 1 end");
+        assert_err!("iffoo; 1end");
         // Success cases
+        assert_ok!("if@foo; 1end");
         assert_ok!(
             "if 1; 2 end",
             Node::conditional(
