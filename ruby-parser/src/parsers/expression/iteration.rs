@@ -107,4 +107,22 @@ mod tests {
             )
         );
     }
+
+    #[test]
+    fn test_until_expression() {
+        use_parser!(until_expression);
+        // Parse errors
+        assert_err!("until 1\ndo 2 end");
+        assert_err!("until 1do2; 3end");
+        // Success cases
+        assert_ok!(
+            "until 1; 2; 3; end",
+            Node::loop_(
+                LoopKind::Until,
+                Node::int(1),
+                Node::Block(vec![Node::int(2), Node::int(3)]),
+                vec![]
+            )
+        );
+    }
 }
