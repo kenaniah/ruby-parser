@@ -11,9 +11,10 @@ pub fn program(i: Input) -> NodeResult {
 
 /// *statement_list*? *separator_list*?
 pub(crate) fn compound_statement(i: Input) -> NodeResult {
-    map(tuple((ws0, opt(statement_list), opt(separator_list), ws0)), |t| {
-        t.1.unwrap_or(Node::Block(vec![]))
-    })(i)
+    map(
+        tuple((ws0, opt(statement_list), opt(separator_list), ws0)),
+        |t| t.1.unwrap_or(Node::Block(vec![])),
+    )(i)
 }
 
 /// *statement* ( *separator_list* *statement* )*
@@ -77,15 +78,6 @@ pub(crate) fn end_of_program_marker(i: Input) -> NodeResult {
 /// ( *whitespace* | *line_terminator* | *comment* )*
 pub(crate) fn ws0(i: Input) -> LexResult {
     recognize(many0(alt((
-        whitespace,
-        line_terminator,
-        recognize(comment),
-    ))))(i)
-}
-
-/// ( *whitespace* | *line_terminator* | *comment* )+
-pub(crate) fn ws1(i: Input) -> LexResult {
-    recognize(many1(alt((
         whitespace,
         line_terminator,
         recognize(comment),
