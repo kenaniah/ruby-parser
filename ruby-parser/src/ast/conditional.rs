@@ -21,6 +21,12 @@ pub enum ConditionalKind {
 #[derive(Debug, PartialEq)]
 pub struct Case {
     pub expr: Box<Node>,
-    pub when: Vec<Node>,
+    pub when: Vec<WhenClause>,
     pub otherwise: Box<Node>,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct WhenClause {
+    pub cond: Vec<Node>,
+    pub then: Box<Node>,
 }

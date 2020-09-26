@@ -1,4 +1,4 @@
-use crate::ast::{Case, Conditional, ConditionalKind};
+use crate::ast::{Case, Conditional, ConditionalKind, WhenClause};
 use crate::lexer::*;
 use crate::parsers::expression::argument::comma;
 use crate::parsers::expression::argument::operator_expression_list;
@@ -116,11 +116,13 @@ pub(crate) fn case_expression(i: Input) -> NodeResult {
 }
 
 /// `when` *when_argument* *then_clause*
-pub(crate) fn when_clause(i: Input) -> NodeResult {
-    map(
-        tuple((tag("when"), ws0, when_argument, then_clause)),
-        |_| Node::Placeholder,
-    )(i)
+pub(crate) fn when_clause(i: Input) -> WhenClauseResult {
+    map(tuple((tag("when"), ws0, when_argument, then_clause)), |t| {
+        WhenClause {
+            cond: t.2,
+            then: Box::new(t.3),
+        }
+    })(i)
 }
 
 /// *operator_expression_list* ( [ no ⏎ ] `,`  *splatting_argument* )? | *splatting_argument*
