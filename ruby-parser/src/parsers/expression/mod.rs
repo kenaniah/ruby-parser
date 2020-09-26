@@ -39,7 +39,7 @@ pub(crate) fn primary_expression(i: Input) -> NodeResult {
         //yield_with_optional_argument,
         conditional::if_expression,
         conditional::unless_expression,
-        //case_expression,
+        conditional::case_expression,
         iteration::while_expression,
         iteration::until_expression,
         //for_expression,
