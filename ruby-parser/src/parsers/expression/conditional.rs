@@ -1,4 +1,4 @@
-use crate::ast::{Case, Conditional, ConditionalKind, WhenClause};
+use crate::ast::{BinaryOpKind, Case, Conditional, ConditionalKind, WhenClause};
 use crate::lexer::*;
 use crate::parsers::expression::argument::comma;
 use crate::parsers::expression::argument::operator_expression_list;
@@ -100,6 +100,7 @@ pub(crate) fn case_expression(i: Input) -> NodeResult {
             tag("case"),
             ws0,
             opt(expression),
+            ws0,
             opt(separator_list),
             many1(when_clause),
             opt(else_clause),
@@ -108,8 +109,8 @@ pub(crate) fn case_expression(i: Input) -> NodeResult {
         |t| {
             Node::Case(Case {
                 expr: Box::new(t.2.unwrap_or(Node::None)),
-                when: t.4,
-                otherwise: Box::new(t.5.unwrap_or(Node::None)),
+                when: t.5,
+                otherwise: Box::new(t.6.unwrap_or(Node::None)),
             })
         },
     )(i)
@@ -119,7 +120,7 @@ pub(crate) fn case_expression(i: Input) -> NodeResult {
 pub(crate) fn when_clause(i: Input) -> WhenClauseResult {
     map(tuple((tag("when"), ws0, when_argument, then_clause)), |t| {
         WhenClause {
-            cond: t.2,
+            when: t.2,
             then: Box::new(t.3),
         }
     })(i)
@@ -182,6 +183,50 @@ fn _conditional_operator_expression(i: Input) -> NodeResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_case_expression() {
+        use_parser!(case_expression);
+        // Parse errors
+        assert_err!("case 1 end");
+        assert_err!("case 1 then end");
+        // Success cases
+        assert_ok!(
+            "case when 1, 2 + 3 \n 4 end",
+            Node::case(
+                Node::None,
+                vec![WhenClause {
+                    when: vec![
+                        Node::int(1),
+                        Node::binary_op(Node::int(2), BinaryOpKind::Add, Node::int(3))
+                    ],
+                    then: Box::new(Node::Block(vec![Node::int(4)]))
+                }],
+                Node::None
+            )
+        );
+        assert_ok!(
+            "case 1 when 2 then 3;when 4, 5 \n 6 when 7 then 8 else 9 end",
+            Node::case(
+                Node::int(1),
+                vec![
+                    WhenClause {
+                        when: vec![Node::int(2),],
+                        then: Box::new(Node::Block(vec![Node::int(3)]))
+                    },
+                    WhenClause {
+                        when: vec![Node::int(4), Node::int(5)],
+                        then: Box::new(Node::Block(vec![Node::int(6)]))
+                    },
+                    WhenClause {
+                        when: vec![Node::int(7),],
+                        then: Box::new(Node::Block(vec![Node::int(8)]))
+                    }
+                ],
+                Node::Block(vec![Node::int(9)])
+            )
+        );
+    }
 
     #[test]
     fn test_if_expression() {

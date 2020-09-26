@@ -21,7 +21,9 @@ pub(crate) fn yield_with_parenthesis_and_argument(i: Input) -> NodeResult {
 
 /// `yield` [ no ⏎ ] [ no ⎵ ] `()`
 pub(crate) fn yield_with_parenthesis_without_argument(i: Input) -> NodeResult {
-    map(tuple((tag("yield("), ws0, char(')'))), |_| Node::Placeholder)(i)
+    map(tuple((tag("yield("), ws0, char(')'))), |_| {
+        Node::Placeholder
+    })(i)
 }
 
 /// `yield` *argument_without_parenthesis*

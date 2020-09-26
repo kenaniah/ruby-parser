@@ -27,6 +27,6 @@ pub struct Case {
 
 #[derive(Debug, PartialEq)]
 pub struct WhenClause {
-    pub cond: Vec<Node>,
+    pub when: Vec<Node>,
     pub then: Box<Node>,
 }

@@ -7,10 +7,9 @@ use crate::parsers::program::compound_statement;
 
 /// `begin` *body_statement* `end`
 pub(crate) fn begin_expression(i: Input) -> NodeResult {
-    map(
-        tuple((tag("begin"), body_statement, tag("end"))),
-        |_| Node::Placeholder,
-    )(i)
+    map(tuple((tag("begin"), body_statement, tag("end"))), |_| {
+        Node::Placeholder
+    })(i)
 }
 
 /// *compound_statement* *rescue_clause** *else_clause*? *ensure_clause*?

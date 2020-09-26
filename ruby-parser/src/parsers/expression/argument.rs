@@ -57,9 +57,10 @@ pub(crate) fn argument_with_parenthesis(i: Input) -> NodeListResult {
         map(tuple((char('('), ws0, char(')'))), |_| {
             vec![Node::Placeholder]
         }),
-        map(tuple((char('('), ws0, argument_list, ws0, char(')'))), |_| {
-            vec![Node::Placeholder]
-        }),
+        map(
+            tuple((char('('), ws0, argument_list, ws0, char(')'))),
+            |_| vec![Node::Placeholder],
+        ),
         map(
             tuple((
                 char('('),
@@ -73,7 +74,13 @@ pub(crate) fn argument_with_parenthesis(i: Input) -> NodeListResult {
             |_| vec![Node::Placeholder],
         ),
         map(
-            tuple((char('('), ws0, chained_command_with_do_block, ws0, char(')'))),
+            tuple((
+                char('('),
+                ws0,
+                chained_command_with_do_block,
+                ws0,
+                char(')'),
+            )),
             |_| vec![Node::Placeholder],
         ),
     ))(i)
