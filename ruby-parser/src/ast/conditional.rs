@@ -17,3 +17,10 @@ pub enum ConditionalKind {
     ModifyingIf,
     ModifyingUnless,
 }
+
+#[derive(Debug, PartialEq)]
+pub struct Case {
+    pub expr: Box<Node>,
+    pub when: Vec<Node>,
+    pub otherwise: Box<Node>,
+}

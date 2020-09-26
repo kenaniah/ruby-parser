@@ -1,4 +1,4 @@
-use crate::ast::{Conditional, ConditionalKind};
+use crate::ast::{Case, Conditional, ConditionalKind};
 use crate::lexer::*;
 use crate::parsers::expression::argument::comma;
 use crate::parsers::expression::argument::operator_expression_list;
@@ -105,7 +105,13 @@ pub(crate) fn case_expression(i: Input) -> NodeResult {
             opt(else_clause),
             tag("end"),
         )),
-        |_| Node::Placeholder,
+        |t| {
+            Node::Case(Case {
+                expr: Box::new(t.2.unwrap_or(Node::None)),
+                when: t.4,
+                otherwise: Box::new(t.5.unwrap_or(Node::None)),
+            })
+        },
     )(i)
 }
 
@@ -140,7 +146,7 @@ pub(crate) fn when_argument(i: Input) -> NodeListResult {
 pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
     let i = stack_frame!("conditional_operator_expression", i);
     map(
-        tuple((range_constructor, opt(_conditional_operator_expression))), // BUG: range constructor is currently too greedy
+        tuple((range_constructor, opt(_conditional_operator_expression))),
         |(node, ast)| Node::update_placeholder(node, ast),
     )(i)
 }

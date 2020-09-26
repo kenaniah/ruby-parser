@@ -26,6 +26,7 @@ pub enum Node {
     Undef(Undef),
     Loop(Loop),
     Rescue(Rescue),
+    Case(Case),
     Nil,
     Self_,
     EndOfProgram,
