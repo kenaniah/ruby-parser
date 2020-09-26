@@ -1,6 +1,10 @@
 use crate::ast::{Conditional, ConditionalKind};
 use crate::lexer::*;
+use crate::parsers::expression::argument::comma;
+use crate::parsers::expression::argument::operator_expression_list;
+use crate::parsers::expression::argument::splatting_argument;
 use crate::parsers::expression::{expression, operator_expression, range_constructor};
+use crate::parsers::program::separator_list;
 use crate::parsers::program::{compound_statement, separator};
 use std::mem;
 
@@ -91,17 +95,45 @@ pub(crate) fn unless_expression(i: Input) -> NodeResult {
 
 /// `case` *expression*? *separator_list*? *when_clause*+ *else_clause*? end
 pub(crate) fn case_expression(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((
+            tag("case"),
+            ws0,
+            opt(expression),
+            opt(separator_list),
+            many1(when_clause),
+            opt(else_clause),
+            tag("end"),
+        )),
+        |_| Node::Placeholder,
+    )(i)
 }
 
 /// `when` *when_argument* *then_clause*
 pub(crate) fn when_clause(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((tag("when"), ws0, when_argument, then_clause)),
+        |_| Node::Placeholder,
+    )(i)
 }
 
 /// *operator_expression_list* ( [ no ⏎ ] `,`  *splatting_argument* )? | *splatting_argument*
-pub(crate) fn when_argument(i: Input) -> NodeResult {
-    stub(i)
+pub(crate) fn when_argument(i: Input) -> NodeListResult {
+    alt((
+        map(
+            tuple((
+                operator_expression_list,
+                opt(preceded(comma, splatting_argument)),
+            )),
+            |(mut vec, splat)| {
+                if let Some(v) = splat {
+                    vec.push(v)
+                };
+                vec
+            },
+        ),
+        map(splatting_argument, |v| vec![v]),
+    ))(i)
 }
 
 /// *range_constructor* | *range_constructor* [ no ⏎ ] `?` *operator_expression* [ no ⏎ ] `:` *operator_expression*
