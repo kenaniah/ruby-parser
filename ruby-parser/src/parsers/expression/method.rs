@@ -1,6 +1,10 @@
 use crate::lexer::*;
+use crate::parsers::expression::argument::argument_with_parenthesis;
 use crate::parsers::expression::begin::body_statement;
+use crate::parsers::expression::block::block;
 use crate::parsers::expression::operator_expression;
+use crate::parsers::expression::_primary_expression;
+use crate::parsers::expression::super_::super_with_optional_argument;
 use crate::parsers::token::identifier::{
     assignment_like_method_identifier, constant_identifier, local_variable_identifier,
     method_only_identifier,
@@ -34,15 +38,45 @@ pub(crate) fn method_body(i: Input) -> NodeResult {
     body_statement(i)
 }
 
-/// *super_with_optional_argument* | *indexing_method_invocation* | *method_only_identifier* | *method_identifier* *block* | *method_identifier* [ no ⏎ ] [ no ⎵ ] *argument_with_parentheses* *block*? | *primary_expression* [ no ⏎ ] `.` *method_name* ( [ no ⏎ ] [ no ⎵ ] *argument_with_parentheses* )? *block*? | *primary_expression* [ no ⏎ ] `::` *method_name* [ no ⏎ ] [ no ⎵ ] *argument_with_parentheses* *block*? | *primary_expression* [ no ⏎ ] `::` *method_name_except_constant* *block*?
+/// *primary_expression* [ no ⏎ ] `.` *method_name* ( [ no ⏎ ] [ no ⎵ ] *argument_with_parenthesis* )? *block*? | *primary_expression* [ no ⏎ ] `::` *method_name* [ no ⏎ ] [ no ⎵ ] *argument_with_parenthesis* *block*? | *primary_expression* [ no ⏎ ] `::` *method_name_except_constant* *block*?
 pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
-    // map(
-    //     tuple((
-    //
-    //     )),
-    //     |_| Node::Placeholder
-    // )(i)
-    stub(i)
+    alt((
+        map(
+            tuple((
+                _primary_expression,
+                no_lt,
+                char('.'),
+                ws0,
+                method_name,
+                opt(argument_with_parenthesis),
+                opt(block),
+            )),
+            |_| Node::Placeholder,
+        ),
+        map(
+            tuple((
+                _primary_expression,
+                no_lt,
+                tag("::"),
+                ws0,
+                method_name,
+                argument_with_parenthesis,
+                opt(block),
+            )),
+            |_| Node::Placeholder,
+        ),
+        map(
+            tuple((
+                _primary_expression,
+                no_lt,
+                tag("::"),
+                method_name_except_constant,
+                ws0,
+                opt(block),
+            )),
+            |_| Node::Placeholder,
+        ),
+    ))(i)
 }
 
 /// *local_variable_identifier* | *constant_identifier* | *method_only_identifier*
@@ -92,7 +126,7 @@ pub(crate) fn chained_command_with_do_block(i: Input) -> NodeResult {
     stub(i)
 }
 
-/// ( `.` | `::` ) *method_name* | ( `.` | `::` ) *method_name* [ no ⏎ ] [ no ⎵ ] *argument_with_parentheses*
+/// ( `.` | `::` ) *method_name* | ( `.` | `::` ) *method_name* [ no ⏎ ] [ no ⎵ ] *argument_with_parenthesis*
 pub(crate) fn chained_method_invocation(i: Input) -> NodeResult {
     stub(i)
 }

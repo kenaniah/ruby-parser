@@ -1,7 +1,9 @@
 use crate::lexer::*;
+use crate::parsers::expression::method::method_identifier;
 use crate::parsers::expression::object::association;
 use crate::parsers::expression::object::range_constructor;
 use crate::parsers::program::compound_statement;
+use crate::parsers::token::identifier::method_only_identifier;
 use crate::parsers::token::literal::literal;
 
 pub(crate) mod argument;
@@ -27,9 +29,13 @@ pub(crate) fn expression(i: Input) -> NodeResult {
     logical::keyword_logical_expression(i)
 }
 
-/// *class_definition* | *singleton_class_definition* | *module_definition* | *method_definition* | *singleton_method_definition* | *yield_with_optional_argument* | *if_expression* | *unless_expression* | *case_expression* | *while_expression* | *until_expression* | *for_expression* | *return_without_argument* | *break_without_argument* | *next_without_argument* | *redo_expression* | *retry_expression* | *begin_expression* | *grouping_expression* | *variable_reference* | *scoped_constant_reference* | *array_constructor* | *hash_constructor* | *literal* | *defined_with_parenthesis* | *primary_method_invocation*
+/// *class_definition* | *singleton_class_definition* | *module_definition* | *method_definition* | *singleton_method_definition* | *yield_with_optional_argument* | *if_expression* | *unless_expression* | *case_expression* | *while_expression* | *until_expression* | *for_expression* | *return_without_argument* | *break_without_argument* | *next_without_argument* | *redo_expression* | *retry_expression* | *begin_expression* | *grouping_expression* | *variable_reference* | *scoped_constant_reference* | *array_constructor* | *hash_constructor* | *literal* | *defined_with_parenthesis* | *primary_method_invocation* | *super_with_optional_argument* | *indexing_method_invocation* | *method_only_identifier* | *method_identifier* *block* | *method_identifier* [ no ⏎ ] [ no ⎵ ] *argument_with_parenthesis* *block*?
 pub(crate) fn primary_expression(i: Input) -> NodeResult {
     let i = stack_frame!("primary_expression", i);
+    alt((method::primary_method_invocation, _primary_expression))(i)
+}
+
+pub(crate) fn _primary_expression(i: Input) -> NodeResult {
     alt((
         //class_definition,
         //singleton_class_definition,
@@ -37,17 +43,9 @@ pub(crate) fn primary_expression(i: Input) -> NodeResult {
         //method_definition,
         //singleton_method_definition,
         //yield_with_optional_argument,
-        conditional::if_expression,
-        conditional::unless_expression,
-        conditional::case_expression,
-        iteration::while_expression,
-        iteration::until_expression,
-        //for_expression,
-        jump::return_without_argument,
-        jump::break_without_argument,
-        jump::next_without_argument,
-        jump::redo_expression,
-        jump::retry_expression,
+        _primary_conditional_expression,
+        _primary_iteration_expression,
+        _primary_jump_expression,
         //begin_expression,
         grouping_expression,
         variable::variable_reference,
@@ -56,7 +54,47 @@ pub(crate) fn primary_expression(i: Input) -> NodeResult {
         object::hash_constructor,
         literal,
         defined::defined_with_parenthesis,
-        //primary_method_invocation,
+        //method::primary_method_invocation,
+        super_::super_with_optional_argument,
+        method::indexing_method_invocation,
+        map(method_only_identifier, |_| Node::Placeholder),
+        map(tuple((method_identifier, ws0, block::block)), |_| {
+            Node::Placeholder
+        }),
+        map(
+            tuple((
+                method_identifier,
+                argument::argument_with_parenthesis,
+                opt(block::block),
+            )),
+            |_| Node::Placeholder,
+        ),
+    ))(i)
+}
+
+fn _primary_jump_expression(i: Input) -> NodeResult {
+    alt((
+        jump::return_without_argument,
+        jump::break_without_argument,
+        jump::next_without_argument,
+        jump::redo_expression,
+        jump::retry_expression,
+    ))(i)
+}
+
+fn _primary_conditional_expression(i: Input) -> NodeResult {
+    alt((
+        conditional::if_expression,
+        conditional::unless_expression,
+        conditional::case_expression,
+    ))(i)
+}
+
+fn _primary_iteration_expression(i: Input) -> NodeResult {
+    alt((
+        iteration::while_expression,
+        iteration::until_expression,
+        //for_expression,
     ))(i)
 }
 
