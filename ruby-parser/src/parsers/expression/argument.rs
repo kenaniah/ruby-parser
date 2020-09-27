@@ -88,7 +88,10 @@ pub(crate) fn argument_with_parenthesis(i: Input) -> NodeListResult {
 
 /// **not** `{` [ no ⏎ ] *argument_list*
 pub(crate) fn argument_without_parenthesis(i: Input) -> NodeListResult {
-    map(tuple((not(peek(char('{'))), no_lt, argument_list)), |t| t.2)(i)
+    map(
+        tuple((no_lt, not(peek(char('{'))), no_lt, argument_list)),
+        |t| t.3,
+    )(i)
 }
 
 /// *block_argument* | *splatting_argument* ( [ no ⏎ ] `,` *block_argument* )? | *operator_expression_list* [ no ⏎ ] `,` *association_list* ( [ no ⏎ ] `,` *splatting_argument* )? ( [ no ⏎ ] `,` *block_argument* )? | ( *operator_expression_list* | *association_list* ) ( [ no ⏎ ] `,` *splatting_argument* )? ( [ no ⏎ ] `,` *block_argument* )? | *command*
