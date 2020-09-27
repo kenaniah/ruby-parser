@@ -29,6 +29,11 @@ pub enum Node {
     Case(Case),
     Nil,
     Self_,
+    Redo,
+    Retry,
+    Return(Vec<Self>),
+    Break(Vec<Self>),
+    Next(Vec<Self>),
     EndOfProgram,
     Placeholder,
 }

@@ -43,11 +43,11 @@ pub(crate) fn primary_expression(i: Input) -> NodeResult {
         iteration::while_expression,
         iteration::until_expression,
         //for_expression,
-        //return_without_argument,
-        //break_without_argument,
-        //next_without_argument,
-        //redo_expression,
-        //retry_expression,
+        jump::return_without_argument,
+        jump::break_without_argument,
+        jump::next_without_argument,
+        jump::redo_expression,
+        jump::retry_expression,
         //begin_expression,
         grouping_expression,
         variable::variable_reference,
@@ -94,6 +94,11 @@ mod tests {
         assert_ok!("meh", Node::ident("meh", IdentifierKind::LocalVariable));
         assert_ok!("-23e4", Node::float(-230000.0));
         assert_ok!("'hello world'", Node::literal_string("hello world"));
+        assert_ok!("redo", Node::Redo);
+        assert_ok!("retry", Node::Retry);
+        assert_ok!("return", Node::Return(vec![]));
+        assert_ok!("break", Node::Break(vec![]));
+        assert_ok!("next", Node::Next(vec![]));
         assert_ok!("()", Node::Block(vec![]));
         assert_ok!(
             "((false))",
