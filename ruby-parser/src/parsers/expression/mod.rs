@@ -20,6 +20,7 @@ pub(crate) mod logical;
 pub(crate) mod method;
 pub(crate) mod module;
 pub(crate) mod object;
+pub(crate) mod singleton;
 pub(crate) mod super_;
 pub(crate) mod unary;
 pub(crate) mod variable;
@@ -37,11 +38,8 @@ pub(crate) fn primary_expression(i: Input) -> NodeResult {
 
 pub(crate) fn _primary_expression(i: Input) -> NodeResult {
     alt((
-        //class_definition,
-        //singleton_class_definition,
-        //module_definition,
-        //method_definition,
-        //singleton_method_definition,
+        _primary_literal_expression,
+        _primary_definition_expression,
         //yield_with_optional_argument,
         _primary_conditional_expression,
         _primary_iteration_expression,
@@ -50,11 +48,7 @@ pub(crate) fn _primary_expression(i: Input) -> NodeResult {
         grouping_expression,
         variable::variable_reference,
         //scoped_constant_reference,
-        object::array_constructor,
-        object::hash_constructor,
-        literal,
         defined::defined_with_parenthesis,
-        //method::primary_method_invocation,
         super_::super_with_optional_argument,
         method::indexing_method_invocation,
         map(method_only_identifier, |_| Node::Placeholder),
@@ -69,6 +63,20 @@ pub(crate) fn _primary_expression(i: Input) -> NodeResult {
             )),
             |_| Node::Placeholder,
         ),
+    ))(i)
+}
+
+fn _primary_literal_expression(i: Input) -> NodeResult {
+    alt((object::array_constructor, object::hash_constructor, literal))(i)
+}
+
+fn _primary_definition_expression(i: Input) -> NodeResult {
+    alt((
+        class::class_definition,
+        singleton::singleton_class_definition,
+        singleton::singleton_method_definition,
+        module::module_definition,
+        method::method_definition,
     ))(i)
 }
 
@@ -94,7 +102,7 @@ fn _primary_iteration_expression(i: Input) -> NodeResult {
     alt((
         iteration::while_expression,
         iteration::until_expression,
-        //for_expression,
+        iteration::for_expression,
     ))(i)
 }
 
