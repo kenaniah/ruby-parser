@@ -23,6 +23,7 @@ pub(crate) mod unary;
 pub(crate) mod variable;
 pub(crate) mod yield_;
 
+/// *keyword_logical_expression*
 pub(crate) fn expression(i: Input) -> NodeResult {
     logical::keyword_logical_expression(i)
 }
