@@ -1,5 +1,5 @@
 use crate::lexer::*;
-use crate::parsers::expression::_primary_expression;
+use crate::parsers::expression::simple_primary_expression;
 use crate::parsers::expression::argument::argument_with_parenthesis;
 use crate::parsers::expression::begin::body_statement;
 use crate::parsers::expression::block::block;
@@ -42,7 +42,7 @@ pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
     alt((
         map(
             tuple((
-                _primary_expression,
+                simple_primary_expression,
                 no_lt,
                 char('.'),
                 ws0,
@@ -54,7 +54,7 @@ pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
         ),
         map(
             tuple((
-                _primary_expression,
+                simple_primary_expression,
                 no_lt,
                 tag("::"),
                 ws0,
@@ -66,7 +66,7 @@ pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
         ),
         map(
             tuple((
-                _primary_expression,
+                simple_primary_expression,
                 no_lt,
                 tag("::"),
                 method_name_except_constant,
