@@ -30,44 +30,42 @@ pub(crate) fn expression(i: Input) -> NodeResult {
     logical::keyword_logical_expression(i)
 }
 
-/// *class_definition* | *singleton_class_definition* | *module_definition* | *method_definition* | *singleton_method_definition* | *yield_with_optional_argument* | *if_expression* | *unless_expression* | *case_expression* | *while_expression* | *until_expression* | *for_expression* | *return_without_argument* | *break_without_argument* | *next_without_argument* | *redo_expression* | *retry_expression* | *begin_expression* | *grouping_expression* | *variable_reference* | *scoped_constant_reference* | *array_constructor* | *hash_constructor* | *literal* | *defined_with_parenthesis* | *primary_method_invocation* | *super_with_optional_argument* | *indexing_method_invocation* | *method_only_identifier* | *method_identifier* *block* | *method_identifier* [ no ⏎ ] [ no ⎵ ] *argument_with_parenthesis* *block*?
+/// *class_definition* | *singleton_class_definition* | *module_definition* | *method_definition* | *singleton_method_definition* | *yield_with_optional_argument* | *if_expression* | *unless_expression* | *case_expression* | *while_expression* | *until_expression* | *for_expression* | *return_without_argument* | *break_without_argument* | *next_without_argument* | *redo_expression* | *retry_expression* | *begin_expression* | *grouping_expression* | *variable_reference* | *scoped_constant_reference* | *array_constructor* | *hash_constructor* | *literal* | *defined_with_parenthesis* | *primary_method_invocation* | *super_with_optional_argument* | *indexing_method_invocation*
 pub(crate) fn primary_expression(i: Input) -> NodeResult {
     let i = stack_frame!("primary_expression", i);
-    alt((method::primary_method_invocation, _primary_expression))(i)
+    alt((
+        method::primary_method_invocation,
+        method::indexing_method_invocation,
+        //scoped_constant_reference,
+        _primary_expression,
+    ))(i)
 }
 
 pub(crate) fn _primary_expression(i: Input) -> NodeResult {
     alt((
         _primary_literal_expression,
         _primary_definition_expression,
-        //yield_with_optional_argument,
         _primary_conditional_expression,
         _primary_iteration_expression,
         _primary_jump_expression,
-        //begin_expression,
+        _primary_keyword_expression,
+        begin::begin_expression,
         grouping_expression,
+        _primary_method_call_expression,
         variable::variable_reference,
-        //scoped_constant_reference,
-        defined::defined_with_parenthesis,
-        super_::super_with_optional_argument,
-        method::indexing_method_invocation,
-        map(method_only_identifier, |_| Node::Placeholder),
-        map(tuple((method_identifier, ws0, block::block)), |_| {
-            Node::Placeholder
-        }),
-        map(
-            tuple((
-                method_identifier,
-                argument::argument_with_parenthesis,
-                opt(block::block),
-            )),
-            |_| Node::Placeholder,
-        ),
     ))(i)
 }
 
 fn _primary_literal_expression(i: Input) -> NodeResult {
     alt((object::array_constructor, object::hash_constructor, literal))(i)
+}
+
+fn _primary_keyword_expression(i: Input) -> NodeResult {
+    alt((
+        defined::defined_with_parenthesis,
+        super_::super_with_optional_argument,
+        yield_::yield_with_optional_argument,
+    ))(i)
 }
 
 fn _primary_definition_expression(i: Input) -> NodeResult {
@@ -103,6 +101,14 @@ fn _primary_iteration_expression(i: Input) -> NodeResult {
         iteration::while_expression,
         iteration::until_expression,
         iteration::for_expression,
+    ))(i)
+}
+
+fn _primary_method_call_expression(i: Input) -> NodeResult {
+    alt((
+        method::method_only_invocation,
+        method::method_invocation_with_block,
+        method::method_invocation_with_parenthesis,
     ))(i)
 }
 

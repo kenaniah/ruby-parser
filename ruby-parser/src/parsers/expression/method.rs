@@ -1,10 +1,9 @@
 use crate::lexer::*;
+use crate::parsers::expression::_primary_expression;
 use crate::parsers::expression::argument::argument_with_parenthesis;
 use crate::parsers::expression::begin::body_statement;
 use crate::parsers::expression::block::block;
 use crate::parsers::expression::operator_expression;
-use crate::parsers::expression::_primary_expression;
-use crate::parsers::expression::super_::super_with_optional_argument;
 use crate::parsers::token::identifier::{
     assignment_like_method_identifier, constant_identifier, local_variable_identifier,
     method_only_identifier,
@@ -77,6 +76,26 @@ pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
             |_| Node::Placeholder,
         ),
     ))(i)
+}
+
+/// *method_only_identifier*
+pub(crate) fn method_only_invocation(i: Input) -> NodeResult {
+    map(method_only_identifier, |_| Node::Placeholder)(i)
+}
+
+/// *method_identifier* *block*
+pub(crate) fn method_invocation_with_block(i: Input) -> NodeResult {
+    map(tuple((method_identifier, no_lt, block)), |_| {
+        Node::Placeholder
+    })(i)
+}
+
+/// *method_identifier* [ no ⏎ ] [ no ⎵ ] *argument_with_parenthesis* *block*?
+pub(crate) fn method_invocation_with_parenthesis(i: Input) -> NodeResult {
+    map(
+        tuple((method_identifier, argument_with_parenthesis, opt(block))),
+        |_| Node::Placeholder,
+    )(i)
 }
 
 /// *local_variable_identifier* | *constant_identifier* | *method_only_identifier*
