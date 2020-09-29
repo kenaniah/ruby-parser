@@ -31,11 +31,17 @@ pub(crate) fn expression(i: Input) -> NodeResult {
 /// *primary_method_invocation* | *indexing_method_invocation* | *scoped_constant_reference* | *simple_primary_expression*
 pub(crate) fn primary_expression(i: Input) -> NodeResult {
     let i = stack_frame!("primary_expression", i);
+    map(
+        tuple((simple_primary_expression, opt(_primary_expression))),
+        |(node, ast)| Node::update_placeholder(node, ast),
+    )(i)
+}
+
+pub(crate) fn _primary_expression(i: Input) -> NodeResult {
     alt((
         method::primary_method_invocation,
         method::indexing_method_invocation,
-        //scoped_constant_reference,
-        simple_primary_expression,
+        //scoped_constant_reference
     ))(i)
 }
 
@@ -158,6 +164,8 @@ mod tests {
         assert_ok!("break", Node::Break(vec![]));
         assert_ok!("next", Node::Next(vec![]));
         assert_ok!("()", Node::Block(vec![]));
+        assert_ok!("foo.bar.baz");
+        assert_ok!("foo[1][2].bar().baz[3]");
         assert_ok!(
             "((false))",
             Node::Block(vec![Node::Block(vec![Node::boolean(false)])])

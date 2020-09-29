@@ -1,9 +1,11 @@
 use crate::lexer::*;
-use crate::parsers::expression::simple_primary_expression;
+use crate::parsers::expression::_primary_expression;
 use crate::parsers::expression::argument::argument_with_parenthesis;
+use crate::parsers::expression::argument::indexing_argument_list;
 use crate::parsers::expression::begin::body_statement;
 use crate::parsers::expression::block::block;
 use crate::parsers::expression::operator_expression;
+use crate::parsers::expression::simple_primary_expression;
 use crate::parsers::token::identifier::{
     assignment_like_method_identifier, constant_identifier, local_variable_identifier,
     method_only_identifier,
@@ -42,36 +44,35 @@ pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
     alt((
         map(
             tuple((
-                simple_primary_expression,
                 no_lt,
                 char('.'),
                 ws0,
                 method_name,
                 opt(argument_with_parenthesis),
                 opt(block),
+                opt(_primary_expression),
             )),
             |_| Node::Placeholder,
         ),
         map(
             tuple((
-                simple_primary_expression,
                 no_lt,
                 tag("::"),
                 ws0,
                 method_name,
                 argument_with_parenthesis,
-                opt(block),
+                opt(_primary_expression),
             )),
             |_| Node::Placeholder,
         ),
         map(
             tuple((
-                simple_primary_expression,
                 no_lt,
                 tag("::"),
                 method_name_except_constant,
                 ws0,
                 opt(block),
+                opt(_primary_expression),
             )),
             |_| Node::Placeholder,
         ),
@@ -122,7 +123,17 @@ pub(crate) fn method_name(i: Input) -> IdentifierResult {
 
 /// *primary_expression* [ no ⏎ ] [ no ⎵ ] `[` *indexing_argument_list*? `]`
 pub(crate) fn indexing_method_invocation(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((
+            char('['),
+            ws0,
+            opt(indexing_argument_list),
+            ws0,
+            char(']'),
+            opt(_primary_expression),
+        )),
+        |_| Node::Placeholder,
+    )(i)
 }
 
 /// *method_name* **but not** *constant_identifier*
