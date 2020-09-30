@@ -195,6 +195,9 @@ impl Node {
     pub(crate) fn undef(list: Vec<Identifier>) -> Self {
         Self::Undef(Undef { list })
     }
+    /// Allows placeholding nodes to be updated when working around left-recursion via LL(k)
+    /// The first item in the tuple represents the intial term
+    /// The second item in the tuple represents the recursive term (or ϵ via None)
     pub(crate) fn decurse(nodes: (Self, Option<Self>)) -> Self {
         if let Some(mut parent_node) = nodes.1 {
             use std::borrow::BorrowMut;
