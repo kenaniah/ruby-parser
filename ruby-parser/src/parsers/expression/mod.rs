@@ -39,8 +39,8 @@ pub(crate) fn primary_expression(i: Input) -> NodeResult {
 
 pub(crate) fn recursing_primary_expression(i: Input) -> NodeResult {
     alt((
-        method::primary_method_invocation,
-        method::indexing_method_invocation,
+        method::_primary_method_invocation,
+        method::_indexing_method_invocation,
         //scoped_constant_reference
     ))(i)
 }

@@ -39,7 +39,7 @@ pub(crate) fn method_body(i: Input) -> NodeResult {
 }
 
 /// *primary_expression* [ no ⏎ ] `.` *method_name* ( [ no ⏎ ] [ no ⎵ ] *argument_with_parenthesis* )? *block*? | *primary_expression* [ no ⏎ ] `::` *method_name* [ no ⏎ ] [ no ⎵ ] *argument_with_parenthesis* *block*? | *primary_expression* [ no ⏎ ] `::` *method_name_except_constant* *block*?
-pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
+pub(crate) fn _primary_method_invocation(i: Input) -> NodeResult {
     alt((
         map(
             tuple((
@@ -121,7 +121,7 @@ pub(crate) fn method_name(i: Input) -> IdentifierResult {
 }
 
 /// *primary_expression* [ no ⏎ ] [ no ⎵ ] `[` *indexing_argument_list*? `]`
-pub(crate) fn indexing_method_invocation(i: Input) -> NodeResult {
+pub(crate) fn _indexing_method_invocation(i: Input) -> NodeResult {
     map(
         tuple((
             char('['),

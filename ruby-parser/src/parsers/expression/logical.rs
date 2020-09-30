@@ -154,19 +154,22 @@ fn recursing_keyword_or_expression(i: Input) -> NodeResult {
 pub(crate) fn operator_or_expression(i: Input) -> NodeResult {
     let i = stack_frame!("operator_or_expression", i);
     map(
-        tuple((operator_and_expression, opt(_operator_or_expression))),
+        tuple((
+            operator_and_expression,
+            opt(recursing_operator_or_expression),
+        )),
         Node::decurse,
     )(i)
 }
 
-fn _operator_or_expression(i: Input) -> NodeResult {
+fn recursing_operator_or_expression(i: Input) -> NodeResult {
     map(
         tuple((
             no_lt,
             tag("||"),
             ws0,
             operator_and_expression,
-            opt(_operator_or_expression),
+            opt(recursing_operator_or_expression),
         )),
         |t| {
             let node = Node::LogicalOr(LogicalOr {
@@ -182,19 +185,19 @@ fn _operator_or_expression(i: Input) -> NodeResult {
 pub(crate) fn operator_and_expression(i: Input) -> NodeResult {
     let i = stack_frame!("operator_and_expression", i);
     map(
-        tuple((equality_expression, opt(_operator_and_expression))),
+        tuple((equality_expression, opt(recursing_operator_and_expression))),
         Node::decurse,
     )(i)
 }
 
-fn _operator_and_expression(i: Input) -> NodeResult {
+fn recursing_operator_and_expression(i: Input) -> NodeResult {
     map(
         tuple((
             no_lt,
             tag("&&"),
             ws0,
             equality_expression,
-            opt(_operator_and_expression),
+            opt(recursing_operator_and_expression),
         )),
         |t| {
             let node = Node::LogicalAnd(LogicalAnd {

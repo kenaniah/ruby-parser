@@ -37,7 +37,7 @@ fn recursing_equality_expression(i: Input) -> NodeResult {
                 "!~" => Op::NotRegexMatch,
                 _ => unreachable!(),
             };
-            _partial_node(op, t.3, t.4)
+            partial_node(op, t.3, t.4)
         },
     )(i)
 }
@@ -68,7 +68,7 @@ fn recursing_relational_expression(i: Input) -> NodeResult {
                 "<" => Op::LessThan,
                 _ => unreachable!(),
             };
-            _partial_node(op, t.3, t.4)
+            partial_node(op, t.3, t.4)
         },
     )(i)
 }
@@ -97,7 +97,7 @@ fn recursing_bitwise_or_expression(i: Input) -> NodeResult {
                 '^' => Op::BitXor,
                 _ => unreachable!(),
             };
-            _partial_node(op, t.3, t.4)
+            partial_node(op, t.3, t.4)
         },
     )(i)
 }
@@ -123,7 +123,7 @@ fn recursing_bitwise_and_expression(i: Input) -> NodeResult {
             bitwise_shift_expression,
             opt(recursing_bitwise_and_expression),
         )),
-        |t| _partial_node(Op::BitAnd, t.3, t.4),
+        |t| partial_node(Op::BitAnd, t.3, t.4),
     )(i)
 }
 
@@ -151,7 +151,7 @@ fn recursing_bitwise_shift_expression(i: Input) -> NodeResult {
                 ">>" => Op::ShiftRight,
                 _ => unreachable!(),
             };
-            _partial_node(op, t.3, t.4)
+            partial_node(op, t.3, t.4)
         },
     )(i)
 }
@@ -183,7 +183,7 @@ fn recursing_additive_expression(i: Input) -> NodeResult {
                 '-' => Op::Subtract,
                 _ => unreachable!(),
             };
-            _partial_node(op, t.3, t.4)
+            partial_node(op, t.3, t.4)
         },
     )(i)
 }
@@ -216,7 +216,7 @@ fn recursing_multiplicative_expression(i: Input) -> NodeResult {
                 '%' => Op::Modulus,
                 _ => unreachable!(),
             };
-            _partial_node(op, t.3, t.4)
+            partial_node(op, t.3, t.4)
         },
     )(i)
 }
@@ -240,7 +240,7 @@ pub(crate) fn power_expression(i: Input) -> NodeResult {
 }
 
 /// Constructs a partial binary op node, using a placeholder for the left hand side
-fn _partial_node(op: Op, rhs: Node, ast: Option<Node>) -> Node {
+fn partial_node(op: Op, rhs: Node, ast: Option<Node>) -> Node {
     let node = Node::BinaryOp(BinaryOp {
         op,
         lhs: Box::new(Node::Placeholder),

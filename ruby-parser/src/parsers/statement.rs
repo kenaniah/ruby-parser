@@ -9,7 +9,7 @@ use crate::parsers::expression::method::defined_method_name;
 /// *simple_statement* | *expression_modifier_statement* | *rescue_modifier_statement*
 pub(crate) fn statement(i: Input) -> NodeResult {
     map(
-        tuple((simple_statement, opt(_statement_modifier))),
+        tuple((simple_statement, opt(recursing_statement_modifier))),
         Node::decurse,
     )(i)
 }
@@ -24,11 +24,11 @@ pub(crate) fn simple_statement(i: Input) -> NodeResult {
     ))(i)
 }
 
-pub(crate) fn _statement_modifier(i: Input) -> NodeResult {
+pub(crate) fn recursing_statement_modifier(i: Input) -> NodeResult {
     map(
         tuple((
             alt((_expression_modifier_statement, _rescue_modifier_statement)),
-            opt(_statement_modifier),
+            opt(recursing_statement_modifier),
         )),
         Node::decurse,
     )(i)
