@@ -33,7 +33,7 @@ pub(crate) fn primary_expression(i: Input) -> NodeResult {
     let i = stack_frame!("primary_expression", i);
     map(
         tuple((simple_primary_expression, opt(_primary_expression))),
-        |(node, ast)| Node::update_placeholder(node, ast),
+        Node::decurse,
     )(i)
 }
 

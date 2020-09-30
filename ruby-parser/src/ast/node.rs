@@ -195,9 +195,8 @@ impl Node {
     pub(crate) fn undef(list: Vec<Identifier>) -> Self {
         Self::Undef(Undef { list })
     }
-    /// Allows placeholding nodes to be updated when working around left-recursion via LL(2)
-    pub(crate) fn update_placeholder(value: Self, ast: Option<Self>) -> Self {
-        if let Some(mut parent_node) = ast {
+    pub(crate) fn decurse(nodes: (Self, Option<Self>)) -> Self {
+        if let Some(mut parent_node) = nodes.1 {
             use std::borrow::BorrowMut;
             {
                 let mut n = &mut parent_node;
@@ -227,11 +226,11 @@ impl Node {
                         _ => break,
                     }
                 }
-                *n = value;
+                *n = nodes.0;
             }
             parent_node
         } else {
-            value
+            nodes.0
         }
     }
 }

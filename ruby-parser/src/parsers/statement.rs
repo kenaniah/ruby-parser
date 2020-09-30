@@ -10,7 +10,7 @@ use crate::parsers::expression::method::defined_method_name;
 pub(crate) fn statement(i: Input) -> NodeResult {
     map(
         tuple((simple_statement, opt(_statement_modifier))),
-        |(node, ast)| Node::update_placeholder(node, ast),
+        Node::decurse,
     )(i)
 }
 
@@ -30,7 +30,7 @@ pub(crate) fn _statement_modifier(i: Input) -> NodeResult {
             alt((_expression_modifier_statement, _rescue_modifier_statement)),
             opt(_statement_modifier),
         )),
-        |(node, ast)| Node::update_placeholder(node, ast),
+        Node::decurse,
     )(i)
 }
 

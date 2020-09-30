@@ -150,7 +150,7 @@ pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
     let i = stack_frame!("conditional_operator_expression", i);
     map(
         tuple((range_constructor, opt(_conditional_operator_expression))),
-        |(node, ast)| Node::update_placeholder(node, ast),
+        Node::decurse,
     )(i)
 }
 
@@ -175,7 +175,7 @@ fn _conditional_operator_expression(i: Input) -> NodeResult {
                 otherwise: Box::new(t.7),
                 kind: ConditionalKind::Ternary,
             });
-            Node::update_placeholder(node, t.8)
+            Node::decurse((node, t.8))
         },
     )(i)
 }

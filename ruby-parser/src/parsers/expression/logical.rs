@@ -77,10 +77,7 @@ pub(crate) fn keyword_and_expression(i: Input) -> NodeResult {
             alt((keyword_not_expression, keyword_or_expression)),
             _keyword_and_expression,
         )),
-        |(node, ast)| {
-            println!("{:?} - {:?}", node, ast);
-            Node::update_placeholder(node, Some(ast))
-        },
+        |(node, ast)| Node::decurse((node, Some(ast))),
     )(i)
 }
 
@@ -99,7 +96,7 @@ fn _keyword_and_expression(i: Input) -> NodeResult {
                 first: Box::new(Node::Placeholder),
                 second: Box::new(t.3),
             });
-            Node::update_placeholder(node, t.4)
+            Node::decurse((node, t.4))
         },
     )(i)
 }
@@ -116,10 +113,10 @@ pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
         )),
         |(node, mid, ast)| {
             if mid.is_some() {
-                let mid = Node::update_placeholder(node, mid);
-                Node::update_placeholder(mid, Some(ast))
+                let mid = Node::decurse((node, mid));
+                Node::decurse((mid, Some(ast)))
             } else {
-                Node::update_placeholder(node, Some(ast))
+                Node::decurse((node, Some(ast)))
             }
         },
     )(i)
@@ -130,7 +127,7 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
     alt((
         map(
             tuple((_keyword_and_expression, opt(_keyword_or_expression))),
-            |(node, ast)| Node::update_placeholder(node, ast),
+            Node::decurse,
         ),
         map(
             tuple((
@@ -145,7 +142,7 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
                     first: Box::new(Node::Placeholder),
                     second: Box::new(t.3),
                 });
-                Node::update_placeholder(node, t.4)
+                Node::decurse((node, t.4))
             },
         ),
     ))(i)
@@ -156,7 +153,7 @@ pub(crate) fn operator_or_expression(i: Input) -> NodeResult {
     let i = stack_frame!("operator_or_expression", i);
     map(
         tuple((operator_and_expression, opt(_operator_or_expression))),
-        |(node, ast)| Node::update_placeholder(node, ast),
+        Node::decurse,
     )(i)
 }
 
@@ -174,7 +171,7 @@ fn _operator_or_expression(i: Input) -> NodeResult {
                 first: Box::new(Node::Placeholder),
                 second: Box::new(t.3),
             });
-            Node::update_placeholder(node, t.4)
+            Node::decurse((node, t.4))
         },
     )(i)
 }
@@ -184,7 +181,7 @@ pub(crate) fn operator_and_expression(i: Input) -> NodeResult {
     let i = stack_frame!("operator_and_expression", i);
     map(
         tuple((equality_expression, opt(_operator_and_expression))),
-        |(node, ast)| Node::update_placeholder(node, ast),
+        Node::decurse,
     )(i)
 }
 
@@ -202,7 +199,7 @@ fn _operator_and_expression(i: Input) -> NodeResult {
                 first: Box::new(Node::Placeholder),
                 second: Box::new(t.3),
             });
-            Node::update_placeholder(node, t.4)
+            Node::decurse((node, t.4))
         },
     )(i)
 }
