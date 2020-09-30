@@ -1,5 +1,6 @@
 use crate::ast::Literal;
 use crate::lexer::*;
+use crate::parsers::expression::recursing_primary_expression;
 use crate::parsers::token::identifier::*;
 
 /// *pseudo_variable* | *variable*
@@ -26,6 +27,26 @@ pub(crate) fn pseudo_variable(i: Input) -> NodeResult {
         false_expression,
         self_expression,
     ))(i)
+}
+
+/// `::` *constant_identifier*
+pub(crate) fn simple_scoped_constant_reference(i: Input) -> NodeResult {
+    map(tuple((tag("::"), ws0, constant_identifier)), |_| {
+        Node::Placeholder
+    })(i)
+}
+
+/// `::` *constant_identifier*
+pub(crate) fn _scoped_constant_reference(i: Input) -> NodeResult {
+    map(
+        tuple((
+            tag("::"),
+            ws0,
+            constant_identifier,
+            opt(recursing_primary_expression),
+        )),
+        |_| Node::Placeholder,
+    )(i)
 }
 
 /// `nil`

@@ -41,7 +41,7 @@ pub(crate) fn recursing_primary_expression(i: Input) -> NodeResult {
     alt((
         method::_primary_method_invocation,
         method::_indexing_method_invocation,
-        //scoped_constant_reference
+        variable::_scoped_constant_reference,
     ))(i)
 }
 
@@ -58,6 +58,7 @@ pub(crate) fn simple_primary_expression(i: Input) -> NodeResult {
         grouping_expression,
         primary_method_call_expression,
         variable::variable_reference,
+        variable::simple_scoped_constant_reference,
     ))(i)
 }
 
@@ -151,6 +152,8 @@ mod tests {
         assert_err!("bar\n");
         assert_err!("('");
         assert_err!("((foo)");
+        assert_err!("::foo");
+        assert_err!("::Foo::bar");
         // Success cases
         assert_ok!("nil", Node::Nil);
         assert_ok!("42", Node::int(42));
@@ -165,6 +168,10 @@ mod tests {
         assert_ok!("next", Node::Next(vec![]));
         assert_ok!("()", Node::Block(vec![]));
         assert_ok!("foo.bar.baz");
+        assert_ok!("foo::BAR");
+        assert_ok!("::BAR");
+        assert_ok!("::BAR::Baz");
+        assert_ok!("foo()::Bar");
         assert_ok!("foo[1][2].bar().baz[3]");
         assert_ok!(
             "((false))",
