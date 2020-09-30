@@ -1,10 +1,10 @@
 use crate::lexer::*;
-use crate::parsers::expression::_recursing_primary_expression;
 use crate::parsers::expression::argument::argument_with_parenthesis;
 use crate::parsers::expression::argument::indexing_argument_list;
 use crate::parsers::expression::begin::body_statement;
 use crate::parsers::expression::block::block;
 use crate::parsers::expression::operator_expression;
+use crate::parsers::expression::recursing_primary_expression;
 use crate::parsers::token::identifier::{
     assignment_like_method_identifier, constant_identifier, local_variable_identifier,
     method_only_identifier,
@@ -49,7 +49,7 @@ pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
                 method_name,
                 opt(argument_with_parenthesis),
                 opt(block),
-                opt(_recursing_primary_expression),
+                opt(recursing_primary_expression),
             )),
             |_| Node::Placeholder,
         ),
@@ -60,7 +60,7 @@ pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
                 ws0,
                 method_name,
                 argument_with_parenthesis,
-                opt(_recursing_primary_expression),
+                opt(recursing_primary_expression),
             )),
             |_| Node::Placeholder,
         ),
@@ -71,7 +71,7 @@ pub(crate) fn primary_method_invocation(i: Input) -> NodeResult {
                 method_name_except_constant,
                 ws0,
                 opt(block),
-                opt(_recursing_primary_expression),
+                opt(recursing_primary_expression),
             )),
             |_| Node::Placeholder,
         ),
@@ -129,7 +129,7 @@ pub(crate) fn indexing_method_invocation(i: Input) -> NodeResult {
             opt(indexing_argument_list),
             ws0,
             char(']'),
-            opt(_recursing_primary_expression),
+            opt(recursing_primary_expression),
         )),
         |_| Node::Placeholder,
     )(i)

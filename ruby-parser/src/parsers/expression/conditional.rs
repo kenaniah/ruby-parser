@@ -149,13 +149,16 @@ pub(crate) fn when_argument(i: Input) -> NodeListResult {
 pub(crate) fn conditional_operator_expression(i: Input) -> NodeResult {
     let i = stack_frame!("conditional_operator_expression", i);
     map(
-        tuple((range_constructor, opt(_conditional_operator_expression))),
+        tuple((
+            range_constructor,
+            opt(recursing_conditional_operator_expression),
+        )),
         Node::decurse,
     )(i)
 }
 
-fn _conditional_operator_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("_conditional_operator_expression", i);
+fn recursing_conditional_operator_expression(i: Input) -> NodeResult {
+    let i = stack_frame!("recursing_conditional_operator_expression", i);
     map(
         tuple((
             no_lt,
@@ -166,7 +169,7 @@ fn _conditional_operator_expression(i: Input) -> NodeResult {
             char(':'),
             ws0,
             operator_expression,
-            opt(_conditional_operator_expression),
+            opt(recursing_conditional_operator_expression),
         )),
         |t| {
             let node = Node::Conditional(Conditional {

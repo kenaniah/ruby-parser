@@ -32,12 +32,12 @@ pub(crate) fn expression(i: Input) -> NodeResult {
 pub(crate) fn primary_expression(i: Input) -> NodeResult {
     let i = stack_frame!("primary_expression", i);
     map(
-        tuple((simple_primary_expression, opt(_recursing_primary_expression))),
+        tuple((simple_primary_expression, opt(recursing_primary_expression))),
         Node::decurse,
     )(i)
 }
 
-pub(crate) fn _recursing_primary_expression(i: Input) -> NodeResult {
+pub(crate) fn recursing_primary_expression(i: Input) -> NodeResult {
     alt((
         method::primary_method_invocation,
         method::indexing_method_invocation,
@@ -48,26 +48,26 @@ pub(crate) fn _recursing_primary_expression(i: Input) -> NodeResult {
 /// *primary_literal_expression* | *primary_definition_expression* | *primary_conditional_expression* | *primary_iteration_expression* | *primary_jump_expression* | *primary_keyword_expression* | *begin_expression* | *grouping_expression* | *primary_method_call_expression* | *variable_reference*
 pub(crate) fn simple_primary_expression(i: Input) -> NodeResult {
     alt((
-        _primary_literal_expression,
-        _primary_definition_expression,
-        _primary_conditional_expression,
-        _primary_iteration_expression,
-        _primary_jump_expression,
-        _primary_keyword_expression,
+        primary_literal_expression,
+        primary_definition_expression,
+        primary_conditional_expression,
+        primary_iteration_expression,
+        primary_jump_expression,
+        primary_keyword_expression,
         begin::begin_expression,
         grouping_expression,
-        _primary_method_call_expression,
+        primary_method_call_expression,
         variable::variable_reference,
     ))(i)
 }
 
 /// *array_constructor* | *hash_constructor* | *literal*
-fn _primary_literal_expression(i: Input) -> NodeResult {
+fn primary_literal_expression(i: Input) -> NodeResult {
     alt((object::array_constructor, object::hash_constructor, literal))(i)
 }
 
 /// *defined_with_parenthesis* | *super_with_optional_argument* | *yield_with_optional_argument*
-fn _primary_keyword_expression(i: Input) -> NodeResult {
+fn primary_keyword_expression(i: Input) -> NodeResult {
     alt((
         defined::defined_with_parenthesis,
         super_::super_with_optional_argument,
@@ -76,7 +76,7 @@ fn _primary_keyword_expression(i: Input) -> NodeResult {
 }
 
 /// *class_definition* | *singleton_class_definition* | *singleton_method_definition* | *module_definition* | *method_definition*
-fn _primary_definition_expression(i: Input) -> NodeResult {
+fn primary_definition_expression(i: Input) -> NodeResult {
     alt((
         class::class_definition,
         singleton::singleton_class_definition,
@@ -87,7 +87,7 @@ fn _primary_definition_expression(i: Input) -> NodeResult {
 }
 
 /// *return_without_argument* | *break_without_argument* | *next_without_argument* | *redo_expression* | *retry_expression*
-fn _primary_jump_expression(i: Input) -> NodeResult {
+fn primary_jump_expression(i: Input) -> NodeResult {
     alt((
         jump::return_without_argument,
         jump::break_without_argument,
@@ -98,7 +98,7 @@ fn _primary_jump_expression(i: Input) -> NodeResult {
 }
 
 /// *if_expression* | *unless_expression* | *case_expression*
-fn _primary_conditional_expression(i: Input) -> NodeResult {
+fn primary_conditional_expression(i: Input) -> NodeResult {
     alt((
         conditional::if_expression,
         conditional::unless_expression,
@@ -107,7 +107,7 @@ fn _primary_conditional_expression(i: Input) -> NodeResult {
 }
 
 /// *while_expression* | *until_expression* | *for_expression*
-fn _primary_iteration_expression(i: Input) -> NodeResult {
+fn primary_iteration_expression(i: Input) -> NodeResult {
     alt((
         iteration::while_expression,
         iteration::until_expression,
@@ -116,7 +116,7 @@ fn _primary_iteration_expression(i: Input) -> NodeResult {
 }
 
 /// *method_only_invocation* | *method_invocation_with_block* | *method_invocation_with_parenthesis*
-fn _primary_method_call_expression(i: Input) -> NodeResult {
+fn primary_method_call_expression(i: Input) -> NodeResult {
     alt((
         method::method_only_invocation,
         method::method_invocation_with_block,

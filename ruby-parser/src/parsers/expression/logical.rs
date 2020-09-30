@@ -75,21 +75,21 @@ pub(crate) fn keyword_and_expression(i: Input) -> NodeResult {
     map(
         tuple((
             alt((keyword_not_expression, keyword_or_expression)),
-            _keyword_and_expression,
+            recursing_keyword_and_expression,
         )),
         |(node, ast)| Node::decurse((node, Some(ast))),
     )(i)
 }
 
 /// `A1 -> a N A1 | ϵ`
-fn _keyword_and_expression(i: Input) -> NodeResult {
+fn recursing_keyword_and_expression(i: Input) -> NodeResult {
     map(
         tuple((
             no_lt,
             tag("and"),
             ws0,
             keyword_not_expression,
-            opt(_keyword_and_expression),
+            opt(recursing_keyword_and_expression),
         )),
         |t| {
             let node = Node::LogicalAnd(LogicalAnd {
@@ -109,7 +109,7 @@ pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
         tuple((
             keyword_not_expression,
             opt(keyword_and_expression),
-            _keyword_or_expression,
+            recursing_keyword_or_expression,
         )),
         |(node, mid, ast)| {
             if mid.is_some() {
@@ -123,10 +123,13 @@ pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
 }
 
 /// `O1 -> A1 O1 | o N O1 | ϵ`
-fn _keyword_or_expression(i: Input) -> NodeResult {
+fn recursing_keyword_or_expression(i: Input) -> NodeResult {
     alt((
         map(
-            tuple((_keyword_and_expression, opt(_keyword_or_expression))),
+            tuple((
+                recursing_keyword_and_expression,
+                opt(recursing_keyword_or_expression),
+            )),
             Node::decurse,
         ),
         map(
@@ -135,7 +138,7 @@ fn _keyword_or_expression(i: Input) -> NodeResult {
                 tag("or"),
                 ws0,
                 keyword_not_expression,
-                opt(_keyword_or_expression),
+                opt(recursing_keyword_or_expression),
             )),
             |t| {
                 let node = Node::LogicalOr(LogicalOr {
