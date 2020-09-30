@@ -154,7 +154,6 @@ mod tests {
         assert_err!("((foo)");
         assert_err!("::foo");
         assert_err!("foo[1]()");
-        assert_err!("::Foo::bar");
         // Success cases
         assert_ok!("nil", Node::Nil);
         assert_ok!("42", Node::int(42));
@@ -173,6 +172,7 @@ mod tests {
         assert_ok!("::BAR");
         assert_ok!("::BAR::Baz");
         assert_ok!("foo()::Bar");
+        assert_ok!("::Foo::bar");
         assert_ok!("foo[1][2].bar().baz[3]");
         assert_ok!(
             "((false))",

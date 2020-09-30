@@ -136,8 +136,9 @@ pub(crate) fn _indexing_method_invocation(i: Input) -> NodeResult {
 }
 
 /// *method_name* **but not** *constant_identifier*
-pub(crate) fn method_name_except_constant(i: Input) -> NodeResult {
-    stub(i)
+pub(crate) fn method_name_except_constant(i: Input) -> IdentifierResult {
+    let (i, _) = peek(not(constant_identifier))(i)?;
+    method_name(i)
 }
 
 /// *command* | *chained_command_with_do_block* | *chained_command_with_do_block* ( `.` | `::` ) *method_name* *argument_without_parenthesis* | *return_with_argument* | *break_with_argument* | *next_with_argument*
@@ -207,7 +208,13 @@ pub(crate) fn default_parameter_expression(i: Input) -> NodeResult {
 
 /// `*` *array_parameter_name* | `*`
 pub(crate) fn array_parameter(i: Input) -> NodeResult {
-    stub(i)
+    map(preceded(char('*'), opt(array_parameter_name)), |n| {
+        if let Some(ident) = n {
+            Node::Splat(Box::new(Node::Identifier(ident)))
+        } else {
+            Node::Splat(Box::new(Node::None))
+        }
+    })(i)
 }
 
 /// *local_variable_identifier*
