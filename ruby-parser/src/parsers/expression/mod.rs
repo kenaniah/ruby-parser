@@ -153,6 +153,7 @@ mod tests {
         assert_err!("('");
         assert_err!("((foo)");
         assert_err!("::foo");
+        assert_err!("foo[1]()");
         assert_err!("::Foo::bar");
         // Success cases
         assert_ok!("nil", Node::Nil);
