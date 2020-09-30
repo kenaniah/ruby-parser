@@ -113,8 +113,7 @@ pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
         )),
         |(node, mid, ast)| {
             if mid.is_some() {
-                let mid = Node::decurse((node, mid));
-                Node::decurse((mid, Some(ast)))
+                Node::decurse((Node::decurse((node, mid)), Some(ast)))
             } else {
                 Node::decurse((node, Some(ast)))
             }
