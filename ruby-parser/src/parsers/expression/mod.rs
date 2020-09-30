@@ -32,12 +32,12 @@ pub(crate) fn expression(i: Input) -> NodeResult {
 pub(crate) fn primary_expression(i: Input) -> NodeResult {
     let i = stack_frame!("primary_expression", i);
     map(
-        tuple((simple_primary_expression, opt(_primary_expression))),
+        tuple((simple_primary_expression, opt(_recursing_primary_expression))),
         Node::decurse,
     )(i)
 }
 
-pub(crate) fn _primary_expression(i: Input) -> NodeResult {
+pub(crate) fn _recursing_primary_expression(i: Input) -> NodeResult {
     alt((
         method::primary_method_invocation,
         method::indexing_method_invocation,
