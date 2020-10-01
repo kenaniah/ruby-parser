@@ -1,10 +1,17 @@
 use crate::lexer::*;
 use crate::parsers::expression::argument::argument_with_parenthesis;
+use crate::parsers::expression::argument::argument_without_parenthesis;
 use crate::parsers::expression::argument::indexing_argument_list;
 use crate::parsers::expression::begin::body_statement;
 use crate::parsers::expression::block::block;
+use crate::parsers::expression::jump::{
+    break_with_argument, next_with_argument, return_with_argument,
+};
 use crate::parsers::expression::operator_expression;
+use crate::parsers::expression::primary_expression;
 use crate::parsers::expression::recursing_primary_expression;
+use crate::parsers::expression::super_::super_with_argument;
+use crate::parsers::expression::yield_::yield_with_argument;
 use crate::parsers::token::identifier::{
     assignment_like_method_identifier, constant_identifier, local_variable_identifier,
     method_only_identifier,
@@ -143,12 +150,43 @@ pub(crate) fn method_name_except_constant(i: Input) -> IdentifierResult {
 
 /// *command* | *chained_command_with_do_block* | *chained_command_with_do_block* ( `.` | `::` ) *method_name* *argument_without_parenthesis* | *return_with_argument* | *break_with_argument* | *next_with_argument*
 pub(crate) fn method_invocation_without_parenthesis(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        map(
+            tuple((
+                chained_command_with_do_block,
+                alt((tag("."), tag("::"))),
+                method_name,
+                argument_without_parenthesis,
+            )),
+            |_| Node::Placeholder,
+        ),
+        chained_command_with_do_block,
+        command,
+        return_with_argument,
+        break_with_argument,
+        next_with_argument,
+    ))(i)
 }
 
 /// *super_with_argument* | *yield_with_argument* | *method_identifier* *argument_without_parenthesis* | *primary_expression* [ no ⏎ ] ( `.` | `::` ) *method_name* *argument_without_parenthesis*
 pub(crate) fn command(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        super_with_argument,
+        yield_with_argument,
+        map(
+            tuple((method_identifier, argument_without_parenthesis)),
+            |_| Node::Placeholder,
+        ),
+        map(
+            tuple((
+                primary_expression,
+                alt((tag("."), tag("::"))),
+                method_name,
+                argument_without_parenthesis,
+            )),
+            |_| Node::Placeholder,
+        ),
+    ))(i)
 }
 
 /// *command_with_do_block* *chained_method_invocation**

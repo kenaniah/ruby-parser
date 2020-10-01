@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOpKind, Case, Conditional, ConditionalKind, WhenClause};
+use crate::ast::{Case, Conditional, ConditionalKind, WhenClause};
 use crate::lexer::*;
 use crate::parsers::expression::argument::comma;
 use crate::parsers::expression::argument::operator_expression_list;
@@ -186,6 +186,7 @@ fn recursing_conditional_operator_expression(i: Input) -> NodeResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ast::BinaryOpKind;
 
     #[test]
     fn test_case_expression() {

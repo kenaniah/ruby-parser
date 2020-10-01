@@ -28,7 +28,7 @@ pub(crate) fn do_block(i: Input) -> NodeResult {
 pub(crate) fn block_parameter(i: Input) -> NodeResult {
     alt((
         map(alt((tag("| |"), tag("||"))), |_| Node::Placeholder),
-        map(tuple((char('|'), block_parameter_list, char('|'))), |t| {
+        map(tuple((char('|'), block_parameter_list, char('|'))), |_| {
             Node::Placeholder
         }),
     ))(i)
