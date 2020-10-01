@@ -1,9 +1,11 @@
 use crate::lexer::*;
 use crate::parsers::expression::argument::argument_with_parenthesis;
 use crate::parsers::expression::argument::argument_without_parenthesis;
+use crate::parsers::expression::argument::comma;
 use crate::parsers::expression::argument::indexing_argument_list;
 use crate::parsers::expression::begin::body_statement;
 use crate::parsers::expression::block::block;
+use crate::parsers::expression::block::do_block;
 use crate::parsers::expression::jump::{
     break_with_argument, next_with_argument, return_with_argument,
 };
@@ -11,7 +13,9 @@ use crate::parsers::expression::operator_expression;
 use crate::parsers::expression::primary_expression;
 use crate::parsers::expression::recursing_primary_expression;
 use crate::parsers::expression::super_::super_with_argument;
+use crate::parsers::expression::super_::super_with_argument_and_do_block;
 use crate::parsers::expression::yield_::yield_with_argument;
+use crate::parsers::program::separator;
 use crate::parsers::token::identifier::{
     assignment_like_method_identifier, constant_identifier, local_variable_identifier,
     method_only_identifier,
@@ -191,37 +195,108 @@ pub(crate) fn command(i: Input) -> NodeResult {
 
 /// *command_with_do_block* *chained_method_invocation**
 pub(crate) fn chained_command_with_do_block(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((command_with_do_block, chained_method_invocation)),
+        |_| Node::Placeholder,
+    )(i)
 }
 
 /// ( `.` | `::` ) *method_name* | ( `.` | `::` ) *method_name* [ no ⏎ ] [ no ⎵ ] *argument_with_parenthesis*
 pub(crate) fn chained_method_invocation(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((
+            alt((tag("."), tag("::"))),
+            method_name,
+            opt(argument_with_parenthesis),
+        )),
+        |_| Node::Placeholder,
+    )(i)
 }
 
 /// *super_with_argument_and_do_block* | *method_identifier* *argument_without_parenthesis* *do_block* | *primary_expression* [ no ⏎ ] ( `.` | `::` ) *method_name* *argument_without_parenthesis* *do_block*
 pub(crate) fn command_with_do_block(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        super_with_argument_and_do_block,
+        map(
+            tuple((method_identifier, argument_without_parenthesis, do_block)),
+            |_| Node::Placeholder,
+        ),
+        map(
+            tuple((
+                primary_expression,
+                alt((tag("."), tag("::"))),
+                method_name,
+                argument_without_parenthesis,
+                do_block,
+            )),
+            |_| Node::Placeholder,
+        ),
+    ))(i)
 }
 
 /// `(` *parameter_list*? `)` | *parameter_list*? *separator*
 pub(crate) fn method_parameter_part(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        map(tuple((char('('), opt(parameter_list), char(')'))), |_| {
+            Node::Placeholder
+        }),
+        map(tuple((opt(parameter_list), separator)), |_| {
+            Node::Placeholder
+        }),
+    ))(i)
 }
 
 /// *mandatory_parameter_list* ( `,` *optional_parameter_list* )? ( `,` *array_parameter* )? ( `,` *proc_parameter* )? |  *optional_parameter_list* ( `,` *array_parameter* )? ( `,` *proc_parameter* )? | *array_parameter* ( `,` *proc_parameter* )? | *proc_parameter*
 pub(crate) fn parameter_list(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        map(
+            tuple((
+                mandatory_parameter_list,
+                opt(tuple((comma, ws0, optional_parameter_list))),
+                opt(tuple((comma, ws0, array_parameter))),
+                opt(tuple((comma, ws0, proc_parameter))),
+            )),
+            |_| Node::Placeholder,
+        ),
+        map(
+            tuple((
+                optional_parameter_list,
+                opt(tuple((comma, ws0, array_parameter))),
+                opt(tuple((comma, ws0, proc_parameter))),
+            )),
+            |_| Node::Placeholder,
+        ),
+        map(
+            tuple((array_parameter, opt(tuple((comma, ws0, proc_parameter))))),
+            |_| Node::Placeholder,
+        ),
+        map(proc_parameter, |_| Node::Placeholder),
+    ))(i)
 }
 
 /// *mandatory_parameter* | *mandatory_parameter_list* `,` *mandatory_parameter*
 pub(crate) fn mandatory_parameter_list(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((mandatory_parameter, opt(recursing_mandatory_parameter_list))),
+        Node::decurse,
+    )(i)
+}
+
+fn recursing_mandatory_parameter_list(i: Input) -> NodeResult {
+    map(
+        tuple((
+            comma,
+            ws0,
+            mandatory_parameter,
+            opt(recursing_mandatory_parameter_list),
+        )),
+        |_| Node::Placeholder,
+    )(i)
 }
 
 /// *local_variable_identifier*
-pub(crate) fn mandatory_parameter(i: Input) -> IdentifierResult {
-    local_variable_identifier(i)
+pub(crate) fn mandatory_parameter(i: Input) -> NodeResult {
+    map(local_variable_identifier, |ident| Node::Identifier(ident))(i)
 }
 
 /// *optional_parameter* | *optional_parameter_list* `,` *optional_parameter*
