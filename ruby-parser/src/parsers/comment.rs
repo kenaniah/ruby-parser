@@ -6,7 +6,7 @@ use crate::parsers::program::*;
 /// *single_line_comment* | *multi_line_comment*
 pub(crate) fn comment(i: Input) -> NodeResult {
     let (i, content) = alt((single_line_comment, multi_line_comment))(i)?;
-    Ok((i, Node::Comment((*content).to_owned())))
+    Ok((i, Node::Comment(content.to_string())))
 }
 
 /// `#` *comment_content*?

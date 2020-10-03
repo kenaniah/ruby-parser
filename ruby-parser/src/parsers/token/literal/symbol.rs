@@ -14,7 +14,7 @@ pub(crate) fn symbol(i: Input) -> NodeResult {
 /// `:` *symbol_name*
 pub(crate) fn symbol_literal(i: Input) -> NodeResult {
     map(preceded(char(':'), symbol_name), |s| {
-        Node::Literal(Literal::Symbol((*s).to_owned()))
+        Node::Literal(Literal::Symbol(s.to_string()))
     })(i)
 }
 

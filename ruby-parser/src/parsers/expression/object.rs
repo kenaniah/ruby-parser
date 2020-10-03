@@ -51,7 +51,7 @@ pub(crate) fn association(i: Input) -> NodeListResult {
         ),
         map(
             tuple((
-                alt((map(symbol_name, |s| (*s).to_owned()), single_quoted_string)),
+                alt((map(symbol_name, |s| s.to_string()), single_quoted_string)),
                 char(':'),
                 ws0,
                 association_value,

@@ -163,7 +163,7 @@ pub(crate) fn control_escape_sequence(i: Input) -> StringResult {
 pub(crate) fn control_escaped_character(i: Input) -> StringResult {
     alt((
         double_escape_sequence,
-        map(tag("?"), |s: Input| (*s).to_owned()),
+        map(tag("?"), |s: Input| s.to_string()),
         map(none_of("\\?"), |c: char| c.to_string()),
     ))(i)
 }

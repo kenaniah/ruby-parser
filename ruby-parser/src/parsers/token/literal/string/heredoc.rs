@@ -426,7 +426,7 @@ mod tests {
     #[test]
     fn test_heredoc_start_line() {
         fn wrapped_heredoc_start_line(i: Input) -> StringResult {
-            map(wrap_heredoc(heredoc_start_line), |s| (*s).to_owned())(i)
+            map(wrap_heredoc(heredoc_start_line), |s| s.into())(i)
         }
         use_parser!(wrapped_heredoc_start_line);
         assert_err!("<<-Foo");

@@ -360,6 +360,12 @@ impl<T: ToString, X> std::fmt::Display for TrackedLocation<T, X> {
     }
 }
 
+impl<T: ToString, X> From<TrackedLocation<T, X>> for String {
+    fn from(v: TrackedLocation<T, X>) -> Self {
+        v.to_string()
+    }
+}
+
 impl<'a, I, E, T, X> ExtendInto for TrackedLocation<T, X>
 where
     E: Default + Extend<I>,
