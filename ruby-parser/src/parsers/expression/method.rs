@@ -373,6 +373,38 @@ mod tests {
     use crate::ast::BinaryOpKind;
 
     #[test]
+    fn test_optional_parameter_list() {
+        use_parser!(optional_parameter_list);
+        // Parse errors
+        assert_err!("foo=1,");
+        assert_err!("foo=1,bar");
+        // Success cases
+        assert_ok!("foo=1", vec![Parameter::new_optional("foo", Node::int(1))]);
+        assert_ok!(
+            "foo=1,bar=2",
+            vec![
+                Parameter::new_optional("foo", Node::int(1)),
+                Parameter::new_optional("bar", Node::int(2))
+            ]
+        );
+        assert_ok!(
+            "foo=1,\n\nbar=2",
+            vec![
+                Parameter::new_optional("foo", Node::int(1)),
+                Parameter::new_optional("bar", Node::int(2))
+            ]
+        );
+        assert_ok!(
+            "foo=1,\n\nbar=2,baz = 3",
+            vec![
+                Parameter::new_optional("foo", Node::int(1)),
+                Parameter::new_optional("bar", Node::int(2)),
+                Parameter::new_optional("baz", Node::int(3))
+            ]
+        );
+    }
+
+    #[test]
     fn test_optional_parameter() {
         use_parser!(optional_parameter);
         // Parse errors
@@ -380,10 +412,10 @@ mod tests {
         assert_err!("Foo=1");
         assert_err!("bar=");
         // Success cases
-        assert_ok!("foo=1", Parameter::new_with_default("foo", Node::int(1)));
+        assert_ok!("foo=1", Parameter::new_optional("foo", Node::int(1)));
         assert_ok!(
             "foo =\n1 + 2",
-            Parameter::new_with_default(
+            Parameter::new_optional(
                 "foo",
                 Node::binary_op(Node::int(1), BinaryOpKind::Add, Node::int(2))
             )
