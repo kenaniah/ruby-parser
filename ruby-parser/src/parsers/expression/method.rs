@@ -275,29 +275,26 @@ pub(crate) fn parameter_list(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// *mandatory_parameter* | *mandatory_parameter_list* `,` *mandatory_parameter*
-pub(crate) fn mandatory_parameter_list(i: Input) -> NodeResult {
-    map(
-        tuple((mandatory_parameter, opt(recursing_mandatory_parameter_list))),
-        Node::decurse,
-    )(i)
-}
-
-fn recursing_mandatory_parameter_list(i: Input) -> NodeResult {
+/// *mandatory_parameter* ( [ no ⏎ ] `,` *mandatory_parameter* )*
+pub(crate) fn mandatory_parameter_list(i: Input) -> ParameterListResult {
     map(
         tuple((
-            comma,
-            ws0,
             mandatory_parameter,
-            opt(recursing_mandatory_parameter_list),
+            many0(map(tuple((comma, ws0, mandatory_parameter)), |t| t.2)),
         )),
-        |_| Node::Placeholder,
+        |(first, mut vec)| {
+            vec.insert(0, first);
+            vec
+        },
     )(i)
 }
 
 /// *local_variable_identifier*
-pub(crate) fn mandatory_parameter(i: Input) -> NodeResult {
-    map(local_variable_identifier, |ident| Node::Identifier(ident))(i)
+pub(crate) fn mandatory_parameter(i: Input) -> ParameterResult {
+    map(recognize(local_variable_identifier), |v| Parameter {
+        name: v.to_string(),
+        default_value: None,
+    })(i)
 }
 
 /// *optional_parameter* ( [ no ⏎ ] `,` *optional_parameter* )*
@@ -371,6 +368,16 @@ pub(crate) fn proc_parameter_name(i: Input) -> IdentifierResult {
 mod tests {
     use super::*;
     use crate::ast::BinaryOpKind;
+
+    #[test]
+    fn test_mandatory_parameter() {
+        use_parser!(mandatory_parameter);
+        // Parse errors
+        assert_err!("Foo");
+        // Success cases
+        assert_ok!("foo", Parameter::new_required("foo"));
+        assert_ok!("foo_bar", Parameter::new_required("foo_bar"));
+    }
 
     #[test]
     fn test_optional_parameter_list() {
