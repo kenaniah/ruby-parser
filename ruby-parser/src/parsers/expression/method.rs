@@ -366,3 +366,27 @@ pub(crate) fn proc_parameter(i: Input) -> IdentifierResult {
 pub(crate) fn proc_parameter_name(i: Input) -> IdentifierResult {
     local_variable_identifier(i)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ast::BinaryOpKind;
+
+    #[test]
+    fn test_optional_parameter() {
+        use_parser!(optional_parameter);
+        // Parse errors
+        assert_err!("foo\n=1");
+        assert_err!("Foo=1");
+        assert_err!("bar=");
+        // Success cases
+        assert_ok!("foo=1", Parameter::new_with_default("foo", Node::int(1)));
+        assert_ok!(
+            "foo =\n1 + 2",
+            Parameter::new_with_default(
+                "foo",
+                Node::binary_op(Node::int(1), BinaryOpKind::Add, Node::int(2))
+            )
+        );
+    }
+}
