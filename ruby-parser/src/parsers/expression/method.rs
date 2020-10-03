@@ -380,6 +380,44 @@ mod tests {
     }
 
     #[test]
+    fn test_mandatory_parameter_list() {
+        use_parser!(mandatory_parameter_list);
+        // Parse errors
+        assert_err!("foo, Bar");
+        assert_err!("foo,");
+        assert_err!("foo, bar=1");
+        assert_err!("foo\n,bar");
+        // Success cases
+        assert_ok!("foo", vec![Parameter::new_required("foo")]);
+        assert_ok!(
+            "foo, bar, \nbaz",
+            vec![
+                Parameter::new_required("foo"),
+                Parameter::new_required("bar"),
+                Parameter::new_required("baz")
+            ]
+        );
+    }
+
+    #[test]
+    fn test_optional_parameter() {
+        use_parser!(optional_parameter);
+        // Parse errors
+        assert_err!("foo\n=1");
+        assert_err!("Foo=1");
+        assert_err!("bar=");
+        // Success cases
+        assert_ok!("foo=1", Parameter::new_optional("foo", Node::int(1)));
+        assert_ok!(
+            "foo =\n1 + 2",
+            Parameter::new_optional(
+                "foo",
+                Node::binary_op(Node::int(1), BinaryOpKind::Add, Node::int(2))
+            )
+        );
+    }
+
+    #[test]
     fn test_optional_parameter_list() {
         use_parser!(optional_parameter_list);
         // Parse errors
@@ -408,24 +446,6 @@ mod tests {
                 Parameter::new_optional("bar", Node::int(2)),
                 Parameter::new_optional("baz", Node::int(3))
             ]
-        );
-    }
-
-    #[test]
-    fn test_optional_parameter() {
-        use_parser!(optional_parameter);
-        // Parse errors
-        assert_err!("foo\n=1");
-        assert_err!("Foo=1");
-        assert_err!("bar=");
-        // Success cases
-        assert_ok!("foo=1", Parameter::new_optional("foo", Node::int(1)));
-        assert_ok!(
-            "foo =\n1 + 2",
-            Parameter::new_optional(
-                "foo",
-                Node::binary_op(Node::int(1), BinaryOpKind::Add, Node::int(2))
-            )
         );
     }
 }
