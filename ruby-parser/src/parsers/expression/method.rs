@@ -1,3 +1,4 @@
+use crate::ast::Parameter;
 use crate::lexer::*;
 use crate::parsers::expression::argument::argument_with_parenthesis;
 use crate::parsers::expression::argument::argument_without_parenthesis;
@@ -299,28 +300,22 @@ pub(crate) fn mandatory_parameter(i: Input) -> NodeResult {
     map(local_variable_identifier, |ident| Node::Identifier(ident))(i)
 }
 
-fn recursing_optional_parameter_list(i: Input) -> NodeResult {
+/// *optional_parameter* ( [ no ⏎ ] `,` *optional_parameter* )*
+pub(crate) fn optional_parameter_list(i: Input) -> ParameterListResult {
     map(
         tuple((
-            comma,
-            ws0,
             optional_parameter,
-            opt(recursing_optional_parameter_list),
+            many0(map(tuple((comma, ws0, optional_parameter)), |t| t.2)),
         )),
-        |_| Node::Placeholder,
-    )(i)
-}
-
-/// *optional_parameter* | *optional_parameter_list* `,` *optional_parameter*
-pub(crate) fn optional_parameter_list(i: Input) -> NodeResult {
-    map(
-        tuple((optional_parameter, opt(recursing_optional_parameter_list))),
-        Node::decurse,
+        |(first, mut vec)| {
+            vec.insert(0, first);
+            vec
+        },
     )(i)
 }
 
 /// *optional_parameter_name* `=` *default_parameter_expression*
-pub(crate) fn optional_parameter(i: Input) -> NodeResult {
+pub(crate) fn optional_parameter(i: Input) -> ParameterResult {
     map(
         tuple((
             optional_parameter_name,
@@ -329,13 +324,16 @@ pub(crate) fn optional_parameter(i: Input) -> NodeResult {
             ws0,
             default_parameter_expression,
         )),
-        |_| Node::Placeholder,
+        |t| Parameter {
+            name: t.0.to_string(),
+            default_value: Some(Box::new(t.4)),
+        },
     )(i)
 }
 
 /// *local_variable_identifier*
-pub(crate) fn optional_parameter_name(i: Input) -> IdentifierResult {
-    local_variable_identifier(i)
+pub(crate) fn optional_parameter_name(i: Input) -> LexResult {
+    recognize(local_variable_identifier)(i)
 }
 
 /// *operator_expression*

@@ -7,7 +7,7 @@ mod nom_prelude;
 mod segment;
 mod tracked_location;
 
-pub use crate::ast::{Identifier, IdentifierKind, Interpolated, Literal, Node, WhenClause};
+pub use crate::ast::{Identifier, IdentifierKind, Interpolated, Literal, Node, WhenClause, Parameter};
 pub use heredoc::{HeredocIndentation, HeredocMetadata, HeredocQuoteType};
 pub use interpolable::Interpolatable;
 pub use metadata::Metadata;
@@ -53,6 +53,12 @@ pub(crate) type IdentifierResult<'a> = Parsed<'a, Identifier>;
 
 /// Describes a list of parsed identifiers
 pub(crate) type IdentifierListResult<'a> = Parsed<'a, Vec<Identifier>>;
+
+/// Describes a parsed parameter
+pub(crate) type ParameterResult<'a> = Parsed<'a, Parameter>;
+
+/// Describes a list o parsed parameters
+pub(crate) type ParameterListResult<'a> = Parsed<'a, Vec<Parameter>>;
 
 /// Describes a parsed when clause
 pub(crate) type WhenClauseResult<'a> = Parsed<'a, WhenClause>;
