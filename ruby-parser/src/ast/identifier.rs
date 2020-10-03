@@ -1,3 +1,5 @@
+use super::*;
+
 #[derive(Debug, PartialEq)]
 pub struct Identifier {
     pub name: String,
@@ -7,6 +9,18 @@ pub struct Identifier {
 impl Identifier {
     pub fn new(name: String, kind: IdentifierKind) -> Self {
         Self { name, kind }
+    }
+}
+
+impl From<Identifier> for String {
+    fn from(v: Identifier) -> Self {
+        v.name
+    }
+}
+
+impl From<Identifier> for Node {
+    fn from(v: Identifier) -> Self {
+        Self::Identifier(v)
     }
 }
 

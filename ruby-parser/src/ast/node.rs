@@ -38,12 +38,6 @@ pub enum Node {
     Placeholder,
 }
 
-impl From<Identifier> for Node {
-    fn from(v: Identifier) -> Self {
-        Self::Identifier(v)
-    }
-}
-
 #[allow(dead_code)]
 impl Node {
     /// Creates a token that represents an empty block

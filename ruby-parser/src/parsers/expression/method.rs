@@ -291,8 +291,8 @@ pub(crate) fn mandatory_parameter_list(i: Input) -> ParameterListResult {
 
 /// *local_variable_identifier*
 pub(crate) fn mandatory_parameter(i: Input) -> ParameterResult {
-    map(recognize(local_variable_identifier), |v| Parameter {
-        name: v.to_string(),
+    map(local_variable_identifier, |ident| Parameter {
+        name: ident.into(),
         default_value: None,
     })(i)
 }
@@ -322,15 +322,15 @@ pub(crate) fn optional_parameter(i: Input) -> ParameterResult {
             default_parameter_expression,
         )),
         |t| Parameter {
-            name: t.0.to_string(),
+            name: t.0.into(),
             default_value: Some(Box::new(t.4)),
         },
     )(i)
 }
 
 /// *local_variable_identifier*
-pub(crate) fn optional_parameter_name(i: Input) -> LexResult {
-    recognize(local_variable_identifier)(i)
+pub(crate) fn optional_parameter_name(i: Input) -> IdentifierResult {
+    local_variable_identifier(i)
 }
 
 /// *operator_expression*
@@ -342,7 +342,7 @@ pub(crate) fn default_parameter_expression(i: Input) -> NodeResult {
 pub(crate) fn array_parameter(i: Input) -> NodeResult {
     map(preceded(char('*'), opt(array_parameter_name)), |n| {
         if let Some(ident) = n {
-            Node::Splat(Box::new(Node::Identifier(ident)))
+            Node::Splat(Box::new(ident.into()))
         } else {
             Node::Splat(Box::new(Node::None))
         }
