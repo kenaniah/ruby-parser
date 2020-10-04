@@ -1,4 +1,4 @@
-use crate::ast::Parameter;
+use crate::ast::{Method, MethodParameters, Parameter};
 use crate::lexer::*;
 use crate::parsers::expression::argument::argument_with_parenthesis;
 use crate::parsers::expression::argument::argument_without_parenthesis;
@@ -248,30 +248,53 @@ pub(crate) fn method_parameter_part(i: Input) -> NodeResult {
 }
 
 /// *mandatory_parameter_list* ( `,` *optional_parameter_list* )? ( `,` *array_parameter* )? ( `,` *proc_parameter* )? |  *optional_parameter_list* ( `,` *array_parameter* )? ( `,` *proc_parameter* )? | *array_parameter* ( `,` *proc_parameter* )? | *proc_parameter*
-pub(crate) fn parameter_list(i: Input) -> NodeResult {
+pub(crate) fn parameter_list(i: Input) -> Parsed<MethodParameters> {
     alt((
         map(
             tuple((
                 mandatory_parameter_list,
-                opt(tuple((comma, ws0, optional_parameter_list))),
-                opt(tuple((comma, ws0, array_parameter))),
-                opt(tuple((comma, ws0, proc_parameter))),
+                opt(map(tuple((comma, ws0, optional_parameter_list)), |t| t.2)),
+                opt(map(tuple((comma, ws0, array_parameter)), |t| t.2)),
+                opt(map(tuple((comma, ws0, proc_parameter)), |t| t.2)),
             )),
-            |_| Node::Placeholder,
+            |t| MethodParameters {
+                required: t.0,
+                optional: t.1.unwrap_or(vec![]),
+                array: t.2,
+                proc: t.3,
+            },
         ),
         map(
             tuple((
                 optional_parameter_list,
-                opt(tuple((comma, ws0, array_parameter))),
-                opt(tuple((comma, ws0, proc_parameter))),
+                opt(map(tuple((comma, ws0, array_parameter)), |t| t.2)),
+                opt(map(tuple((comma, ws0, proc_parameter)), |t| t.2)),
             )),
-            |_| Node::Placeholder,
+            |t| MethodParameters {
+                required: vec![],
+                optional: t.0,
+                array: t.1,
+                proc: t.2,
+            },
         ),
         map(
-            tuple((array_parameter, opt(tuple((comma, ws0, proc_parameter))))),
-            |_| Node::Placeholder,
+            tuple((
+                array_parameter,
+                opt(map(tuple((comma, ws0, proc_parameter)), |t| t.2)),
+            )),
+            |t| MethodParameters {
+                required: vec![],
+                optional: vec![],
+                array: Some(t.0),
+                proc: t.1,
+            },
         ),
-        map(proc_parameter, |_| Node::Placeholder),
+        map(proc_parameter, |proc| MethodParameters {
+            required: vec![],
+            optional: vec![],
+            array: None,
+            proc: Some(proc),
+        }),
     ))(i)
 }
 
@@ -336,29 +359,25 @@ pub(crate) fn default_parameter_expression(i: Input) -> NodeResult {
 }
 
 /// `*` *array_parameter_name* | `*`
-pub(crate) fn array_parameter(i: Input) -> NodeResult {
-    map(preceded(char('*'), opt(array_parameter_name)), |n| {
-        if let Some(ident) = n {
-            Node::Splat(Box::new(ident.into()))
-        } else {
-            Node::Splat(Box::new(Node::None))
-        }
+pub(crate) fn array_parameter(i: Input) -> Parsed<String> {
+    map(preceded(char('*'), opt(array_parameter_name)), |ident| {
+        ident.unwrap_or("".to_owned())
     })(i)
 }
 
 /// *local_variable_identifier*
-pub(crate) fn array_parameter_name(i: Input) -> IdentifierResult {
-    local_variable_identifier(i)
+pub(crate) fn array_parameter_name(i: Input) -> StringResult {
+    map(local_variable_identifier, |ident| ident.into())(i)
 }
 
 /// `&` *proc_parameter_name*
-pub(crate) fn proc_parameter(i: Input) -> IdentifierResult {
+pub(crate) fn proc_parameter(i: Input) -> StringResult {
     map(tuple((char('&'), ws0, proc_parameter_name)), |t| t.2)(i)
 }
 
 /// *local_variable_identifier*
-pub(crate) fn proc_parameter_name(i: Input) -> IdentifierResult {
-    local_variable_identifier(i)
+pub(crate) fn proc_parameter_name(i: Input) -> StringResult {
+    map(local_variable_identifier, |ident| ident.into())(i)
 }
 
 #[cfg(test)]
