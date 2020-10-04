@@ -44,29 +44,11 @@ pub(crate) type LexResult<'a> = Parsed<'a, Input<'a>>;
 /// Describes a segment of something that may be interpolated
 pub(crate) type SegmentResult<'a> = Parsed<'a, Segment>;
 
-/// Describes a segment of something that may be interpolated
-pub(crate) type SegmentVecResult<'a> = Parsed<'a, Vec<Segment>>;
-
 /// Describes a parsed string
 pub(crate) type StringResult<'a> = Parsed<'a, String>;
 
-/// Describes a list of parsed strings
-pub(crate) type StringListResult<'a> = Parsed<'a, Vec<String>>;
-
 /// Describes a parsed identifier
 pub(crate) type IdentifierResult<'a> = Parsed<'a, Identifier>;
-
-/// Describes a list of parsed identifiers
-pub(crate) type IdentifierListResult<'a> = Parsed<'a, Vec<Identifier>>;
-
-/// Describes a parsed parameter
-pub(crate) type ParameterResult<'a> = Parsed<'a, Parameter>;
-
-/// Describes a list o parsed parameters
-pub(crate) type ParameterListResult<'a> = Parsed<'a, Vec<Parameter>>;
-
-/// Describes a parsed when clause
-pub(crate) type WhenClauseResult<'a> = Parsed<'a, WhenClause>;
 
 pub(crate) fn stub(i: Input) -> NodeResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))

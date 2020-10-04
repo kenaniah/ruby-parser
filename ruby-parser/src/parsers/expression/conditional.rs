@@ -117,7 +117,7 @@ pub(crate) fn case_expression(i: Input) -> NodeResult {
 }
 
 /// `when` *when_argument* *then_clause*
-pub(crate) fn when_clause(i: Input) -> WhenClauseResult {
+pub(crate) fn when_clause(i: Input) -> Parsed<WhenClause> {
     map(tuple((tag("when"), ws0, when_argument, then_clause)), |t| {
         WhenClause {
             when: t.2,

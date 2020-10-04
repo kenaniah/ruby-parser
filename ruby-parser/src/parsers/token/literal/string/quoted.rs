@@ -84,7 +84,7 @@ pub(crate) fn expanded_delimited_string(i: Input) -> InterpolatableResult {
 }
 
 /// *literal_beginning_delimiter* *expanded_literal_string** *literal_ending_delimiter*
-fn _expanded_delimited_string(i: Input) -> SegmentVecResult {
+fn _expanded_delimited_string(i: Input) -> Parsed<Vec<Segment>> {
     map(
         tuple((
             literal_beginning_delimiter,
@@ -108,7 +108,7 @@ pub(crate) fn non_expanded_literal_string(i: Input) -> StringResult {
 }
 
 /// *expanded_literal_character* | *expanded_delimited_string*
-pub(crate) fn expanded_literal_string(i: Input) -> SegmentVecResult {
+pub(crate) fn expanded_literal_string(i: Input) -> Parsed<Vec<Segment>> {
     alt((
         map(expanded_literal_character, |s| vec![s]),
         _expanded_delimited_string,

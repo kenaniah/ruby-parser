@@ -61,7 +61,7 @@ pub(crate) fn undef_statement(i: Input) -> NodeResult {
 }
 
 /// *method_name_or_symbol* ( [ no ⏎ ] `,` *method_name_or_symbol* )*
-pub(crate) fn undef_list(i: Input) -> IdentifierListResult {
+pub(crate) fn undef_list(i: Input) -> Parsed<Vec<Identifier>> {
     map(
         tuple((
             method_name_or_symbol,

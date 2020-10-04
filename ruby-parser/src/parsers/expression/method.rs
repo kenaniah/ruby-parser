@@ -276,7 +276,7 @@ pub(crate) fn parameter_list(i: Input) -> NodeResult {
 }
 
 /// *mandatory_parameter* ( [ no ⏎ ] `,` *mandatory_parameter* )*
-pub(crate) fn mandatory_parameter_list(i: Input) -> StringListResult {
+pub(crate) fn mandatory_parameter_list(i: Input) -> Parsed<Vec<String>> {
     map(
         tuple((
             mandatory_parameter,
@@ -295,7 +295,7 @@ pub(crate) fn mandatory_parameter(i: Input) -> StringResult {
 }
 
 /// *optional_parameter* ( [ no ⏎ ] `,` *optional_parameter* )*
-pub(crate) fn optional_parameter_list(i: Input) -> ParameterListResult {
+pub(crate) fn optional_parameter_list(i: Input) -> Parsed<Vec<Parameter>> {
     map(
         tuple((
             optional_parameter,
@@ -309,7 +309,7 @@ pub(crate) fn optional_parameter_list(i: Input) -> ParameterListResult {
 }
 
 /// *optional_parameter_name* `=` *default_parameter_expression*
-pub(crate) fn optional_parameter(i: Input) -> ParameterResult {
+pub(crate) fn optional_parameter(i: Input) -> Parsed<Parameter> {
     map(
         tuple((
             optional_parameter_name,
