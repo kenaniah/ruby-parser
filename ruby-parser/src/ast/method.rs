@@ -1,6 +1,21 @@
 use super::*;
 
 #[derive(Debug, PartialEq)]
+pub struct Method {
+    name: String,
+    params: MethodParameters,
+    body: Node,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct MethodParameters {
+    pub required: Vec<Parameter>,
+    pub optional: Vec<Parameter>,
+    pub array: Option<Parameter>,
+    pub proc: Option<Parameter>,
+}
+
+#[derive(Debug, PartialEq)]
 pub struct Parameter {
     pub name: String,
     pub default_value: Option<Box<Node>>,

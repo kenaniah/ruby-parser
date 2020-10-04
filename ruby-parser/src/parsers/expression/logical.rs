@@ -38,7 +38,6 @@ use crate::parsers::expression::operator_expression;
 
 /// *keyword_not_expression* | *keyword_and_expression* | *keyword_or_expression*
 pub(crate) fn keyword_logical_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("keyword_logical_expression", i);
     alt((
         keyword_or_expression,
         keyword_and_expression,
@@ -48,7 +47,6 @@ pub(crate) fn keyword_logical_expression(i: Input) -> NodeResult {
 
 /// *method_invocation_without_parenthesis* | *operator_expression* | `!` *method_invocation_without_parenthesis* | `not` *keyword_not_expression*
 pub(crate) fn keyword_not_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("keyword_not_expression", i);
     alt((
         map(
             tuple((char('!'), ws0, method_invocation_without_parenthesis)),
@@ -71,7 +69,6 @@ pub(crate) fn keyword_not_expression(i: Input) -> NodeResult {
 /// *expression* [ no ⏎ ] `and` *keyword_not_expression*
 /// `A  -> N A1 | O A1`
 pub(crate) fn keyword_and_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("keyword_and_expression", i);
     map(
         tuple((
             alt((keyword_not_expression, keyword_or_expression)),
@@ -104,7 +101,6 @@ fn recursing_keyword_and_expression(i: Input) -> NodeResult {
 /// *expression* [ no ⏎ ] `or` *keyword_not_expression*
 /// `O  -> N O1 | N A1 O1`
 pub(crate) fn keyword_or_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("keyword_or_expression", i);
     map(
         tuple((
             keyword_not_expression,
@@ -152,7 +148,6 @@ fn recursing_keyword_or_expression(i: Input) -> NodeResult {
 
 /// *operator_and_expression* | *operator_or_expression* [ no ⏎ ] `||` *operator_and_expression*
 pub(crate) fn operator_or_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("operator_or_expression", i);
     map(
         tuple((
             operator_and_expression,
@@ -183,7 +178,6 @@ fn recursing_operator_or_expression(i: Input) -> NodeResult {
 
 /// *equality_expression* | *operator_and_expression* [ no ⏎ ] `&&` *equality_expression*
 pub(crate) fn operator_and_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("operator_and_expression", i);
     map(
         tuple((equality_expression, opt(recursing_operator_and_expression))),
         Node::decurse,

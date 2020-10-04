@@ -87,7 +87,6 @@ pub(crate) fn association_value(i: Input) -> NodeResult {
 
 /// *operator_or_expression* | *operator_or_expression* [ no ⏎ ] *range_operator* *operator_or_expression*
 pub(crate) fn range_constructor(i: Input) -> NodeResult {
-    let i = stack_frame!("range_constructor", i);
     let (i, lhs) = operator_or_expression(i)?;
     if let Ok((j, t)) = tuple((no_lt, range_operator, ws0, operator_or_expression))(i.clone()) {
         Ok((

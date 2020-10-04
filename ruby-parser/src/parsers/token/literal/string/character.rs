@@ -4,7 +4,6 @@ use crate::parsers::program::*;
 
 /// `?` ( *double_escape_sequence* | *source_character* **but not** ( *whitespace* | `\` ) )
 pub(crate) fn character_literal(i: Input) -> StringResult {
-    let i = stack_frame!("character_literal", i);
     map(
         tuple((
             char('?'),

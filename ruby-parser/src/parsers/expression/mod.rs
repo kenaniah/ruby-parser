@@ -30,7 +30,6 @@ pub(crate) fn expression(i: Input) -> NodeResult {
 
 /// *primary_method_invocation* | *indexing_method_invocation* | *scoped_constant_reference* | *simple_primary_expression*
 pub(crate) fn primary_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("primary_expression", i);
     map(
         tuple((simple_primary_expression, opt(recursing_primary_expression))),
         Node::decurse,

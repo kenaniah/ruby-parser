@@ -4,7 +4,6 @@ use crate::parsers::expression::unary::{unary_expression, unary_minus_expression
 
 /// *relational_expression* | *relational_expression* [ no ⏎ ] ( `<=>` | `===` | `==` | `!=` | `=~` | `!~` ) *relational_expression*
 pub(crate) fn equality_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("equality_expression", i);
     map(
         tuple((relational_expression, opt(recursing_equality_expression))),
         Node::decurse,
@@ -44,7 +43,6 @@ fn recursing_equality_expression(i: Input) -> NodeResult {
 
 /// *bitwise_or_expression* | *relational_expression* [ no ⏎ ] ( `>=` | `>` | `<=` | `<` ) *bitwise_or_expression*
 pub(crate) fn relational_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("relational_expression", i);
     map(
         tuple((bitwise_or_expression, opt(recursing_relational_expression))),
         Node::decurse,
@@ -75,7 +73,6 @@ fn recursing_relational_expression(i: Input) -> NodeResult {
 
 /// *bitwise_and_expression* | *bitwise_or_expression* [ no ⏎ ] ( `|` | `^` ) *bitwise_and_expression*
 pub(crate) fn bitwise_or_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("bitwise_or_expression", i);
     map(
         tuple((bitwise_and_expression, opt(recursing_bitwise_or_expression))),
         Node::decurse,
@@ -104,7 +101,6 @@ fn recursing_bitwise_or_expression(i: Input) -> NodeResult {
 
 /// *bitwise_shift_expression* | *bitwise_and_expression* [ no ⏎ ] `&` *bitwise_shift_expression*
 pub(crate) fn bitwise_and_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("bitwise_and_expression", i);
     map(
         tuple((
             bitwise_shift_expression,
@@ -129,7 +125,6 @@ fn recursing_bitwise_and_expression(i: Input) -> NodeResult {
 
 /// *additive_expression* | *bitwise_shift_expression* [ no ⏎ ] ( `<<` | `>>` ) *additive_expression*
 pub(crate) fn bitwise_shift_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("bitwise_shift_expression", i);
     map(
         tuple((additive_expression, opt(recursing_bitwise_shift_expression))),
         Node::decurse,
@@ -158,7 +153,6 @@ fn recursing_bitwise_shift_expression(i: Input) -> NodeResult {
 
 /// *multiplicative_expression* | *additive_expression* [ no ⏎ ] ( `+` | `-` ) *multiplicative_expression*
 pub(crate) fn additive_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("additive_expression", i);
     map(
         tuple((
             multiplicative_expression,
@@ -190,7 +184,6 @@ fn recursing_additive_expression(i: Input) -> NodeResult {
 
 /// *unary_minus_expression* | *multiplicative_expression* [ no ⏎ ] ( `*` | `/` | `%` ) *unary_minus_expression*
 pub(crate) fn multiplicative_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("multiplicative_expression", i);
     map(
         tuple((
             unary_minus_expression,
@@ -223,7 +216,6 @@ fn recursing_multiplicative_expression(i: Input) -> NodeResult {
 
 /// *unary_expression* | *unary_expression* [ no ⏎ ] `**` *power_expression*
 pub(crate) fn power_expression(i: Input) -> NodeResult {
-    let i = stack_frame!("power_expression", i);
     let (i, lhs) = unary_expression(i)?;
     if let Ok((j, t)) = tuple((no_lt, tag("**"), ws0, power_expression))(i.clone()) {
         Ok((

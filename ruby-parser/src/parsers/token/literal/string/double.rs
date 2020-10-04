@@ -25,7 +25,6 @@ pub(crate) fn double_quoted_string_character(i: Input) -> SegmentResult {
 
 /// *simple_escape_sequence* | *non_escaped_sequence* | *line_terminator_escape_sequence* | *octal_escape_sequence* | *hexadecimal_escape_sequence* | *control_escape_sequence*
 pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
-    let i = stack_frame!("double_escape_sequence", i);
     // Should be evaluated
     alt((
         map(simple_escape_sequence, |c| c.to_string()),
@@ -41,7 +40,6 @@ pub(crate) fn double_escape_sequence(i: Input) -> StringResult {
 
 /// `\` *double_escaped_character*
 pub(crate) fn simple_escape_sequence(i: Input) -> CharResult {
-    let i = stack_frame!("simple_escape_sequence", i);
     map(tuple((char('\\'), double_escaped_character)), |t| {
         match t.1 {
             '\\' => '\\',
@@ -71,7 +69,6 @@ pub(crate) fn non_escaped_sequence(i: Input) -> CharResult {
 
 /// *source_character* **but not** ( [ any escaping character ] | *line_terminator* )
 pub(crate) fn non_escaped_double_quoted_string_char(i: Input) -> CharResult {
-    let i = stack_frame!("non_escaped_double_quoted_string_char", i);
     peek(not(one_of("\\ntrfvaebsxucCM01234567")))(i.clone())?;
     peek(not(line_terminator))(i.clone())?;
     anychar(i)
