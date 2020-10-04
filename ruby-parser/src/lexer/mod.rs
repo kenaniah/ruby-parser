@@ -50,6 +50,9 @@ pub(crate) type SegmentVecResult<'a> = Parsed<'a, Vec<Segment>>;
 /// Describes a parsed string
 pub(crate) type StringResult<'a> = Parsed<'a, String>;
 
+/// Describes a list of parsed strings
+pub(crate) type StringListResult<'a> = Parsed<'a, Vec<String>>;
+
 /// Describes a parsed identifier
 pub(crate) type IdentifierResult<'a> = Parsed<'a, Identifier>;
 

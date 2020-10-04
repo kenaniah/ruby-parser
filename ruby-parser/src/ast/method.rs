@@ -9,10 +9,10 @@ pub struct Method {
 
 #[derive(Debug, PartialEq)]
 pub struct MethodParameters {
-    pub required: Vec<Parameter>,
+    pub required: Vec<String>,
     pub optional: Vec<Parameter>,
-    pub array: Option<Parameter>,
-    pub proc: Option<Parameter>,
+    pub array: Option<String>,
+    pub proc: Option<String>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -23,11 +23,8 @@ pub struct Parameter {
 
 #[allow(dead_code)]
 impl Parameter {
-    pub(crate) fn new_required(name: &str) -> Self {
-        Self {
-            name: name.to_owned(),
-            default_value: None,
-        }
+    pub(crate) fn new_required(name: &str) -> String {
+        name.to_owned()
     }
     pub(crate) fn new_optional(name: &str, default_value: Node) -> Self {
         Self {

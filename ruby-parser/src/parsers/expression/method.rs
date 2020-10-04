@@ -276,7 +276,7 @@ pub(crate) fn parameter_list(i: Input) -> NodeResult {
 }
 
 /// *mandatory_parameter* ( [ no ⏎ ] `,` *mandatory_parameter* )*
-pub(crate) fn mandatory_parameter_list(i: Input) -> ParameterListResult {
+pub(crate) fn mandatory_parameter_list(i: Input) -> StringListResult {
     map(
         tuple((
             mandatory_parameter,
@@ -290,11 +290,8 @@ pub(crate) fn mandatory_parameter_list(i: Input) -> ParameterListResult {
 }
 
 /// *local_variable_identifier*
-pub(crate) fn mandatory_parameter(i: Input) -> ParameterResult {
-    map(local_variable_identifier, |ident| Parameter {
-        name: ident.into(),
-        default_value: None,
-    })(i)
+pub(crate) fn mandatory_parameter(i: Input) -> StringResult {
+    map(local_variable_identifier, |ident| ident.into())(i)
 }
 
 /// *optional_parameter* ( [ no ⏎ ] `,` *optional_parameter* )*
