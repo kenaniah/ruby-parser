@@ -172,7 +172,7 @@ mod tests {
         assert_ok!("::BAR::Baz");
         assert_ok!("foo()::Bar");
         assert_ok!("::Foo::bar");
-        assert_ok!("foo[1][2].bar().baz[3]");
+        assert_ok!("foo[1, 2][2].bar().baz[3]");
         assert_ok!(
             "((false))",
             Node::Block(vec![Node::Block(vec![Node::boolean(false)])])
