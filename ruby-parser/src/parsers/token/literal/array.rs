@@ -65,14 +65,28 @@ pub(crate) fn expanded_array_content(i: Input) -> LexResult {
     stub_p(i)
 }
 
-/// *expanded_array_item* ( *quoated_array_item_separator_list* *expanded_array_item* )*
-pub(crate) fn expanded_array_item_list(i: Input) -> LexResult {
-    stub_p(i)
+/// *expanded_array_item* ( *quoted_array_item_separator_list* *expanded_array_item* )*
+pub(crate) fn expanded_array_item_list(i: Input) -> Parsed<Vec<Interpolatable>> {
+    map(
+        tuple((
+            expanded_array_item,
+            many0(preceded(
+                quoted_array_item_separator_list,
+                expanded_array_item,
+            )),
+        )),
+        |(first, mut vec)| {
+            vec.insert(0, first);
+            vec
+        },
+    )(i)
 }
 
 /// *expanded_array_item_character*+
-pub(crate) fn expanded_array_item(i: Input) -> LexResult {
-    stub_p(i)
+pub(crate) fn expanded_array_item(i: Input) -> InterpolatableResult {
+    map(many1(expanded_array_item_character), |contents| {
+        Interpolatable::from(contents)
+    })(i)
 }
 
 /// *non_escaped_array_item_character* | `#` **not** ( `$` | `@` | `{` ) | *expanded_array_escape_sequence* | *interpolated_character_sequence*
