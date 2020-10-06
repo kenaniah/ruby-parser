@@ -118,7 +118,7 @@ pub(crate) fn expanded_literal_string(i: Input) -> Parsed<Vec<Segment>> {
 /// *non_escaped_literal_character* | *non_expanded_literal_escape_sequence*
 pub(crate) fn non_expanded_literal_character(i: Input) -> StringResult {
     alt((
-        non_escaped_literal_character,
+        map(non_escaped_literal_character, |c| c.into()),
         non_expanded_literal_escape_sequence,
     ))(i)
 }
@@ -128,7 +128,7 @@ pub(crate) fn expanded_literal_character(i: Input) -> SegmentResult {
     alt((
         map(
             preceded(peek(not(char('#'))), non_escaped_literal_character),
-            |s| Segment::String(s),
+            |c| Segment::Char(c),
         ),
         map(double_escape_sequence, |s| Segment::String(s)),
         map(interpolated_character_sequence, |e| Segment::expr(e)),
@@ -139,11 +139,8 @@ pub(crate) fn expanded_literal_character(i: Input) -> SegmentResult {
 }
 
 /// *source_character* **but not** *quoted_literal_escape_character*
-pub(crate) fn non_escaped_literal_character(i: Input) -> StringResult {
-    preceded(
-        peek(not(quoted_literal_escape_character)),
-        map(anychar, |c| c.to_string()),
-    )(i)
+pub(crate) fn non_escaped_literal_character(i: Input) -> CharResult {
+    preceded(peek(not(quoted_literal_escape_character)), anychar)(i)
 }
 
 /// *non_expanded_literal_escape_character_sequence* | *non_escaped_non_expanded_literal_character_sequence*
