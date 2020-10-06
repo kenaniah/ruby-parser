@@ -1,4 +1,4 @@
-use crate::ast::{Method, MethodParameters, Parameter};
+use crate::ast::{BinaryOpKind, Method, MethodParameters, Parameter};
 use crate::lexer::*;
 use crate::parsers::expression::argument::argument_with_parenthesis;
 use crate::parsers::expression::argument::argument_without_parenthesis;
@@ -395,13 +395,75 @@ mod tests {
         assert_err!("&");
         assert_err!("* args");
         // Success cases
-        assert_ok!("*");
-        assert_ok!("*args");
-        assert_ok!("&blk");
-        assert_ok!("foo=2");
-        assert_ok!("foo, bar, baz=1, *");
-        assert_ok!("baz=1, *arr, &block");
-        assert_ok!("foo,&blk");
+        assert_ok!(
+            "*",
+            MethodParameters {
+                required: vec![],
+                optional: vec![],
+                array: Some("".to_owned()),
+                proc: None
+            }
+        );
+        assert_ok!(
+            "*args",
+            MethodParameters {
+                required: vec![],
+                optional: vec![],
+                array: Some("args".to_owned()),
+                proc: None
+            }
+        );
+        assert_ok!(
+            "&blk",
+            MethodParameters {
+                required: vec![],
+                optional: vec![],
+                array: None,
+                proc: Some("blk".to_owned())
+            }
+        );
+        assert_ok!(
+            "foo=2",
+            MethodParameters {
+                required: vec![],
+                optional: vec![Parameter::new_optional("foo", Node::int(2))],
+                array: None,
+                proc: None
+            }
+        );
+        assert_ok!(
+            "foo, bar, baz= 1 + 2, *",
+            MethodParameters {
+                required: vec![
+                    Parameter::new_required("foo"),
+                    Parameter::new_required("bar")
+                ],
+                optional: vec![Parameter::new_optional(
+                    "baz",
+                    Node::binary_op(Node::int(1), BinaryOpKind::Add, Node::int(2))
+                )],
+                array: Some("".to_owned()),
+                proc: None
+            }
+        );
+        assert_ok!(
+            "baz=1, *arr, &block",
+            MethodParameters {
+                required: vec![],
+                optional: vec![Parameter::new_optional("baz", Node::int(1))],
+                array: Some("arr".to_owned()),
+                proc: Some("block".to_owned())
+            }
+        );
+        assert_ok!(
+            "foo,&blk",
+            MethodParameters {
+                required: vec![Parameter::new_required("foo")],
+                optional: vec![],
+                array: None,
+                proc: Some("blk".to_owned())
+            }
+        );
     }
 
     #[test]
