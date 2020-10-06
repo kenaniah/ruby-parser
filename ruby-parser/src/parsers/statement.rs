@@ -61,7 +61,7 @@ pub(crate) fn undef_statement(i: Input) -> NodeResult {
 }
 
 /// *method_name_or_symbol* ( [ no ⏎ ] `,` *method_name_or_symbol* )*
-pub(crate) fn undef_list(i: Input) -> Parsed<Vec<Identifier>> {
+pub(crate) fn undef_list(i: Input) -> Parsed<Vec<String>> {
     map(
         tuple((
             method_name_or_symbol,
@@ -79,7 +79,7 @@ pub(crate) fn undef_list(i: Input) -> Parsed<Vec<Identifier>> {
 }
 
 /// *defined_method_name* | *symbol*
-pub(crate) fn method_name_or_symbol(i: Input) -> IdentifierResult {
+pub(crate) fn method_name_or_symbol(i: Input) -> StringResult {
     preceded(opt(char(':')), defined_method_name)(i)
 }
 
@@ -152,42 +152,15 @@ mod tests {
         // Success cases
         assert_ok!(
             "alias foo? BAR",
-            Node::alias(
-                Identifier {
-                    name: "foo?".to_owned(),
-                    kind: IdentifierKind::Method
-                },
-                Identifier {
-                    name: "BAR".to_owned(),
-                    kind: IdentifierKind::Constant
-                }
-            )
+            Node::alias("foo?".to_owned(), "BAR".to_owned(),)
         );
         assert_ok!(
             "alias\n\nfoo\t:bar!",
-            Node::alias(
-                Identifier {
-                    name: "foo".to_owned(),
-                    kind: IdentifierKind::LocalVariable
-                },
-                Identifier {
-                    name: "bar!".to_owned(),
-                    kind: IdentifierKind::Method
-                }
-            )
+            Node::alias("foo".to_owned(), "bar!".to_owned(),)
         );
         assert_ok!(
             "alias :sym func_name!",
-            Node::alias(
-                Identifier {
-                    name: "sym".to_owned(),
-                    kind: IdentifierKind::LocalVariable
-                },
-                Identifier {
-                    name: "func_name!".to_owned(),
-                    kind: IdentifierKind::Method
-                }
-            )
+            Node::alias("sym".to_owned(), "func_name!".to_owned(),)
         );
     }
 
@@ -200,29 +173,10 @@ mod tests {
         assert_err!("undef foo?? bar");
         assert_err!("undef foo? :bar?!");
         // Success cases
-        assert_ok!(
-            "undef foo?",
-            Node::undef(vec![Identifier {
-                name: "foo?".to_owned(),
-                kind: IdentifierKind::Method
-            },])
-        );
+        assert_ok!("undef foo?", Node::undef(vec!["foo?".to_owned()]));
         assert_ok!(
             "undef \n:bar   , BAZ\t,\n foo!",
-            Node::undef(vec![
-                Identifier {
-                    name: "bar".to_owned(),
-                    kind: IdentifierKind::LocalVariable
-                },
-                Identifier {
-                    name: "BAZ".to_owned(),
-                    kind: IdentifierKind::Constant
-                },
-                Identifier {
-                    name: "foo!".to_owned(),
-                    kind: IdentifierKind::Method
-                }
-            ])
+            Node::undef(vec!["bar".to_owned(), "BAZ".to_owned(), "foo!".to_owned()])
         );
     }
 
@@ -277,10 +231,7 @@ mod tests {
                 Node::conditional(
                     ConditionalKind::ModifyingIf,
                     Node::boolean(true),
-                    Node::undef(vec![Identifier {
-                        name: "hi".to_owned(),
-                        kind: IdentifierKind::LocalVariable
-                    }]),
+                    Node::undef(vec!["hi".to_owned()]),
                     Node::None
                 ),
                 Node::int(3)
@@ -291,13 +242,7 @@ mod tests {
             Node::conditional(
                 ConditionalKind::ModifyingIf,
                 Node::boolean(false),
-                Node::rescued_statement(
-                    Node::undef(vec![Identifier {
-                        name: "hi".to_owned(),
-                        kind: IdentifierKind::LocalVariable
-                    }]),
-                    Node::int(3)
-                ),
+                Node::rescued_statement(Node::undef(vec!["hi".to_owned()]), Node::int(3)),
                 Node::None
             )
         );

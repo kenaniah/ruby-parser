@@ -41,8 +41,11 @@ pub(crate) fn method_definition(i: Input) -> NodeResult {
 }
 
 /// *method_name* | *assignment_like_method_identifier*
-pub(crate) fn defined_method_name(i: Input) -> IdentifierResult {
-    alt((method_name, assignment_like_method_identifier))(i)
+pub(crate) fn defined_method_name(i: Input) -> StringResult {
+    alt((
+        map(method_name, |s| s.into()),
+        map(assignment_like_method_identifier, |s| s.into()),
+    ))(i)
 }
 
 /// *body_statement*
@@ -111,25 +114,17 @@ pub(crate) fn method_invocation_with_parenthesis(i: Input) -> NodeResult {
 }
 
 /// *local_variable_identifier* | *constant_identifier* | *method_only_identifier*
-pub(crate) fn method_identifier(i: Input) -> IdentifierResult {
-    alt((
+pub(crate) fn method_identifier(i: Input) -> LexResult {
+    recognize(alt((
         method_only_identifier,
         local_variable_identifier,
         constant_identifier,
-    ))(i)
+    )))(i)
 }
 
 /// *method_identifier* | *operator_method_name* | *keyword*
-pub(crate) fn method_name(i: Input) -> IdentifierResult {
-    alt((
-        method_identifier,
-        map(operator_method_name, |s| {
-            Identifier::new(s.to_string(), IdentifierKind::Method)
-        }),
-        map(keyword, |s| {
-            Identifier::new(s.to_string(), IdentifierKind::Method)
-        }),
-    ))(i)
+pub(crate) fn method_name(i: Input) -> LexResult {
+    alt((method_identifier, operator_method_name, keyword))(i)
 }
 
 /// *primary_expression* [ no ⏎ ] [ no ⎵ ] `[` *indexing_argument_list*? `]`
@@ -148,7 +143,7 @@ pub(crate) fn _indexing_method_invocation(i: Input) -> NodeResult {
 }
 
 /// *method_name* **but not** *constant_identifier*
-pub(crate) fn method_name_except_constant(i: Input) -> IdentifierResult {
+pub(crate) fn method_name_except_constant(i: Input) -> LexResult {
     let (i, _) = peek(not(constant_identifier))(i)?;
     method_name(i)
 }

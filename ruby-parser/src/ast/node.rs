@@ -182,11 +182,11 @@ impl Node {
         })
     }
     /// Creates a token that represents an alias
-    pub(crate) fn alias(to: Identifier, from: Identifier) -> Self {
+    pub(crate) fn alias(to: String, from: String) -> Self {
         Self::Alias(Alias { to, from })
     }
     /// Creates a token that represents an undefinition
-    pub(crate) fn undef(list: Vec<Identifier>) -> Self {
+    pub(crate) fn undef(list: Vec<String>) -> Self {
         Self::Undef(Undef { list })
     }
     /// Allows placeholding nodes to be updated when working around left-recursion via LL(k)

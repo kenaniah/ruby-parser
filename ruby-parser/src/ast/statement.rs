@@ -2,13 +2,13 @@ use super::*;
 
 #[derive(Debug, PartialEq)]
 pub struct Alias {
-    pub to: Identifier,
-    pub from: Identifier,
+    pub to: String,
+    pub from: String,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct Undef {
-    pub list: Vec<Identifier>,
+    pub list: Vec<String>,
 }
 
 #[derive(Debug, PartialEq)]
