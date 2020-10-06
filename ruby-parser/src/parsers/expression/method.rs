@@ -312,8 +312,9 @@ pub(crate) fn mandatory_parameter_list(i: Input) -> Parsed<Vec<String>> {
     )(i)
 }
 
-/// *local_variable_identifier*
+/// *local_variable_identifier* **but not** *optional_parameter*
 pub(crate) fn mandatory_parameter(i: Input) -> StringResult {
+    let (i, _) = not(peek(optional_parameter))(i)?;
     map(local_variable_identifier, |ident| ident.into())(i)
 }
 
@@ -384,6 +385,24 @@ pub(crate) fn proc_parameter_name(i: Input) -> StringResult {
 mod tests {
     use super::*;
     use crate::ast::BinaryOpKind;
+
+    #[test]
+    fn test_parameter_list() {
+        use_parser!(parameter_list);
+        // Parse errors
+        assert_err!("foo,,bar");
+        assert_err!("foo=1,bar");
+        assert_err!("&");
+        assert_err!("* args");
+        // Success cases
+        assert_ok!("*");
+        assert_ok!("*args");
+        assert_ok!("&blk");
+        assert_ok!("foo=2");
+        assert_ok!("foo, bar, baz=1, *");
+        assert_ok!("baz=1, *arr, &block");
+        assert_ok!("foo,&blk");
+    }
 
     #[test]
     fn test_mandatory_parameter() {
