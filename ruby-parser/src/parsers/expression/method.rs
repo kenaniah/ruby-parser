@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOpKind, Method, MethodParameters, Parameter};
+use crate::ast::{MethodParameters, Parameter};
 use crate::lexer::*;
 use crate::parsers::expression::argument::argument_with_parenthesis;
 use crate::parsers::expression::argument::argument_without_parenthesis;

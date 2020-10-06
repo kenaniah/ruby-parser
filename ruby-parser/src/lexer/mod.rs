@@ -53,7 +53,3 @@ pub(crate) type IdentifierResult<'a> = Parsed<'a, Identifier>;
 pub(crate) fn stub(i: Input) -> NodeResult {
     Err(nom::Err::Error((i, crate::ErrorKind::Char)))
 }
-
-pub(crate) fn stub_list(i: Input) -> NodeListResult {
-    Err(nom::Err::Error((i, crate::ErrorKind::Char)))
-}
