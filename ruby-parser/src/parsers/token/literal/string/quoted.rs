@@ -31,7 +31,7 @@ pub(crate) fn non_expanded_delimited_string(i: Input) -> StringResult {
 }
 
 /// Manages the state of the input's quote delimiter when nested
-fn wrap_quote_delimiter<'a, O1, E, F>(
+pub(crate) fn wrap_quote_delimiter<'a, O1, E, F>(
     mut func: F,
 ) -> impl FnMut(Input<'a>) -> nom::IResult<Input<'a>, O1, E>
 where

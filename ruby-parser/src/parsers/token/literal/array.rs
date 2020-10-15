@@ -2,7 +2,10 @@ use crate::lexer::*;
 use crate::parsers::program::{line_terminator, whitespace};
 use crate::parsers::token::literal::string::double::double_escape_sequence;
 use crate::parsers::token::literal::string::double::interpolated_character_sequence;
+use crate::parsers::token::literal::string::quoted::literal_beginning_delimiter;
+use crate::parsers::token::literal::string::quoted::literal_ending_delimiter;
 use crate::parsers::token::literal::string::quoted::non_escaped_literal_character;
+use crate::parsers::token::literal::string::quoted::wrap_quote_delimiter;
 
 /// *quoted_non_expanded_array_constructor* | *quoted_expanded_array_constructor*
 pub(crate) fn array_literal(i: Input) -> NodeResult {
@@ -26,7 +29,7 @@ pub(crate) fn non_expanded_array_item_list(i: Input) -> LexResult {
 
 /// *quoted_array_item_separator*+
 pub(crate) fn quoted_array_item_separator_list(i: Input) -> LexResult {
-    stub_p(i)
+    recognize(many1(quoted_array_item_separator))(i)
 }
 
 /// *whitespace* | *line_terminator*
@@ -56,13 +59,27 @@ pub(crate) fn non_expanded_array_escape_sequence(i: Input) -> LexResult {
 }
 
 /// `%W` *literal_beginning_delimiter* *expanded_array_content* *literal_ending_delimiter*
-pub(crate) fn quoted_expanded_array_constructor(i: Input) -> LexResult {
-    stub_p(i)
+pub(crate) fn quoted_expanded_array_constructor(i: Input) -> Parsed<Vec<Interpolatable>> {
+    preceded(
+        tag("%W"),
+        wrap_quote_delimiter(delimited(
+            literal_beginning_delimiter,
+            expanded_array_content,
+            literal_ending_delimiter,
+        )),
+    )(i)
 }
 
 /// *quoted_array_item_separator_list*? *expanded_array_item_list*? *quoted_array_item_separator_list*?
-pub(crate) fn expanded_array_content(i: Input) -> LexResult {
-    stub_p(i)
+pub(crate) fn expanded_array_content(i: Input) -> Parsed<Vec<Interpolatable>> {
+    map(
+        delimited(
+            opt(quoted_array_item_separator_list),
+            opt(expanded_array_item_list),
+            opt(quoted_array_item_separator_list),
+        ),
+        |content| content.unwrap_or(vec![]),
+    )(i)
 }
 
 /// *expanded_array_item* ( *quoted_array_item_separator_list* *expanded_array_item* )*
