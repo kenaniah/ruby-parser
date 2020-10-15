@@ -166,7 +166,7 @@ pub(crate) fn expanded_array_item(i: Input) -> InterpolatableResult {
 /// *non_escaped_array_item_character* | `#` **not** ( `$` | `@` | `{` ) | *expanded_array_escape_sequence* | *interpolated_character_sequence*
 pub(crate) fn expanded_array_item_character(i: Input) -> SegmentResult {
     alt((
-        map(non_escaped_array_character, |c| Segment::Char(c)),
+        map(non_escaped_array_item_character, |c| Segment::Char(c)),
         map(expanded_array_escape_sequence, |s| Segment::String(s)),
         map(interpolated_character_sequence, |e| Segment::expr(e)),
         map(char('#'), |c| Segment::Char(c)),
