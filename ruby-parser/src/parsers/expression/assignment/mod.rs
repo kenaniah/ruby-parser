@@ -7,8 +7,6 @@ pub(crate) mod abbreviated;
 pub(crate) mod multiple;
 pub(crate) mod single;
 
-// TODO: figure out if assignment expressions and statements can be gramatically combined
-
 /// *single_assignment_expression* | *abbreviated_assignment_expression* | *assignment_with_rescue_modifier*
 pub(crate) fn assignment_expression(i: Input) -> NodeResult {
     alt((
