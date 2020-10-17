@@ -11,6 +11,7 @@ mod loop_;
 mod method;
 mod node;
 mod object;
+mod program;
 mod statement;
 mod unary_op;
 
@@ -25,5 +26,6 @@ pub use loop_::*;
 pub use method::*;
 pub use node::*;
 pub use object::*;
+pub use program::*;
 pub use statement::*;
 pub use unary_op::*;

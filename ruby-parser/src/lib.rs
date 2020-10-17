@@ -25,6 +25,6 @@ mod parsers;
 pub use nom::error::ErrorKind;
 
 /// Parses a ruby program
-pub fn parse(i: lexer::Input) -> lexer::NodeResult {
+pub fn parse(i: lexer::Input) -> lexer::ProgramResult {
     parsers::program::program(i)
 }

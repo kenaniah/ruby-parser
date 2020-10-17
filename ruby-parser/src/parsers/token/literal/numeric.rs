@@ -17,13 +17,13 @@ use ruby_parser::lexer::Node;
 use ruby_parser::ast::Literal;
 
 let input = "12_345";
-let (remaining, ast) = parse(input.into()).unwrap();
+let (remaining, parsed) = parse(input.into()).unwrap();
 assert_eq!("", *remaining);
-assert_eq!(Node::Block(vec![Node::Literal(Literal::Integer(12345))]), ast);
+assert_eq!(Node::Block(vec![Node::Literal(Literal::Integer(12345))]), parsed.program);
 
 let input = "-12.34e+4";
-let (remaining, ast) = parse(input.into()).unwrap();
-assert_eq!(Node::Block(vec![Node::Literal(Literal::Float(-123400.0))]), ast);
+let (remaining, parsed) = parse(input.into()).unwrap();
+assert_eq!(Node::Block(vec![Node::Literal(Literal::Float(-123400.0))]), parsed.program);
 ```
 
 ## ISO Spec

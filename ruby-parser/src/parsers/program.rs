@@ -5,8 +5,20 @@ use crate::parsers::statement::statement;
 use nom::character::complete::line_ending;
 
 /// *compound_statement*
-pub fn program(i: Input) -> NodeResult {
-    compound_statement(i)
+pub fn program(i: Input) -> ProgramResult {
+    let (i, program) = compound_statement(i)?;
+    let (i, data) = opt(end_of_program_marker)(i)?;
+    Ok((
+        i,
+        Program {
+            program: program,
+            data: if let Some(Node::EndOfProgram(data)) = data {
+                Some(data)
+            } else {
+                None
+            },
+        },
+    ))
 }
 
 /// *statement_list*? *separator_list*?
@@ -72,7 +84,8 @@ pub(crate) fn end_of_program_marker(i: Input) -> NodeResult {
     }
     let (i, _) = tag("__END__")(i)?;
     let (i, _) = opt(line_terminator)(i)?;
-    Ok((i, Node::EndOfProgram))
+    let (i, data) = map(nom::combinator::rest, |s: Input| s.to_string())(i)?;
+    Ok((i, Node::EndOfProgram(data)))
 }
 
 /// ( *whitespace* | *line_terminator* | *comment* )*
@@ -160,15 +173,19 @@ mod tests {
         assert_err!("\r\n");
     }
 
-    // #[test]
-    // fn test_end_of_program_marker() {
-    //     use_parser!(end_of_program_marker);
-    //     // Success cases
-    //     assert_ok!("__END__");
-    //     assert_ok!("__END__\n");
-    //     assert_ok!("__END__\r\n");
-    //     // Failure cases
-    //     assert_err!("__end__");
-    //     assert_err!("__END__ing");
-    // }
+    #[test]
+    fn test_end_of_program_marker() {
+        use_parser!(end_of_program_marker);
+        // Failure cases
+        assert_err!("__end__");
+        assert_err!("__END__ing");
+        // Success cases
+        assert_ok!("__END__", Node::EndOfProgram("".to_owned()));
+        assert_ok!("__END__\n", Node::EndOfProgram("".to_owned()));
+        assert_ok!("__END__\r\n", Node::EndOfProgram("".to_owned()));
+        assert_ok!(
+            "__END__\r\n\nfoo\nbar",
+            Node::EndOfProgram("\nfoo\nbar".to_owned())
+        );
+    }
 }

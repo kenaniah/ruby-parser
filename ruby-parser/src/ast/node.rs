@@ -34,7 +34,7 @@ pub enum Node {
     Return(Vec<Self>),
     Break(Vec<Self>),
     Next(Vec<Self>),
-    EndOfProgram,
+    EndOfProgram(String),
     Placeholder,
 }
 
