@@ -1,4 +1,4 @@
-use clap::{App, Arg, ArgGroup};
+use clap::{App, Arg};
 
 fn main() {
     let opts = App::new("ruby")
@@ -10,7 +10,7 @@ fn main() {
                 .takes_value(true)
                 .possible_values(&["insns", "parsetree", "parsetree_with_comment"])
                 .multiple(true)
-                .multiple_occurrences(true)
+                .use_delimiter(true)
                 .about("dumps debug information"),
         )
         .arg(
@@ -18,16 +18,11 @@ fn main() {
                 .short('e')
                 .takes_value(true)
                 .value_name("code")
-                //.multiple(true)
                 .multiple_occurrences(true)
                 .conflicts_with("PROGRAM_FILENAME")
                 .about("a line of ruby code to be executed, can be specified multiple times"),
         )
-        .arg(
-            Arg::new("PROGRAM_FILENAME")
-                .about("path to a ruby file to be executed")
-        )
-        //.group(ArgGroup::new("execution").args(&["PROGRAM_FILENAME", "execute"]))
+        .arg(Arg::new("PROGRAM_FILENAME").about("path to a ruby file to be executed"))
         .get_matches();
     println!("{:?}", opts);
 }
