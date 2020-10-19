@@ -1,4 +1,5 @@
 [workspace]
 members = [
+  "ruby-bin",
   "ruby-parser"
 ]
