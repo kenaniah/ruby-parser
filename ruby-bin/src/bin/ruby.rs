@@ -1,7 +1,7 @@
 use clap::{App, Arg};
 
-fn main() {
-    let opts = App::new("ruby")
+fn argspec() -> App<'static> {
+    App::new("ruby")
         .version("0.0.0-dev1")
         .arg(
             Arg::new("dump")
@@ -23,6 +23,29 @@ fn main() {
                 .about("a line of ruby code to be executed, can be specified multiple times"),
         )
         .arg(Arg::new("PROGRAM_FILENAME").about("path to a ruby file to be executed"))
-        .get_matches();
+}
+
+fn main() {
+    let opts = argspec().get_matches();
     println!("{:?}", opts);
+}
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+
+    #[test]
+    fn test_arguments() {
+
+        // Base case
+        let res = argspec().try_get_matches_from(vec!["ruby"]);
+        assert!(res.is_ok());
+
+        // Program filename
+        let res = argspec().try_get_matches_from(vec!["ruby", "foo.rb"]);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap().value_of("PROGRAM_FILENAME"), Some("foo.rb"));
+
+    }
 }
