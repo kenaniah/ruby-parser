@@ -17,6 +17,7 @@ use crate::parsers::expression::super_::super_with_argument;
 use crate::parsers::expression::super_::super_with_argument_and_do_block;
 use crate::parsers::expression::yield_::yield_with_argument;
 use crate::parsers::program::separator;
+use crate::parsers::program::whitespace;
 use crate::parsers::token::identifier::{
     assignment_like_method_identifier, constant_identifier, local_variable_identifier,
     method_only_identifier,
@@ -109,6 +110,19 @@ pub(crate) fn method_invocation_with_block(i: Input) -> NodeResult {
 pub(crate) fn method_invocation_with_parenthesis(i: Input) -> NodeResult {
     map(
         tuple((method_identifier, argument_with_parenthesis, opt(block))),
+        |_| Node::Placeholder,
+    )(i)
+}
+
+/// *method_identifier* *whitespace*+ *argument_without_parenthesis* *block*?
+pub(crate) fn simple_method_invocation_without_parenthesis(i: Input) -> NodeResult {
+    map(
+        tuple((
+            method_identifier,
+            many1(whitespace),
+            argument_without_parenthesis,
+            opt(block),
+        )),
         |_| Node::Placeholder,
     )(i)
 }
@@ -380,6 +394,14 @@ pub(crate) fn proc_parameter_name(i: Input) -> StringResult {
 mod tests {
     use super::*;
     use crate::ast::BinaryOpKind;
+
+    // #[test]
+    // fn test_method_invocation_without_parenthesis() {
+    //     use_parser!(method_invocation_without_parenthesis);
+    //     assert_err!("foo");
+    //     assert_ok!("foo 1, [2, 3]");
+    //     assert_ok!("require 'bar/blah'");
+    // }
 
     #[test]
     fn test_parameter_list() {

@@ -118,9 +118,10 @@ fn primary_iteration_expression(i: Input) -> NodeResult {
 /// *method_only_invocation* | *method_invocation_with_block* | *method_invocation_with_parenthesis*
 fn primary_method_call_expression(i: Input) -> NodeResult {
     alt((
+        method::simple_method_invocation_without_parenthesis, // Added for Ruby 2.0
+        method::method_invocation_with_parenthesis,
         method::method_only_invocation,
         method::method_invocation_with_block,
-        method::method_invocation_with_parenthesis,
     ))(i)
 }
 
@@ -173,6 +174,8 @@ mod tests {
         assert_ok!("foo()::Bar");
         assert_ok!("::Foo::bar");
         assert_ok!("foo[1, 2][2].bar().baz[3]");
+        assert_ok!("require 1, 2 + 3");
+        assert_ok!("require 'bar/blah'");
         assert_ok!(
             "((false))",
             Node::Block(vec![Node::Block(vec![Node::boolean(false)])])

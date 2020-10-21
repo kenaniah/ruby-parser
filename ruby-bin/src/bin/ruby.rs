@@ -1,4 +1,4 @@
-use std::io::{BufRead, BufReader, Error, ErrorKind};
+use std::io::Error;
 use std::path::Path;
 
 use clap::{App, Arg};
