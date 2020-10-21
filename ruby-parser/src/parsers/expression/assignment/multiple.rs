@@ -1,8 +1,13 @@
 use crate::lexer::*;
+use crate::parsers::expression::argument::indexing_argument_list;
 use crate::parsers::expression::argument::operator_expression_list;
 use crate::parsers::expression::argument::splatting_argument;
 use crate::parsers::expression::method::method_invocation_without_parenthesis;
 use crate::parsers::expression::operator_expression;
+use crate::parsers::expression::primary_expression;
+use crate::parsers::expression::variable::variable;
+use crate::parsers::token::identifier::constant_identifier;
+use crate::parsers::token::identifier::local_variable_identifier;
 
 /// *many_to_one_assignment_statement* | *one_to_packing_assignment_statement* | *many_to_many_assignment_statement*
 pub(crate) fn multiple_assignment_statement(i: Input) -> NodeResult {
@@ -15,17 +20,57 @@ pub(crate) fn multiple_assignment_statement(i: Input) -> NodeResult {
 
 /// *left_hand_side* [ no ⏎ ] `=` *multiple_right_hand_side*
 pub(crate) fn many_to_one_assignment_statement(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((
+            left_hand_side,
+            no_lt,
+            char('='),
+            ws0,
+            multiple_right_hand_side,
+        )),
+        |_| Node::Placeholder,
+    )(i)
 }
 
 /// *packing_left_hand_side* [ no ⏎ ] `=` *rhs_expression*
 pub(crate) fn one_to_packing_assignment_statement(i: Input) -> NodeResult {
-    stub(i)
+    map(
+        tuple((
+            packing_left_hand_side,
+            no_lt,
+            char('='),
+            ws0,
+            rhs_expression,
+        )),
+        |_| Node::Placeholder,
+    )(i)
 }
 
 /// *multiple_left_hand_side* [ no ⏎ ] `=` *multiple_right_hand_side* | ( *multiple_left_hand_side* **but not** *packing_left_hand_side* ) [ no ⏎ ] `=` *rhs_expression*
 pub(crate) fn many_to_many_assignment_statement(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        map(
+            tuple((
+                multiple_left_hand_side,
+                no_lt,
+                char('='),
+                ws0,
+                multiple_right_hand_side,
+            )),
+            |_| Node::Placeholder,
+        ),
+        map(
+            tuple((
+                peek(not(packing_left_hand_side)),
+                multiple_left_hand_side,
+                no_lt,
+                char('='),
+                ws0,
+                rhs_expression,
+            )),
+            |_| Node::Placeholder,
+        ),
+    ))(i)
 }
 
 /// *method_invocation_without_parenthesis* | *operator_expression*
@@ -35,7 +80,33 @@ pub(crate) fn rhs_expression(i: Input) -> NodeResult {
 
 /// *variable* | *primary_expression* [ no ⏎ ] [ no ⎵ ] `[` *indexing_argument_list*? `]` | *primary_expression* [ no ⏎ ] ( `.` | `::` ) ( *local_variable_identifier* | *constant_identifier* ) | `::` *constant_identifier*
 pub(crate) fn left_hand_side(i: Input) -> NodeResult {
-    stub(i)
+    alt((
+        map(variable, |_| Node::Placeholder),
+        map(
+            tuple((
+                primary_expression,
+                char('['),
+                ws0,
+                opt(indexing_argument_list),
+                ws0,
+                char(']'),
+            )),
+            |_| Node::Placeholder,
+        ),
+        map(
+            tuple((
+                primary_expression,
+                no_lt,
+                alt((tag("."), tag("::"))),
+                ws0,
+                alt((local_variable_identifier, constant_identifier)),
+            )),
+            |_| Node::Placeholder,
+        ),
+        map(tuple((tag("::"), ws0, constant_identifier)), |_| {
+            Node::Placeholder
+        }),
+    ))(i)
 }
 
 /// ( *multiple_left_hand_side_item* [ no ⏎ ] `,` )+ *multiple_left_hand_side_item*? | ( *multiple_left_hand_side_item* [ no ⏎ ] `,` )+ *packing_left_hand_side*? | *packing_left_hand_side* | *grouped_left_hand_side*

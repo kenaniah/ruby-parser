@@ -37,7 +37,6 @@ mod test {
 
     #[test]
     fn test_arguments() {
-
         // Base case
         let res = argspec().try_get_matches_from(vec!["ruby"]);
         assert!(res.is_ok());
@@ -46,6 +45,5 @@ mod test {
         let res = argspec().try_get_matches_from(vec!["ruby", "foo.rb"]);
         assert!(res.is_ok());
         assert_eq!(res.unwrap().value_of("PROGRAM_FILENAME"), Some("foo.rb"));
-
     }
 }
