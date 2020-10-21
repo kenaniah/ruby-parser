@@ -92,7 +92,7 @@ pub(crate) fn abbreviated_indexing_assignment_statement(i: Input) -> NodeResult 
     )(i)
 }
 
-/// *primary_expression* [ no ⏎ ] ( `.` | `::` ) *local_variable_identifier* [ no ⏎ ] *assignment_operator* *operator_expression* | *primary_expression* [ no ⏎ ] `.` *constant_identifier* [ no line terimanator here ] *assignment_operator* *operator_expression*
+/// *primary_expression* [ no ⏎ ] ( `.` | `::` ) *local_variable_identifier* [ no ⏎ ] *assignment_operator* *operator_expression* | *primary_expression* [ no ⏎ ] `.` *constant_identifier* [ no ⏎ ] *assignment_operator* *operator_expression*
 pub(crate) fn abbreviated_method_assignment_expression(i: Input) -> NodeResult {
     alt((
         map(
@@ -124,7 +124,7 @@ pub(crate) fn abbreviated_method_assignment_expression(i: Input) -> NodeResult {
     ))(i)
 }
 
-/// *primary_expression* [ no ⏎ ] ( `.` | `::` ) *local_variable_identifier* [ no ⏎ ] *assignment_operator* *method_invocation_without_parenthesis* | *primary_expression* [ no ⏎ ] `.` *constant_identifier* [ no line terimanator here ] *assignment_operator* *method_invocation_without_parenthesis*
+/// *primary_expression* [ no ⏎ ] ( `.` | `::` ) *local_variable_identifier* [ no ⏎ ] *assignment_operator* *method_invocation_without_parenthesis* | *primary_expression* [ no ⏎ ] `.` *constant_identifier* [ no ⏎ ] *assignment_operator* *method_invocation_without_parenthesis*
 pub(crate) fn abbreviated_method_assignment_statement(i: Input) -> NodeResult {
     alt((
         map(
