@@ -63,6 +63,7 @@ pub(crate) fn source_character(i: Input) -> CharResult {
 pub(crate) fn whitespace(i: Input) -> LexResult {
     alt((
         recognize(one_of(" \t\x0b\x0c\r")),
+        recognize(comment),
         line_terminator_escape_sequence,
     ))(i)
 }
@@ -90,11 +91,7 @@ pub(crate) fn end_of_program_marker(i: Input) -> NodeResult {
 
 /// ( *whitespace* | *line_terminator* | *comment* )*
 pub(crate) fn ws0(i: Input) -> LexResult {
-    recognize(many0(alt((
-        whitespace,
-        line_terminator,
-        recognize(comment),
-    ))))(i)
+    recognize(many0(alt((whitespace, line_terminator))))(i)
 }
 
 /// *whitespace**

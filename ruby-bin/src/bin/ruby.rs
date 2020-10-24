@@ -37,7 +37,16 @@ fn main() -> Result<(), Error> {
         let contents = std::fs::read_to_string(path)?;
         let input = ruby_parser::lexer::Input::new(&contents);
         let program = ruby_parser::parse(input);
-        println!("program {:?}", program);
+
+        // Check for a successful parse
+        if let Ok(program) = program {
+            println!(
+                "AST:\n{:?}\n\nRemaining source:\n----\n{}",
+                program.1, program.0
+            );
+        } else {
+            println!("parsing error {:?}", program);
+        }
     }
     Ok(())
 }
